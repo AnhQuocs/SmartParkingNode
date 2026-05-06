@@ -28,8 +28,6 @@ class LiveTrackingRepositoryImpl @Inject constructor(
             override fun onDataChange(snapshot: DataSnapshot) {
                 Log.d("FirebaseData", "Snapshot: ${snapshot.value}")
 
-                // Bây giờ snapshot sẽ chứa {latest_vehicle: {...}, recent_vehicles: {...}}
-                // Nó sẽ khớp hoàn toàn với cấu trúc của LiveTrackingDto
                 val dto = snapshot.getValue(LiveTrackingDto::class.java)
                 Log.d("FirebaseData", "DTO: $dto")
 

@@ -20,4 +20,13 @@
     <string name="real_time_monitoring_active">Giám sát thời gian thực đang hoạt động</string>
     <string name="speed_analysis_recent_10">PHÂN TÍCH TỐC ĐỘ (10 XE GẦN NHẤT)</string>
 
+    <!-- VIOLATION -->
+    <string name="violation_level_critical">NGHIÊM TRỌNG</string>
+    <string name="violation_level_high">CAO</string>
+    <string name="violation_level_moderate">TRUNG BÌNH</string>
+
+    <string name="violation_recorded_speed">Tốc độ ghi nhận</string>
+    <string name="violation_speed_limit">Giới hạn tốc độ</string>
+    <string name="violation_excess">Vượt quá</string>
+
 </resources>

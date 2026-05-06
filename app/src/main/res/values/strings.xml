@@ -19,4 +19,13 @@
     <string name="real_time_monitoring_active">Real-time monitoring active</string>
     <string name="speed_analysis_recent_10">SPEED ANALYSIS (RECENT 10)</string>
 
+    <!-- VIOLATION -->
+    <string name="violation_level_critical">CRITICAL</string>
+    <string name="violation_level_high">HIGH</string>
+    <string name="violation_level_moderate">MODERATE</string>
+
+    <string name="violation_recorded_speed">Recorded Speed</string>
+    <string name="violation_speed_limit">Speed Limit</string>
+    <string name="violation_excess">Excess</string>
+
 </resources>
