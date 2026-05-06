@@ -28,5 +28,6 @@
     <string name="violation_recorded_speed">Tốc độ ghi nhận</string>
     <string name="violation_speed_limit">Giới hạn tốc độ</string>
     <string name="violation_excess">Vượt quá</string>
+    <string name="incidents">%1$d vi phạm gần đây</string>
 
 </resources>

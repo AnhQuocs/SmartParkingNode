@@ -27,5 +27,6 @@
     <string name="violation_recorded_speed">Recorded Speed</string>
     <string name="violation_speed_limit">Speed Limit</string>
     <string name="violation_excess">Excess</string>
+    <string name="incidents">%1$d recent incidents</string>
 
 </resources>

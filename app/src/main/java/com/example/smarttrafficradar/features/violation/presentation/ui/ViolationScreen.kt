@@ -5,6 +5,7 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,7 @@ import com.example.smarttrafficradar.features.violation.presentation.viewmodel.V
 import com.example.smarttrafficradar.features.violation.presentation.viewmodel.ViolationViewModel
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
+import com.example.smarttrafficradar.ui.theme.DarkBackground
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -43,7 +45,7 @@ fun ViolationScreen(
     val scrollState = rememberScrollState()
 
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().background(color = DarkBackground),
         contentAlignment = Alignment.Center
     ) {
         when(val state = violationState) {
@@ -66,6 +68,10 @@ fun ViolationScreen(
                         .verticalScroll(scrollState),
                     verticalArrangement = Arrangement.spacedBy(AppSpacing.M)
                 ) {
+                    Spacer(modifier = Modifier.height(AppSpacing.XXS))
+
+                    ViolationTopBar(size = violations.size)
+
                     Spacer(modifier = Modifier.height(AppSpacing.S))
 
                     violations.forEachIndexed { index, violation ->
