@@ -65,3 +65,25 @@ val DarkOnError = Color(0xFF690005)
 val NeonGreen = Color(0xFF00FF41)
 val ErrorRed = Color(0xFFFF3B30)
 val SlateMist = Color(0xFF919191)
+
+val RedPrimary = Color(0xFFFF3E5D)
+val RedBorder = Color(0xFF492431)
+val RedBackground = Color(0xFF24171E)
+
+val NeutralPrimary = Color.White
+val NeutralBorder = Color(0xFF2E3544)
+val NeutralBackground = Color(0xFF1A1F29)
+
+val YellowPrimary = Color(0xFFFFB200)
+val YellowBorder = Color(0xFF42341C)
+val YellowBackground = Color(0xFF24201A)
+
+val OrangePrimary = Color(0xFFFFA50C)
+val Orange644919 = Color(0xFF42341C)
+val OrangeBackground = Color(0xFF312A21)
+
+val AmberPrimary  = Color(0xFFF59E0B)
+val AmberDark = Color(0xFFD97706)
+
+val SurfaceDark = Color(0xFF0E1117)
+val TextSecondary = Color(0xFF8690A0)
