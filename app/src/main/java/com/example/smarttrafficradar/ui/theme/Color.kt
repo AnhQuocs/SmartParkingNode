@@ -79,11 +79,18 @@ val YellowBorder = Color(0xFF42341C)
 val YellowBackground = Color(0xFF24201A)
 
 val OrangePrimary = Color(0xFFFFA50C)
-val Orange644919 = Color(0xFF42341C)
+val OrangeBorder = Color(0xFF42341C)
 val OrangeBackground = Color(0xFF312A21)
+
+val CyanPrimary = Color(0xFF00D4FF)
+val CyanBorder = Color(0xFF06586F)
+val CyanBackground = Color(0xFF092331)
 
 val AmberPrimary  = Color(0xFFF59E0B)
 val AmberDark = Color(0xFFD97706)
 
 val SurfaceDark = Color(0xFF0E1117)
 val TextSecondary = Color(0xFF8690A0)
+
+val NavyBackground = Color(0xFF0A0E1A)
+val DeepBlack = Color(0xFF070809)

@@ -22,17 +22,23 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.smarttrafficradar.R
 import com.example.smarttrafficradar.features.violation.domain.model.Violation
 import com.example.smarttrafficradar.features.violation.presentation.util.getViolationLevel
-import com.example.smarttrafficradar.features.violation.presentation.util.toFormattedDateTime
+import com.example.smarttrafficradar.features.violation.presentation.util.toRelativeTime
 import com.example.smarttrafficradar.ui.dimens.AppShape
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
@@ -41,8 +47,8 @@ import com.example.smarttrafficradar.ui.theme.AmberPrimary
 import com.example.smarttrafficradar.ui.theme.NeutralBackground
 import com.example.smarttrafficradar.ui.theme.NeutralBorder
 import com.example.smarttrafficradar.ui.theme.NeutralPrimary
-import com.example.smarttrafficradar.ui.theme.Orange644919
 import com.example.smarttrafficradar.ui.theme.OrangeBackground
+import com.example.smarttrafficradar.ui.theme.OrangeBorder
 import com.example.smarttrafficradar.ui.theme.OrangePrimary
 import com.example.smarttrafficradar.ui.theme.RedBackground
 import com.example.smarttrafficradar.ui.theme.RedBorder
@@ -58,6 +64,7 @@ import com.example.smarttrafficradar.utils.s14
 import com.example.smarttrafficradar.utils.s16
 import com.example.smarttrafficradar.utils.s24
 import com.example.smarttrafficradar.utils.semiBold
+import kotlinx.coroutines.delay
 
 enum class ViolationInfoType {
     SPEED, LIMIT, EXCESS
@@ -140,9 +147,7 @@ fun ViolationCard(
 
                             Spacer(modifier = Modifier.width(AppSpacing.S))
 
-                            Text(
-                                text = violation.timestamp.toFormattedDateTime(), color = SlateMist
-                            )
+                            RelativeTimeText(timestamp = violation.timestamp)
                         }
                     }
 
@@ -161,7 +166,7 @@ fun ViolationCard(
                         ViolationLevel.HIGH -> Quad(
                             R.string.violation_level_high,
                             OrangePrimary,
-                            Orange644919,
+                            OrangeBorder,
                             OrangeBackground
                         )
 
@@ -223,6 +228,29 @@ fun ViolationCard(
             }
         }
     }
+}
+
+@Composable
+fun RelativeTimeText(timestamp: Long, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    var ticker by remember { mutableStateOf(0) }
+
+    LaunchedEffect(timestamp) {
+        while (true) {
+            delay(60_000)
+            ticker++
+        }
+    }
+
+    val timeText = remember(timestamp, ticker) {
+        timestamp.toRelativeTime(context)
+    }
+
+    Text(
+        text = timeText,
+        color = SlateMist,
+        modifier = modifier
+    )
 }
 
 data class ViolationInfoColor(

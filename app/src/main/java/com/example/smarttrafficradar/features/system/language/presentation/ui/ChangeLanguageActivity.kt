@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
@@ -51,6 +52,11 @@ import com.example.smarttrafficradar.features.system.language.presentation.viewm
 import com.example.smarttrafficradar.ui.dimens.AppShape
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
+import com.example.smarttrafficradar.ui.theme.CyanBackground
+import com.example.smarttrafficradar.ui.theme.DarkBackground
+import com.example.smarttrafficradar.ui.theme.DarkOnPrimary
+import com.example.smarttrafficradar.ui.theme.DeepBlack
+import com.example.smarttrafficradar.ui.theme.SlateMist
 import com.example.smarttrafficradar.utils.LangUtils
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -87,7 +93,7 @@ fun ChangeLanguageScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(DarkBackground)
             .padding(horizontal = Dimen.PaddingM, vertical = Dimen.PaddingXL),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
@@ -98,7 +104,7 @@ fun ChangeLanguageScreen(
             Image(
                 painter = painterResource(id = R.drawable.ic_back),
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                colorFilter = ColorFilter.tint(Color.White),
                 modifier = Modifier
                     .align(Alignment.CenterStart)
                     .padding(top = Dimen.PaddingL, start = Dimen.PaddingSM)
@@ -108,7 +114,7 @@ fun ChangeLanguageScreen(
 
             Text(
                 stringResource(id = R.string.select_language),
-                color = MaterialTheme.colorScheme.primary,
+                color = Color.White,
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Medium,
                     fontSize = 20.sp
@@ -124,7 +130,7 @@ fun ChangeLanguageScreen(
         Column(
             modifier = Modifier
                 .clip(RoundedCornerShape(AppShape.ShapeL))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .background(DeepBlack)
                 .fillMaxWidth()
                 .padding(Dimen.PaddingM)
         ) {
@@ -157,7 +163,8 @@ fun ChangeLanguageScreen(
             shape = RoundedCornerShape(AppShape.ShapeL),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(Dimen.HeightDefault)
+                .height(Dimen.HeightDefault),
+            colors = ButtonDefaults.buttonColors(containerColor = DarkOnPrimary)
         ) {
             Text(stringResource(id = R.string.apply), style = MaterialTheme.typography.titleMedium)
         }
@@ -176,7 +183,7 @@ fun LanguageOption(
             .clip(RoundedCornerShape(12.dp))
             .clickable { onClick() }
             .background(
-                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                if (isSelected) CyanBackground
                 else Color.Transparent
             )
             .padding(horizontal = 16.dp, vertical = 12.dp),
@@ -187,9 +194,9 @@ fun LanguageOption(
             text = title,
             style = MaterialTheme.typography.bodyLarge.copy(
                 color = if (isSelected)
-                    MaterialTheme.colorScheme.primary
+                    Color.White
                 else
-                    MaterialTheme.colorScheme.onBackground
+                    SlateMist
             )
         )
 
