@@ -1,65 +1,73 @@
 /**
- * smart_traffic_node.ino — File chính, nạp vào Arduino IDE
+ * smart_traffic_node.ino — v2.0 (tích hợp RFID RC522)
  *
  * CẤU TRÚC PROJECT:
  *   smart_traffic_node/
- *   ├── smart_traffic_node.ino   ← File này (setup + loop)
+ *   ├── smart_traffic_node.ino   ← File này
  *   ├── config.h                 ← Cấu hình (WiFi, GPIO, thông số)
  *   ├── speed_sensor.h           ← Đo tốc độ IR + Moving Average
- *   └── firebase_manager.h       ← Giao tiếp Firebase
+ *   ├── firebase_manager.h       ← Giao tiếp Firebase
+ *   └── rfid_reader.h            ← ĐỌC THẺ RFID RC522 ← MỚI
  *
  * THƯ VIỆN CẦN CÀI (Arduino IDE > Tools > Manage Libraries):
- *   1. Firebase ESP32 Client     by Mobizt       (tìm "Firebase ESP32")
- *   2. ArduinoJson               by Benoit Blanchon
+ *   1. Firebase ESP32 Client  by Mobizt
+ *   2. ArduinoJson            by Benoit Blanchon
+ *   3. MFRC522                by GithubCommunity   ← MỚI
  *
- * PHẦN CỨNG:
- *   ESP32 DevKit v1
- *   IR Sensor 1  → GPIO 18 (cấu hình trong config.h)
- *   IR Sensor 2  → GPIO 19
- *   (RFID, Servo, Laser → do Long xử lý, giao tiếp qua biến g_vehicleId)
+ * ĐẤU NỐI RC522:
+ *   RC522 VCC  → 3.3V (KHÔNG 5V!)
+ *   RC522 GND  → GND
+ *   RC522 SDA  → GPIO 5
+ *   RC522 SCK  → GPIO 18
+ *   RC522 MOSI → GPIO 23
+ *   RC522 MISO → GPIO 19
+ *   RC522 RST  → GPIO 4
  *
- * GHÉP NỐI VỚI LONG (Hardware Engineer):
- *   Long cần khai báo trong file RFID của anh ấy:
- *     volatile char g_vehicleId[32] = "UNKNOWN";
- *   và cài hàm:
- *     void triggerAlarm(float speed_kmh);   // kích Servo + Laser + Buzzer
+ * ĐẤU NỐI IR (đã đổi chân):
+ *   IR Sensor 1 → GPIO 25  (trước: GPIO 18)
+ *   IR Sensor 2 → GPIO 26  (trước: GPIO 19)
+ *
+ * LUỒNG HOẠT ĐỘNG:
+ *   1. Xe tiến vào → RC522 đọc thẻ → ghi vào g_vehicleId
+ *   2. Xe đi qua IR1 → IR2 → tính tốc độ
+ *   3. Kiểm tra vi phạm → kích alrm nếu cần
+ *   4. Đẩy {vehicleId, speed, isViolation} lên Firebase
+ *   5. Reset g_vehicleId → UNKNOWN cho xe tiếp theo
  */
 
 #include <Arduino.h>
-
 #include <WiFi.h>
 #include <time.h>
 
 #include "config.h"
 #include "speed_sensor.h"
 #include "firebase_manager.h"
+#include "rfid_reader.h"   // ← MỚI
 
 // ─────────────────────────────────────────────
-//  GIAO TIẾP VỚI MODULE CỦA LONG
-//  (Long định nghĩa các biến/hàm này ở file của anh ấy)
+//  BIẾN CHIA SẺ
 // ─────────────────────────────────────────────
-// vehicleId từ RFID — Long ghi vào, Trung đọc ra
+// RfidReader ghi vào đây, main đọc ra để đẩy Firebase
 volatile char g_vehicleId[32] = "UNKNOWN";
 
-// Hàm kích hoạt cơ cấu cảnh báo — Long implements
-// Nếu chưa ghép với Long, dùng bản stub bên dưới
-
-// ─── STUB (xóa khi ghép với code của Long) ───
+// ─────────────────────────────────────────────
+//  CƠ CẤU CẢNH BÁO (stub — Long implement)
+// ─────────────────────────────────────────────
 void triggerAlarm(float speed_kmh) {
     DBGF("[STUB] triggerAlarm(%.2f km/h) — chờ Long implement\n", speed_kmh);
-    // Long sẽ viết: xoay Servo → bật Laser → kêu Buzzer
+    // Long viết: xoay Servo → bật Laser → kêu Buzzer
 }
-// ─────────────────────────────────────────────
 
 // ─────────────────────────────────────────────
 //  ĐỐI TƯỢNG TOÀN CỤC
 // ─────────────────────────────────────────────
 SpeedSensor     speedSensor;
 FirebaseManager firebaseMgr;
+RfidReader      rfidReader;    // ← MỚI
 float           g_vmax_kmh = VMAX_DEFAULT_KMH;
 
 // ─────────────────────────────────────────────
-//  HÀM KẾT NỐI WIFI
+//  WIFI
 // ─────────────────────────────────────────────
 void connectWiFi() {
     DBGF("[WiFi] Kết nối tới '%s'", WIFI_SSID);
@@ -78,7 +86,7 @@ void connectWiFi() {
         DBGF("[WiFi] IP: %s | RSSI: %d dBm\n",
              WiFi.localIP().toString().c_str(), WiFi.RSSI());
     } else {
-        DBGLN("\n[WiFi] THẤT BẠI — Hệ thống chạy offline (không gửi Firebase)");
+        DBGLN("\n[WiFi] THẤT BẠI — chạy offline");
     }
 }
 
@@ -90,17 +98,28 @@ void setup() {
     delay(500);
 
     DBGLN("\n╔══════════════════════════════════════╗");
-    DBGLN("║   Smart Traffic Monitor — v1.0      ║");
+    DBGLN("║   Smart Traffic Monitor — v2.0      ║");
+    DBGLN("║   + RFID RC522 Integration          ║");
     DBGLN("╚══════════════════════════════════════╝");
 
-    // 1. Khởi tạo cảm biến IR + ngắt
+    // 1. Cảm biến IR
     speedSensor.begin();
-    speedSensor.printCalibrationInfo();   // In thông số Δt hợp lệ
+    speedSensor.printCalibrationInfo();
 
-    // 2. Kết nối WiFi
+    // 2. RFID RC522 — khởi tạo SPI và module
+    rfidReader.begin();
+
+    // ── Nếu muốn chỉ quét UID để điền bảng xe ──
+    // Uncomment 2 dòng sau, nạp lên, mở Serial Monitor,
+    // đặt từng thẻ vào đầu đọc để xem UID, rồi comment lại:
+    // rfidReader.scanOnlyMode();
+    // while(true) { rfidReader.scanOnlyUpdate(); delay(100); }
+    // ─────────────────────────────────────────
+
+    // 3. WiFi
     connectWiFi();
 
-    // 3. Đồng bộ thời gian NTP (UTC+7 Hà Nội)
+    // 4. NTP
     if (WiFi.status() == WL_CONNECTED) {
         configTime(7 * 3600, 0, "pool.ntp.org", "time.google.com");
         DBGLN("[NTP] Đang đồng bộ giờ...");
@@ -113,11 +132,12 @@ void setup() {
         }
     }
 
-    // 4. Khởi tạo Firebase + lấy Vmax ban đầu
+    // 5. Firebase
     firebaseMgr.begin();
     g_vmax_kmh = firebaseMgr.fetchVmax(VMAX_DEFAULT_KMH);
 
     DBGF("\n[READY] Vmax=%.1f km/h | d=%.1f cm\n", g_vmax_kmh, SENSOR_DISTANCE_CM);
+    DBGLN("[READY] Đặt thẻ RFID vào đầu đọc, sau đó lái xe qua cảm biến IR.");
     DBGLN("─────────────────────────────────────");
 }
 
@@ -125,17 +145,19 @@ void setup() {
 //  LOOP
 // ─────────────────────────────────────────────
 void loop() {
-    SpeedResult result;
 
-    // ── Kiểm tra có kết quả đo mới không ──
+    // ── 1. Cập nhật RFID liên tục ──
+    // Mỗi khi có thẻ mới → tự động cập nhật g_vehicleId
+    rfidReader.update();
+
+    // ── 2. Kiểm tra kết quả đo tốc độ ──
+    SpeedResult result;
     if (speedSensor.update(result)) {
 
         if (!result.valid) {
-            // Kết quả không hợp lệ — in lý do, bỏ qua
             DBGF("[SKIP] %s\n", result.reason.c_str());
 
         } else {
-            // ── In kết quả ra Serial để debug ──
             DBGLN("─────────────────────────────────────");
             DBGF("  Xe         : %s\n", (char*)g_vehicleId);
             DBGF("  Tốc độ thô : %.2f km/h\n", result.rawSpeed_kmh);
@@ -144,28 +166,32 @@ void loop() {
                  result.dt_us, result.dt_us / 1000.0f);
             DBGF("  Vmax       : %.1f km/h\n", g_vmax_kmh);
 
-            // ── Kiểm tra vi phạm ──
             bool isViolation = (result.filtSpeed_kmh > g_vmax_kmh);
 
             if (isViolation) {
                 DBGF("  ⚠ VI PHẠM! %.2f > %.1f km/h\n",
                      result.filtSpeed_kmh, g_vmax_kmh);
-                triggerAlarm(result.filtSpeed_kmh);   // Gọi code của Long
+                triggerAlarm(result.filtSpeed_kmh);
             } else {
                 DBGLN("  ✓ Bình thường");
             }
             DBGLN("─────────────────────────────────────");
 
-            // ── Đẩy lên Firebase ──
+            // ── 3. Đẩy lên Firebase (kèm vehicleId thực) ──
             firebaseMgr.pushVehicleEvent(
                 (const char*)g_vehicleId,
                 result.filtSpeed_kmh,
                 isViolation
             );
+
+            // ── 4. Reset vehicleId sau khi ghi xong ──
+            // Bỏ comment dòng dưới nếu muốn reset sau mỗi lần đo
+            // (phù hợp khi xe phải quẹt thẻ mỗi lần qua trạm)
+            // rfidReader.resetVehicleId();
         }
     }
 
-    // ── Polling cập nhật Vmax + ping status mỗi 30 giây ──
+    // ── 5. Polling Firebase mỗi 30 giây ──
     static unsigned long lastPoll = 0;
     if (millis() - lastPoll > FIREBASE_POLL_INTERVAL_MS) {
         g_vmax_kmh = firebaseMgr.fetchVmax(g_vmax_kmh);
@@ -173,7 +199,7 @@ void loop() {
         lastPoll   = millis();
     }
 
-    // ── Tự reconnect WiFi nếu mất kết nối ──
+    // ── 6. Reconnect WiFi nếu mất ──
     static unsigned long lastWifiCheck = 0;
     if (millis() - lastWifiCheck > 10000) {
         if (WiFi.status() != WL_CONNECTED) {
@@ -183,5 +209,5 @@ void loop() {
         lastWifiCheck = millis();
     }
 
-    delay(5);   // Nhường CPU, không block interrupt
+    delay(5);
 }
