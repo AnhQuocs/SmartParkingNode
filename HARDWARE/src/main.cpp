@@ -1,38 +1,37 @@
 /**
- * smart_traffic_node.ino — v2.0 (tích hợp RFID RC522)
+ * smart_traffic_node.ino — v3.0
  *
  * CẤU TRÚC PROJECT:
  *   smart_traffic_node/
  *   ├── smart_traffic_node.ino   ← File này
- *   ├── config.h                 ← Cấu hình (WiFi, GPIO, thông số)
+ *   ├── config.h                 ← Cấu hình GPIO, WiFi, thông số
  *   ├── speed_sensor.h           ← Đo tốc độ IR + Moving Average
- *   ├── firebase_manager.h       ← Giao tiếp Firebase
- *   └── rfid_reader.h            ← ĐỌC THẺ RFID RC522 ← MỚI
+ *   ├── firebase_manager.h       ← Giao tiếp Firebase Realtime DB
+ *   ├── rfid_reader.h            ← Đọc thẻ RFID RC522
+ *   └── servo_controller.h       ← Điều khiển Servo MG90S
  *
  * THƯ VIỆN CẦN CÀI (Arduino IDE > Tools > Manage Libraries):
  *   1. Firebase ESP32 Client  by Mobizt
  *   2. ArduinoJson            by Benoit Blanchon
- *   3. MFRC522                by GithubCommunity   ← MỚI
+ *   3. MFRC522                by GithubCommunity
+ *   (Servo dùng LEDC built-in của ESP32 — không cần cài thêm)
  *
- * ĐẤU NỐI RC522:
- *   RC522 VCC  → 3.3V (KHÔNG 5V!)
- *   RC522 GND  → GND
- *   RC522 SDA  → GPIO 5
- *   RC522 SCK  → GPIO 18
- *   RC522 MOSI → GPIO 23
- *   RC522 MISO → GPIO 19
- *   RC522 RST  → GPIO 4
- *
- * ĐẤU NỐI IR (đã đổi chân):
- *   IR Sensor 1 → GPIO 25  (trước: GPIO 18)
- *   IR Sensor 2 → GPIO 26  (trước: GPIO 19)
+ * SƠ ĐỒ CHÂN TỔNG HỢP:
+ *   GPIO 35  → IR Sensor 1       (+ pull-up ngoài 10kΩ lên 3.3V)
+ *   GPIO 33  → IR Sensor 2
+ *   GPIO 18  → RC522 SCK
+ *   GPIO 19  → RC522 MISO
+ *   GPIO 23  → RC522 MOSI
+ *   GPIO  5  → RC522 SDA/CS
+ *   GPIO  4  → RC522 RST
+ *   GPIO 13  → Servo MG90S Signal
  *
  * LUỒNG HOẠT ĐỘNG:
- *   1. Xe tiến vào → RC522 đọc thẻ → ghi vào g_vehicleId
- *   2. Xe đi qua IR1 → IR2 → tính tốc độ
- *   3. Kiểm tra vi phạm → kích alrm nếu cần
- *   4. Đẩy {vehicleId, speed, isViolation} lên Firebase
- *   5. Reset g_vehicleId → UNKNOWN cho xe tiếp theo
+ *   1. Xe tiến vào → RC522 đọc thẻ → ghi g_vehicleId
+ *   2. Xe qua IR1 → IR2 → tính tốc độ
+ *   3. Nếu vượt Vmax → servo xoay + (laser + buzzer nếu có)
+ *   4. Đẩy dữ liệu lên Firebase
+ *   5. Servo về vị trí chờ
  */
 
 #include <Arduino.h>
@@ -42,35 +41,56 @@
 #include "config.h"
 #include "speed_sensor.h"
 #include "firebase_manager.h"
-#include "rfid_reader.h"   // ← MỚI
+#include "rfid_reader.h"
+#include "servo_controller.h"
 
 // ─────────────────────────────────────────────
-//  BIẾN CHIA SẺ
+//  BIẾN CHIA SẺ TOÀN CỤC
+//  rfid_reader.h ghi vào đây qua extern
 // ─────────────────────────────────────────────
-// RfidReader ghi vào đây, main đọc ra để đẩy Firebase
-volatile char g_vehicleId[32] = "UNKNOWN";
-
-// ─────────────────────────────────────────────
-//  CƠ CẤU CẢNH BÁO (stub — Long implement)
-// ─────────────────────────────────────────────
-void triggerAlarm(float speed_kmh) {
-    DBGF("[STUB] triggerAlarm(%.2f km/h) — chờ Long implement\n", speed_kmh);
-    // Long viết: xoay Servo → bật Laser → kêu Buzzer
-}
+volatile char g_vehicleId[32+] = "UNKNOWN";
 
 // ─────────────────────────────────────────────
 //  ĐỐI TƯỢNG TOÀN CỤC
 // ─────────────────────────────────────────────
 SpeedSensor     speedSensor;
 FirebaseManager firebaseMgr;
-RfidReader      rfidReader;    // ← MỚI
+RfidReader      rfidReader;
+ServoController servo;
 float           g_vmax_kmh = VMAX_DEFAULT_KMH;
 
 // ─────────────────────────────────────────────
-//  WIFI
+//  CƠ CẤU CẢNH BÁO
+//  Servo đã implement; Laser/Buzzer để TODO khi có phần cứng
+// ─────────────────────────────────────────────
+void triggerAlarm(float speed_kmh) {
+    DBGF("[ALARM] Vi phạm %.2f km/h — kích hoạt cảnh báo\n", speed_kmh);
+
+    // 1. Servo xoay trỏ laser theo mức vượt tốc
+    servo.pointAt(speed_kmh, g_vmax_kmh);
+
+    // 2. Bật Laser — bỏ comment khi có phần cứng
+    // digitalWrite(PIN_LASER, HIGH);
+
+    // 3. Bật Buzzer — bỏ comment khi có phần cứng
+    // tone(PIN_BUZZER, 1000, 500);
+
+    // 4. Giữ 2 giây để laser chỉ vào xe
+    delay(2000);
+
+    // 5. Quét servo 2 lần để cảnh báo thêm
+    servo.sweep(300);
+
+    // 6. Tắt laser và về vị trí chờ
+    // digitalWrite(PIN_LASER, LOW);
+    servo.center();
+}
+
+// ─────────────────────────────────────────────
+//  KẾT NỐI WIFI
 // ─────────────────────────────────────────────
 void connectWiFi() {
-    DBGF("[WiFi] Kết nối tới '%s'", WIFI_SSID);
+    DBGF("[WiFi] Kết nối tới '%s' ", WIFI_SSID);
     WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
@@ -83,10 +103,10 @@ void connectWiFi() {
 
     if (WiFi.status() == WL_CONNECTED) {
         DBGLN("");
-        DBGF("[WiFi] IP: %s | RSSI: %d dBm\n",
+        DBGF("[WiFi] OK — IP: %s | RSSI: %d dBm\n",
              WiFi.localIP().toString().c_str(), WiFi.RSSI());
     } else {
-        DBGLN("\n[WiFi] THẤT BẠI — chạy offline");
+        DBGLN("\n[WiFi] THẤT BẠI — hệ thống chạy offline, không gửi Firebase");
     }
 }
 
@@ -97,29 +117,30 @@ void setup() {
     Serial.begin(115200);
     delay(500);
 
-    DBGLN("\n╔══════════════════════════════════════╗");
-    DBGLN("║   Smart Traffic Monitor — v2.0      ║");
-    DBGLN("║   + RFID RC522 Integration          ║");
-    DBGLN("╚══════════════════════════════════════╝");
+    DBGLN("\n╔══════════════════════════════════════════╗");
+    DBGLN("║   Smart Traffic Monitor — v3.0          ║");
+    DBGLN("║   IR + RFID RC522 + Servo MG90S         ║");
+    DBGLN("╚══════════════════════════════════════════╝");
 
-    // 1. Cảm biến IR
+    // ── 1. IR Sensor ──
     speedSensor.begin();
     speedSensor.printCalibrationInfo();
 
-    // 2. RFID RC522 — khởi tạo SPI và module
+    // ── 2. RFID RC522 ──
     rfidReader.begin();
-
-    // ── Nếu muốn chỉ quét UID để điền bảng xe ──
-    // Uncomment 2 dòng sau, nạp lên, mở Serial Monitor,
-    // đặt từng thẻ vào đầu đọc để xem UID, rồi comment lại:
+    // [Quét UID lần đầu] Uncomment 2 dòng dưới, nạp lên,
+    // đặt thẻ vào đầu đọc, chép UID từ Serial Monitor,
+    // rồi comment lại và điền vào VEHICLE_TABLE trong rfid_reader.h
     // rfidReader.scanOnlyMode();
-    // while(true) { rfidReader.scanOnlyUpdate(); delay(100); }
-    // ─────────────────────────────────────────
+    // while (true) { rfidReader.scanOnlyUpdate(); delay(100); }
 
-    // 3. WiFi
+    // ── 3. Servo MG90S ──
+    servo.begin();   // Tự động về 90° khi khởi động
+
+    // ── 4. WiFi ──
     connectWiFi();
 
-    // 4. NTP
+    // ── 5. Đồng bộ giờ NTP (UTC+7 Hà Nội) ──
     if (WiFi.status() == WL_CONNECTED) {
         configTime(7 * 3600, 0, "pool.ntp.org", "time.google.com");
         DBGLN("[NTP] Đang đồng bộ giờ...");
@@ -132,13 +153,15 @@ void setup() {
         }
     }
 
-    // 5. Firebase
+    // ── 6. Firebase — khởi tạo và lấy Vmax hiện tại ──
     firebaseMgr.begin();
     g_vmax_kmh = firebaseMgr.fetchVmax(VMAX_DEFAULT_KMH);
 
-    DBGF("\n[READY] Vmax=%.1f km/h | d=%.1f cm\n", g_vmax_kmh, SENSOR_DISTANCE_CM);
-    DBGLN("[READY] Đặt thẻ RFID vào đầu đọc, sau đó lái xe qua cảm biến IR.");
-    DBGLN("─────────────────────────────────────");
+    DBGLN("\n─────────────────────────────────────────");
+    DBGF("[READY] Vmax=%.1f km/h | d=%.1f cm | Servo GPIO%d\n",
+         g_vmax_kmh, SENSOR_DISTANCE_CM, PIN_SERVO);
+    DBGLN("[READY] Quẹt thẻ RFID → lái xe qua 2 cảm biến IR");
+    DBGLN("─────────────────────────────────────────");
 }
 
 // ─────────────────────────────────────────────
@@ -146,20 +169,22 @@ void setup() {
 // ─────────────────────────────────────────────
 void loop() {
 
-    // ── 1. Cập nhật RFID liên tục ──
-    // Mỗi khi có thẻ mới → tự động cập nhật g_vehicleId
+    // ── 1. Đọc RFID liên tục ──
+    // rfidReader.update() tự ghi vào g_vehicleId khi có thẻ mới
     rfidReader.update();
 
-    // ── 2. Kiểm tra kết quả đo tốc độ ──
+    // ── 2. Xử lý kết quả đo tốc độ ──
     SpeedResult result;
     if (speedSensor.update(result)) {
 
         if (!result.valid) {
+            // Kết quả không hợp lệ (nhiễu, timeout, v.v.)
             DBGF("[SKIP] %s\n", result.reason.c_str());
 
         } else {
-            DBGLN("─────────────────────────────────────");
-            DBGF("  Xe         : %s\n", (char*)g_vehicleId);
+            // In kết quả ra Serial để debug
+            DBGLN("─────────────────────────────────────────");
+            DBGF("  Xe         : %s\n",   (char*)g_vehicleId);
             DBGF("  Tốc độ thô : %.2f km/h\n", result.rawSpeed_kmh);
             DBGF("  Tốc độ MA  : %.2f km/h\n", result.filtSpeed_kmh);
             DBGF("  Δt         : %lu µs (%.1f ms)\n",
@@ -169,45 +194,45 @@ void loop() {
             bool isViolation = (result.filtSpeed_kmh > g_vmax_kmh);
 
             if (isViolation) {
-                DBGF("  ⚠ VI PHẠM! %.2f > %.1f km/h\n",
+                DBGF("  ⚠  VI PHẠM! %.2f > %.1f km/h\n",
                      result.filtSpeed_kmh, g_vmax_kmh);
                 triggerAlarm(result.filtSpeed_kmh);
             } else {
-                DBGLN("  ✓ Bình thường");
+                DBGLN("  ✓  Bình thường");
             }
-            DBGLN("─────────────────────────────────────");
+            DBGLN("─────────────────────────────────────────");
 
-            // ── 3. Đẩy lên Firebase (kèm vehicleId thực) ──
+            // Đẩy sự kiện lên Firebase
             firebaseMgr.pushVehicleEvent(
                 (const char*)g_vehicleId,
                 result.filtSpeed_kmh,
                 isViolation
             );
 
-            // ── 4. Reset vehicleId sau khi ghi xong ──
-            // Bỏ comment dòng dưới nếu muốn reset sau mỗi lần đo
-            // (phù hợp khi xe phải quẹt thẻ mỗi lần qua trạm)
+            // [Tuỳ chọn] Reset vehicleId sau mỗi lần đo
+            // Bỏ comment nếu mỗi lần qua trạm đều phải quẹt thẻ mới
             // rfidReader.resetVehicleId();
         }
     }
 
-    // ── 5. Polling Firebase mỗi 30 giây ──
+    // ── 3. Polling Firebase mỗi 30 giây ──
+    // Cập nhật Vmax từ app + gửi ping trạng thái "online"
     static unsigned long lastPoll = 0;
     if (millis() - lastPoll > FIREBASE_POLL_INTERVAL_MS) {
         g_vmax_kmh = firebaseMgr.fetchVmax(g_vmax_kmh);
         firebaseMgr.updateSystemStatus("online");
-        lastPoll   = millis();
+        lastPoll = millis();
     }
 
-    // ── 6. Reconnect WiFi nếu mất ──
+    // ── 4. Tự reconnect WiFi nếu mất kết nối ──
     static unsigned long lastWifiCheck = 0;
     if (millis() - lastWifiCheck > 10000) {
         if (WiFi.status() != WL_CONNECTED) {
-            DBGLN("[WiFi] Mất kết nối, đang thử lại...");
+            DBGLN("[WiFi] Mất kết nối — đang thử lại...");
             WiFi.reconnect();
         }
         lastWifiCheck = millis();
     }
 
-    delay(5);
+    delay(5);   // Nhường CPU, không block ngắt IR
 }
