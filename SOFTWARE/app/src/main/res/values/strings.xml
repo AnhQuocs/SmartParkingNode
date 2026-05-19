@@ -48,6 +48,8 @@
         <item quantity="other">%d weeks ago</item>
     </plurals>
 
+    <string name="see_all">See All</string>
+
     <!-- CONTROL -->
     <string name="control_panel">Control Panel</string>
     <string name="system_configuration">System Configuration</string>

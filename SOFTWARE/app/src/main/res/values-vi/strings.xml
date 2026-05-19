@@ -45,6 +45,8 @@
         <item quantity="other">%d tuần trước</item>
     </plurals>
 
+    <string name="see_all">Xem tất cả</string>
+
     <!-- CONTROL -->
     <string name="control_panel">Bảng điều khiển</string>
     <string name="system_configuration">Cấu hình hệ thống</string>

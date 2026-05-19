@@ -23,12 +23,14 @@ class ViolationRepositoryImpl @Inject constructor(
 
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val list = snapshot.children.mapNotNull { child ->
-                    val dto = child.getValue(ViolationDto::class.java)
-                    val id = child.key ?: return@mapNotNull null
+                val list = snapshot.children
+                    .mapNotNull { child ->
+                        val dto = child.getValue(ViolationDto::class.java)
+                        val id = child.key ?: return@mapNotNull null
 
-                    dto?.toDomain(nodeId = nodeId, id = id)
-                }
+                        dto?.toDomain(nodeId = nodeId, id = id)
+                    }
+                    .sortedByDescending { it.timestamp }
 
                 trySend(list)
             }

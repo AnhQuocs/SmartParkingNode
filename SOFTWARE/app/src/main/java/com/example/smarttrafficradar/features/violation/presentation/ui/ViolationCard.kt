@@ -84,7 +84,8 @@ data class Quad<A, B, C, D>(
 @Composable
 fun ViolationCard(
     modifier: Modifier = Modifier,
-    violation: Violation
+    violation: Violation,
+    vMaxThresholds: Int
 ) {
     Card(
         shape = RoundedCornerShape(AppShape.ShapeL),
@@ -153,7 +154,7 @@ fun ViolationCard(
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    val level = getViolationLevel(violation.speedKmh, 60)
+                    val level = getViolationLevel(violation.speedKmh, vMaxThresholds)
 
                     val (textRes, contentColor, borderColor, backgroundColor) = when (level) {
                         ViolationLevel.CRITICAL -> Quad(
@@ -216,13 +217,13 @@ fun ViolationCard(
 
                 ViolationInfoCard(
                     title = stringResource(id = R.string.violation_speed_limit),
-                    value = 60,
+                    value = vMaxThresholds,
                     type = ViolationInfoType.LIMIT
                 )
 
                 ViolationInfoCard(
                     title = stringResource(id = R.string.violation_excess),
-                    value = violation.speedKmh.toInt() - 60,
+                    value = violation.speedKmh.toInt() - vMaxThresholds,
                     type = ViolationInfoType.EXCESS
                 )
             }
