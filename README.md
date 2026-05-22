@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-﻿# 🚦 SmartTrafficRadar
+🚦 SmartTrafficRadar
 
 Hệ thống phát hiện vi phạm tốc độ giao thông thông minh sử dụng IoT
 
@@ -540,4 +539,3 @@ SmartTrafficRadar/
 ---
 
 **Happy Coding! 🚀**
->>>>>>> 6df0a61190a991344ecbb663b8b622d7e571a78a
