@@ -21,8 +21,14 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.smarttrafficradar.R
 import com.example.smarttrafficradar.features.system.language.domain.model.AppLanguage
 import com.example.smarttrafficradar.ui.dimens.AppShape
@@ -39,12 +46,17 @@ import com.example.smarttrafficradar.ui.theme.CyanBackground
 import com.example.smarttrafficradar.ui.theme.CyanBorder
 import com.example.smarttrafficradar.ui.theme.CyanPrimary
 import com.example.smarttrafficradar.ui.theme.NavyBackground
+import com.example.smarttrafficradar.ui.theme.OrangePrimary
 import com.example.smarttrafficradar.ui.theme.SlateMist
+import com.example.smarttrafficradar.ui.theme.YellowBackground
+import com.example.smarttrafficradar.ui.theme.YellowBorder
+import com.example.smarttrafficradar.ui.theme.YellowPrimary
 import com.example.smarttrafficradar.utils.bold
 import com.example.smarttrafficradar.utils.s15
 import com.example.smarttrafficradar.utils.s16
 import com.example.smarttrafficradar.utils.s18
 import com.example.smarttrafficradar.utils.s24
+import com.example.smarttrafficradar.utils.s32
 import com.example.smarttrafficradar.utils.semiBold
 
 @Composable
@@ -155,6 +167,120 @@ fun LanguagesCard(selectedLang: AppLanguage, onChangeLanguage: () -> Unit) {
                     text = stringResource(id = R.string.change_language),
                     style = MaterialTheme.typography.s15,
                     color = Color.White
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SpeedLimitCard(
+    currentThreshold: Int,
+    onThresholdChange: (Int) -> Unit
+) {
+    var sliderValue by remember(currentThreshold) { mutableFloatStateOf(currentThreshold.toFloat()) }
+
+    Card(
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(AppShape.ShapeM),
+        colors = CardDefaults.cardColors(
+            containerColor = NavyBackground
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Dimen.PaddingSM)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(Dimen.SizeXXL)
+                        .clip(RoundedCornerShape(AppShape.ShapeM))
+                        .background(color = YellowBackground)
+                        .border(1.dp, color = YellowBorder, shape = RoundedCornerShape(AppShape.ShapeM)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_radar_speed),
+                        contentDescription = null,
+                        tint = YellowPrimary,
+                        modifier = Modifier.size(Dimen.SizeL)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(AppSpacing.S))
+
+                Column {
+                    Text(
+                        text = stringResource(id = R.string.speed_limit_threshold),
+                        style = MaterialTheme.typography.s18.bold(),
+                        color = Color.White
+                    )
+                    Text(
+                        text = stringResource(id = R.string.trigger_violations_desc),
+                        style = MaterialTheme.typography.s15,
+                        color = SlateMist
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(AppSpacing.L))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Text(
+                    text = sliderValue.toInt().toString(),
+                    style = MaterialTheme.typography.s32.copy(fontSize = 40.sp).bold(),
+                    color = OrangePrimary
+                )
+                Spacer(modifier = Modifier.width(AppSpacing.XS))
+                Text(
+                    text = stringResource(id = R.string.kmh_unit),
+                    style = MaterialTheme.typography.s18.bold(),
+                    color = SlateMist,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
+            Slider(
+                value = sliderValue,
+                onValueChange = { sliderValue = it },
+                onValueChangeFinished = {
+                    onThresholdChange(sliderValue.toInt())
+                },
+                valueRange = 20f..120f,
+                steps = 19, // (120 - 20) / 5 - 1 = 100/5 - 1 = 19 steps for 5km/h intervals
+                colors = SliderDefaults.colors(
+                    thumbColor = OrangePrimary,
+                    activeTrackColor = OrangePrimary,
+                    inactiveTrackColor = Color.DarkGray
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "20 " + stringResource(id = R.string.kmh_unit),
+                    style = MaterialTheme.typography.s15,
+                    color = SlateMist
+                )
+                Text(
+                    text = "120 " + stringResource(id = R.string.kmh_unit),
+                    style = MaterialTheme.typography.s15,
+                    color = SlateMist
                 )
             }
         }

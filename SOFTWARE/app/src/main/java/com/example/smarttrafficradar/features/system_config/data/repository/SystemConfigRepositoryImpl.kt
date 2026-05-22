@@ -11,6 +11,7 @@ import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class SystemConfigRepositoryImpl @Inject constructor(
@@ -45,5 +46,13 @@ class SystemConfigRepositoryImpl @Inject constructor(
         awaitClose {
             ref.removeEventListener(listener)
         }
+    }
+
+    override suspend fun updateVMaxThreshold(nodeId: String, threshold: Int) {
+        realtimeDb.getReference("system_config")
+            .child(nodeId)
+            .child("v_max_threshold")
+            .setValue(threshold)
+            .await()
     }
 }

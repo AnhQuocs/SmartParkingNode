@@ -22,26 +22,17 @@ import com.example.smarttrafficradar.components.AppBottomBar
 import com.example.smarttrafficradar.features.control.ControlScreen
 import com.example.smarttrafficradar.features.dashboard.ui.DashboardScreen
 import com.example.smarttrafficradar.features.status.StatusScreen
-import com.example.smarttrafficradar.features.system_config.presentation.viewmodel.SystemConfigState
-import com.example.smarttrafficradar.features.system_config.presentation.viewmodel.SystemConfigViewModel
 import com.example.smarttrafficradar.features.violation.presentation.ui.ViolationScreen
 import com.example.smarttrafficradar.features.violation.presentation.viewmodel.ViolationViewModel
 
 @Composable
 fun MainScreen(
-    systemConfigViewModel: SystemConfigViewModel = hiltViewModel(),
     violationViewModel: ViolationViewModel = hiltViewModel()
 ) {
     val violationState by violationViewModel.violationState.collectAsState()
-    val systemConfigState by systemConfigViewModel.state.collectAsState()
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var previousTabIndex by remember { mutableIntStateOf(0) }
-
-    val vMaxThresholds = when (val state = systemConfigState) {
-        is SystemConfigState.Success -> state.config.vMaxThreshold
-        else -> 0
-    }
 
     Scaffold(
         bottomBar = {
@@ -72,10 +63,7 @@ fun MainScreen(
             when (step) {
                 0 -> DashboardScreen()
 
-                1 -> ViolationScreen(
-                    violationState = violationState,
-                    vMaxThresholds = vMaxThresholds
-                )
+                1 -> ViolationScreen(violationState = violationState)
 
                 2 -> ControlScreen()
 

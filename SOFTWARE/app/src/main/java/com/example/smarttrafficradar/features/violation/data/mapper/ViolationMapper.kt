@@ -13,6 +13,7 @@ fun ViolationDto.toDomain(
         resolved = resolved ?: false,
         speedKmh = speedKmh ?: 0.0,
         timestamp = timestamp ?: 0L,
-        vehicleId = vehicleId ?: ""
+        vehicleId = vehicleId ?: "",
+        vMax = vMax ?: 0
     )
 }

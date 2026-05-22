@@ -5,4 +5,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface SystemConfigRepository {
     fun getSystemConfig(nodeId: String): Flow<SystemConfig>
+    suspend fun updateVMaxThreshold(nodeId: String, threshold: Int)
 }

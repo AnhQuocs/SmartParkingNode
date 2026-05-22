@@ -49,7 +49,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun ViolationScreen(violationState: ViolationState, vMaxThresholds: Int) {
+fun ViolationScreen(violationState: ViolationState) {
     val scrollState = rememberScrollState()
 
     Box(
@@ -69,7 +69,7 @@ fun ViolationScreen(violationState: ViolationState, vMaxThresholds: Int) {
             }
 
             is ViolationState.Success -> {
-                val violations = violationState.violations.take(8)
+                val violations = violationState.violations.take(6)
 
                 Column(
                     modifier = Modifier
@@ -85,7 +85,10 @@ fun ViolationScreen(violationState: ViolationState, vMaxThresholds: Int) {
                     Spacer(modifier = Modifier.height(AppSpacing.S))
 
                     violations.forEachIndexed { index, violation ->
-                        AnimatedViolationCard(index = index, violation = violation, vMaxThresholds = vMaxThresholds)
+                        AnimatedViolationCard(
+                            index = index,
+                            violation = violation
+                        )
                     }
 
                     OutlinedButton(
@@ -127,7 +130,7 @@ fun ViolationScreen(violationState: ViolationState, vMaxThresholds: Int) {
 }
 
 @Composable
-fun AnimatedViolationCard(index: Int, violation: Violation, vMaxThresholds: Int) {
+fun AnimatedViolationCard(index: Int, violation: Violation) {
     val alpha = remember { Animatable(0f) }
     val translationX = remember { Animatable(-100f) }
 
@@ -160,7 +163,6 @@ fun AnimatedViolationCard(index: Int, violation: Violation, vMaxThresholds: Int)
             this.alpha = alpha.value
             this.translationX = translationX.value
         },
-        violation = violation,
-        vMaxThresholds = vMaxThresholds
+        violation = violation
     )
 }

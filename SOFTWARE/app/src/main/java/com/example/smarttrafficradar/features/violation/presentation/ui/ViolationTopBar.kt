@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,7 +23,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.smarttrafficradar.R
 import com.example.smarttrafficradar.ui.dimens.AppShape
-import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
 import com.example.smarttrafficradar.ui.theme.RedBackground
 import com.example.smarttrafficradar.ui.theme.RedBorder
@@ -32,11 +30,7 @@ import com.example.smarttrafficradar.ui.theme.RedPrimary
 import com.example.smarttrafficradar.ui.theme.SlateMist
 import com.example.smarttrafficradar.utils.bold
 import com.example.smarttrafficradar.utils.s16
-import com.example.smarttrafficradar.utils.s18
-import com.example.smarttrafficradar.utils.s22
 import com.example.smarttrafficradar.utils.s24
-import com.example.smarttrafficradar.utils.s28
-import com.example.smarttrafficradar.utils.semiBold
 
 @Composable
 fun ViolationTopBar(size: Int) {

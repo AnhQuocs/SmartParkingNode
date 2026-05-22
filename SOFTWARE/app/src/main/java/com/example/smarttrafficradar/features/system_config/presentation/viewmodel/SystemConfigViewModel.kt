@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.smarttrafficradar.R
 import com.example.smarttrafficradar.features.system_config.domain.model.SystemConfig
 import com.example.smarttrafficradar.features.system_config.domain.usecase.GetSystemConfigUseCase
+import com.example.smarttrafficradar.features.system_config.domain.usecase.UpdateVMaxThresholdUseCase
 import com.example.smarttrafficradar.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +22,8 @@ sealed class SystemConfigState {
 
 @HiltViewModel
 class SystemConfigViewModel @Inject constructor(
-    private val getSystemConfigUseCase: GetSystemConfigUseCase
+    private val getSystemConfigUseCase: GetSystemConfigUseCase,
+    private val updateVMaxThresholdUseCase: UpdateVMaxThresholdUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<SystemConfigState>(SystemConfigState.Loading)
@@ -43,6 +45,16 @@ class SystemConfigViewModel @Inject constructor(
                 .collect { config ->
                     _state.value = SystemConfigState.Success(config)
                 }
+        }
+    }
+
+    fun updateVMaxThreshold(threshold: Int, nodeId: String = "radar_node_01") {
+        viewModelScope.launch {
+            try {
+                updateVMaxThresholdUseCase(nodeId, threshold)
+            } catch (e: Exception) {
+                // Optionally handle error
+            }
         }
     }
 }

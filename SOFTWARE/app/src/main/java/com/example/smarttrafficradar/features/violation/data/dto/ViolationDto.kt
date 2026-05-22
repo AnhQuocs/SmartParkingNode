@@ -12,6 +12,11 @@ data class ViolationDto(
 
     var timestamp: Long? = null,
 
+    @get: PropertyName("v_max")
+    @set: PropertyName("v_max")
+    @field: PropertyName("v_max")
+    var vMax: Int? = null,
+
     @get: PropertyName("vehicle_id")
     @set: PropertyName("vehicle_id")
     @field: PropertyName("vehicle_id")

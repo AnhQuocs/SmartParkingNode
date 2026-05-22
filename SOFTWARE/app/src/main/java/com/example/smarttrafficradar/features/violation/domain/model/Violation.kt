@@ -6,5 +6,6 @@ data class Violation(
     val resolved: Boolean,
     val speedKmh: Double,
     val timestamp: Long,
-    val vehicleId: String
+    val vehicleId: String,
+    val vMax: Int
 )
