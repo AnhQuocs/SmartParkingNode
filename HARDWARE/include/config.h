@@ -18,17 +18,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-// ═══════════════════════════════════════════════
-//  WIFI
-// ═══════════════════════════════════════════════
-#define WIFI_SSID       "MhLogn"
-#define WIFI_PASSWORD   "22061605"
+#include "secrets.h"
 
-// ═══════════════════════════════════════════════
-//  FIREBASE
-// ═══════════════════════════════════════════════
-#define FIREBASE_HOST   "smarttrafficradar-default-rtdb.firebaseio.com"
-#define FIREBASE_AUTH   "jrv3pgHgTUqgAM5vQPICAw4xs3ZwVRvc86qFqlzc"
 #define NODE_ID         "radar_node_01"
 
 // ═══════════════════════════════════════════════
