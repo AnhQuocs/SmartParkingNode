@@ -50,5 +50,11 @@
     <!-- CONTROL -->
     <string name="control_panel">Bảng điều khiển</string>
     <string name="system_configuration">Cấu hình hệ thống</string>
+<<<<<<< HEAD
+=======
+    <string name="speed_limit_threshold">Ngưỡng giới hạn tốc độ</string>
+    <string name="trigger_violations_desc">Kích hoạt vi phạm trên tốc độ này</string>
+    <string name="kmh_unit">km/h</string>
+>>>>>>> 6df0a61190a991344ecbb663b8b622d7e571a78a
 
 </resources>

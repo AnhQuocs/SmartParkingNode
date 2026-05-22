@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 package com.example.smarttrafficradar.features.system.appearance.di
 
 import android.content.Context
@@ -27,4 +28,35 @@ object DataStoreModule {
             }
         )
     }
+=======
+package com.example.smarttrafficradar.features.system.appearance.di
+
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.dataStoreFile
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object DataStoreModule {
+
+    @Provides
+    @Singleton
+    fun provideDataStore(
+        @ApplicationContext context: Context
+    ): DataStore<Preferences> {
+        return PreferenceDataStoreFactory.create(
+            produceFile = {
+                context.dataStoreFile("settings.preferences_pb")
+            }
+        )
+    }
+>>>>>>> 6df0a61190a991344ecbb663b8b622d7e571a78a
 }

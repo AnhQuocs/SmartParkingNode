@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 package com.example.smarttrafficradar.features.system_config.data.mapper
 
 import com.example.smarttrafficradar.features.system_config.data.dto.SystemConfigDto
@@ -17,3 +18,24 @@ fun SystemConfigDto.toDomain(nodeId: String): SystemConfig {
         isOnline = isOnline
     )
 }
+=======
+package com.example.smarttrafficradar.features.system_config.data.mapper
+
+import com.example.smarttrafficradar.features.system_config.data.dto.SystemConfigDto
+import com.example.smarttrafficradar.features.system_config.domain.model.SystemConfig
+
+fun SystemConfigDto.toDomain(nodeId: String): SystemConfig {
+    val lastPingTime = lastPing ?: 0L
+    val currentTime = System.currentTimeMillis()
+    val isOnline = (currentTime - lastPingTime) < 30_000 // 30 seconds
+
+    return SystemConfig(
+        nodeId = nodeId,
+        laserEnabled = laserEnabled ?: false,
+        lastPing = lastPingTime,
+        status = status ?: "unknown",
+        vMaxThreshold = vMaxThreshold ?: 0,
+        isOnline = isOnline
+    )
+}
+>>>>>>> 6df0a61190a991344ecbb663b8b622d7e571a78a

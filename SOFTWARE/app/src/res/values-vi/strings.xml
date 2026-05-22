@@ -1,0 +1,57 @@
+<resources>
+    <string name="app_name">Smart Traffic Radar</string>
+
+    <!-- BOTTOM BAR -->
+    <string name="dashboard">Tổng quan</string>
+    <string name="violations">Vi phạm</string>
+    <string name="control">Điều khiển</string>
+    <string name="status">Trạng thái</string>
+
+    <!-- SETTING-LANGUAGE -->
+    <string name="language">Ngôn ngữ</string>
+    <string name="change_language">Thay đổi ngôn ngữ</string>
+    <string name="select_language">Chọn ngôn ngữ</string>
+    <string name="english">Tiếng Anh</string>
+    <string name="vietnamese">Tiếng Việt</string>
+    <string name="apply">Áp dụng</string>
+
+
+    <!-- DASHBOARD -->
+    <string name="error_unexpected">Đã xảy ra lỗi không mong muốn</string>
+    <string name="real_time_monitoring_active">Giám sát thời gian thực</string>
+    <string name="speed_analysis_recent_10">PHÂN TÍCH TỐC ĐỘ (10 XE GẦN NHẤT)</string>
+
+    <!-- VIOLATION -->
+    <string name="violation_level_critical">NGHIÊM TRỌNG</string>
+    <string name="violation_level_high">CAO</string>
+    <string name="violation_level_moderate">TRUNG BÌNH</string>
+
+    <string name="violation_recorded_speed">Tốc độ ghi nhận</string>
+    <string name="violation_speed_limit">Giới hạn tốc độ</string>
+    <string name="violation_excess">Vượt quá</string>
+    <string name="incidents">%1$d vi phạm gần đây</string>
+
+    <string name="just_now">Vừa xong</string>
+    <plurals name="minutes_ago">
+        <item quantity="other">%d phút trước</item>
+    </plurals>
+    <plurals name="hours_ago">
+        <item quantity="other">%d giờ trước</item>
+    </plurals>
+    <plurals name="days_ago">
+        <item quantity="other">%d ngày trước</item>
+    </plurals>
+    <plurals name="weeks_ago">
+        <item quantity="other">%d tuần trước</item>
+    </plurals>
+
+    <string name="see_all">Xem tất cả</string>
+
+    <!-- CONTROL -->
+    <string name="control_panel">Bảng điều khiển</string>
+    <string name="system_configuration">Cấu hình hệ thống</string>
+    <string name="speed_limit_threshold">Ngưỡng giới hạn tốc độ</string>
+    <string name="trigger_violations_desc">Kích hoạt vi phạm trên tốc độ này</string>
+    <string name="kmh_unit">km/h</string>
+
+</resources>

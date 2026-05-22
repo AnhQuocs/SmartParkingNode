@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 package com.example.smarttrafficradar.features.daily_stats.domain.repository
 
 import com.example.smarttrafficradar.features.daily_stats.domain.model.DailyStats
@@ -5,4 +6,13 @@ import kotlinx.coroutines.flow.Flow
 
 interface DailyStatsRepository {
     fun getDailyStatsFlow(nodeId: String, date: String): Flow<DailyStats>
+=======
+package com.example.smarttrafficradar.features.daily_stats.domain.repository
+
+import com.example.smarttrafficradar.features.daily_stats.domain.model.DailyStats
+import kotlinx.coroutines.flow.Flow
+
+interface DailyStatsRepository {
+    fun getDailyStatsFlow(nodeId: String, date: String): Flow<DailyStats>
+>>>>>>> 6df0a61190a991344ecbb663b8b622d7e571a78a
 }
