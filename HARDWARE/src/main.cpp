@@ -48,7 +48,7 @@
 //  BIẾN CHIA SẺ TOÀN CỤC
 //  rfid_reader.h ghi vào đây qua extern
 // ─────────────────────────────────────────────
-volatile char g_vehicleId[32+] = "UNKNOWN";
+volatile char g_vehicleId[32] = "UNKNOWN";
 
 // ─────────────────────────────────────────────
 //  ĐỐI TƯỢNG TOÀN CỤC
@@ -66,24 +66,15 @@ float           g_vmax_kmh = VMAX_DEFAULT_KMH;
 void triggerAlarm(float speed_kmh) {
     DBGF("[ALARM] Vi phạm %.2f km/h — kích hoạt cảnh báo\n", speed_kmh);
 
-    // 1. Servo xoay trỏ laser theo mức vượt tốc
-    servo.pointAt(speed_kmh, g_vmax_kmh);
+    digitalWrite(PIN_LASER, HIGH);
 
-    // 2. Bật Laser — bỏ comment khi có phần cứng
-    // digitalWrite(PIN_LASER, HIGH);
+    servo.smoothTo(0.0f, 300);
+    delay(200);
+    servo.smoothTo(180.0f, 500);
+    delay(200);
+    servo.smoothTo(0.0f, 500);
 
-    // 3. Bật Buzzer — bỏ comment khi có phần cứng
-    // tone(PIN_BUZZER, 1000, 500);
-
-    // 4. Giữ 2 giây để laser chỉ vào xe
-    delay(2000);
-
-    // 5. Quét servo 2 lần để cảnh báo thêm
-    servo.sweep(300);
-
-    // 6. Tắt laser và về vị trí chờ
-    // digitalWrite(PIN_LASER, LOW);
-    servo.center();
+    digitalWrite(PIN_LASER, LOW);
 }
 
 // ─────────────────────────────────────────────
@@ -125,6 +116,9 @@ void setup() {
     // ── 1. IR Sensor ──
     speedSensor.begin();
     speedSensor.printCalibrationInfo();
+
+    pinMode(PIN_LASER, OUTPUT);
+    digitalWrite(PIN_LASER, LOW);
 
     // ── 2. RFID RC522 ──
     rfidReader.begin();

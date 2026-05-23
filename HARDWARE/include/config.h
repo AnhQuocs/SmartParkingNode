@@ -47,7 +47,8 @@
 //  Dây nâu/đen  → GND
 //  ⚡ Khuyến nghị: tụ 100µF giữa VIN và GND gần servo
 // ═══════════════════════════════════════════════
-#define PIN_SERVO   13
+#define PIN_SERVO   14
+#define PIN_LASER   26
 
 // ═══════════════════════════════════════════════
 //  RFID — CHỐNG ĐỌC LẶP

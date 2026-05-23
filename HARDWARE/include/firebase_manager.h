@@ -25,6 +25,7 @@ private:
     uint32_t dayTotalViolations = 0;
     float    daySpeedSum        = 0.0f;
     String   currentDate        = "";
+    float    currentVmaxThreshold = 0.0f;
 
     unsigned long long getTimestampMs() {
         struct tm ti;
@@ -116,6 +117,7 @@ public:
             FirebaseJson viol;
             viol.set("vehicle_id", vehicleId);
             viol.set("speed_kmh", (double)speed);
+            viol.set("v_max", (double)currentVmaxThreshold);  // Lấy giá trị v_max_threshold hiện tại
             viol.set("timestamp", (int64_t)ts);
             viol.set("resolved", false);
 
@@ -156,6 +158,7 @@ public:
  
         if (Firebase.getFloat(fbData, srcPath)) {
             float val = fbData.floatData();
+            currentVmaxThreshold = val;  // Lưu giá trị v_max_threshold để dùng cho violation
             if (val > 0.0f && abs(val - currentVmax) > 0.1f) {
                 // Đồng bộ giá trị mới vào v_max để app hiển thị
                 Firebase.setFloat(fbData, destPath, val);
