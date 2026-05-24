@@ -53,11 +53,8 @@
     <!-- CONTROL -->
     <string name="control_panel">Control Panel</string>
     <string name="system_configuration">System Configuration</string>
-<<<<<<< HEAD
-=======
     <string name="speed_limit_threshold">Speed Limit Threshold</string>
     <string name="trigger_violations_desc">Trigger violations above this speed</string>
     <string name="kmh_unit">km/h</string>
->>>>>>> 6df0a61190a991344ecbb663b8b622d7e571a78a
 
 </resources>
