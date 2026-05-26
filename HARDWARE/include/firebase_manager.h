@@ -215,39 +215,58 @@ public:
      */
     bool fetchNetworkConfig(String &newSsid, String &newPass)
     {
-        if (!initialized || WiFi.status() != WL_CONNECTED)
+        if (!initialized)
+        {
+            DBGLN("[Network] fetch: Firebase chua init");
             return false;
+        }
+        if (WiFi.status() != WL_CONNECTED)
+        {
+            DBGLN("[Network] fetch: WiFi mat ket noi");
+            return false;
+        }
 
         String basePath = "/network_setup/" + String(NODE_ID);
-
-        // Chỉ xử lý khi app set switch_request = true
-        if (!Firebase.getBool(fbData, basePath + "/switch_request"))
-            return false;
-        if (fbData.boolData() != true)
-            return false;
-
-        // Đọc credentials TRONG KHI VẪN CÒN KẾT NỐI WiFi cũ
         String ssid = "", pass = "";
+
+        // Doc ssid
         if (Firebase.getString(fbData, basePath + "/ssid"))
+        {
             ssid = fbData.stringData();
+            DBGF("[Network] Firebase ssid: '%s'\n", ssid.c_str());
+        }
+        else
+        {
+            DBGF("[Network] Doc ssid FAIL: %s\n", fbData.errorReason().c_str());
+            return false;
+        }
+
+        // Doc password
         if (Firebase.getString(fbData, basePath + "/password"))
+        {
             pass = fbData.stringData();
+            DBGLN("[Network] Firebase password: OK");
+        }
+        else
+        {
+            DBGF("[Network] Doc password FAIL: %s\n", fbData.errorReason().c_str());
+            return false;
+        }
 
         if (ssid.length() == 0 || pass.length() == 0)
         {
-            DBGLN("[Network] Thiếu ssid hoặc password — bỏ qua");
+            DBGLN("[Network] ssid hoac password trong -- bo qua");
             return false;
         }
         if (ssid == WiFi.SSID())
         {
-            Firebase.setBool(fbData, basePath + "/switch_request", false);
-            DBGLN("[Network] Cùng mạng hiện tại — bỏ qua");
+            DBGF("[Network] Cung WiFi hien tai '%s' -- bo qua\n", ssid.c_str());
             return false;
         }
 
         newSsid = ssid;
         newPass = pass;
-        DBGF("[Network] Yêu cầu switch: %s → %s\n",
+        DBGF("[Network] WiFi moi phat hien: '%s' -> '%s'\n",
              WiFi.SSID().c_str(), ssid.c_str());
         return true;
     }
@@ -268,7 +287,7 @@ public:
                               const String &fallbackPass)
     {
         // Bước 1: Báo app SWITCHING — vẫn còn online
-        pushSwitchStatus("SWITCHING", newSsid.c_str(),
+        pushSwitchStatus("SWITCHING", newSsid.c_str(), newPass.c_str(),
                          "Connecting to new WiFi...");
         DBGF("[Network] Switch: %s → %s\n",
              fallbackSsid.c_str(), newSsid.c_str());
@@ -296,7 +315,7 @@ public:
             delay(1000);
             Firebase.reconnectWiFi(true);
             delay(500);
-            pushSwitchStatus("SUCCESS", newSsid.c_str(),
+            pushSwitchStatus("SUCCESS", newSsid.c_str(), newPass.c_str(),
                              ("Connected. IP: " + WiFi.localIP().toString()).c_str());
             pushConnectionStatus();
             return true; // main.cpp sẽ lưu NVS
@@ -306,7 +325,7 @@ public:
             // ── THẤT BẠI → fallback WiFi cũ (từ NVS hoặc secrets.h) ──
             DBGF("[Network] Thất bại — fallback về '%s'\n",
                  fallbackSsid.c_str());
-            pushSwitchStatus("FAILED", newSsid.c_str(),
+            pushSwitchStatus("FAILED", newSsid.c_str(), newPass.c_str(),
                              "Connection Timeout. Device is not responding.");
 
             WiFi.begin(fallbackSsid.c_str(), fallbackPass.c_str());
@@ -340,6 +359,7 @@ public:
     // khớp Firebase thực tế: ssid, password, status, message, timestamp
     void pushSwitchStatus(const char *status,
                           const char *targetSsid,
+                          const char *targetPass,
                           const char *message)
     {
         if (!initialized)
@@ -350,6 +370,7 @@ public:
 
         FirebaseJson sw;
         sw.set("ssid", targetSsid);
+        sw.set("password", targetPass);
         sw.set("status", status);
         sw.set("message", message);
         sw.set("timestamp", (int64_t)ts);
@@ -452,10 +473,17 @@ public:
     bool isReady() { return initialized; }
     int measureFirebasePing()
     {
+        if (!initialized || WiFi.status() != WL_CONNECTED)
+            return -1;
+        // Dùng fbDataPing riêng để không conflict với fbData đang dùng
+        FirebaseData fbPing;
+        fbPing.setBSSLBufferSize(512, 256);
         unsigned long start = millis();
-        Firebase.getString(fbData,
+        Firebase.getString(fbPing,
                            "/system_config/" + String(NODE_ID) + "/status");
-        return (int)(millis() - start);
+        int elapsed = (int)(millis() - start);
+        // Trả về -1 nếu mất quá lâu (tránh block pushSystemMonitor)
+        return (elapsed > 3000) ? -1 : elapsed;
     }
 
     void pushSystemMonitor(uint32_t reconnectCount, float cycleTime_ms)
