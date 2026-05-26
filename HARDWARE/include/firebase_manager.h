@@ -450,6 +450,14 @@ public:
     }
 
     bool isReady() { return initialized; }
+    int measureFirebasePing()
+    {
+        unsigned long start = millis();
+        Firebase.getString(fbData,
+                           "/system_config/" + String(NODE_ID) + "/status");
+        return (int)(millis() - start);
+    }
+
     void pushSystemMonitor(uint32_t reconnectCount, float cycleTime_ms)
     {
         if (!initialized || WiFi.status() != WL_CONNECTED)
