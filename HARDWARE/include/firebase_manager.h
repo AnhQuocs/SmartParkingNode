@@ -17,7 +17,8 @@
 class FirebaseManager
 {
 private:
-    FirebaseData fbData;
+    FirebaseData fbData;    // dùng cho việc đọc/ghi thông thường
+    FirebaseData fbNetData; // riêng cho network switch — tránh conflict
     FirebaseConfig fbConfig;
     FirebaseAuth fbAuth;
     bool initialized = false;
@@ -229,27 +230,27 @@ public:
         String basePath = "/network_setup/" + String(NODE_ID);
         String ssid = "", pass = "";
 
-        // Doc ssid
-        if (Firebase.getString(fbData, basePath + "/ssid"))
+        // Doc ssid — dung fbNetData rieng, khong conflict fbData
+        if (Firebase.getString(fbNetData, basePath + "/ssid"))
         {
-            ssid = fbData.stringData();
+            ssid = fbNetData.stringData();
             DBGF("[Network] Firebase ssid: '%s'\n", ssid.c_str());
         }
         else
         {
-            DBGF("[Network] Doc ssid FAIL: %s\n", fbData.errorReason().c_str());
+            DBGF("[Network] Doc ssid FAIL: %s\n", fbNetData.errorReason().c_str());
             return false;
         }
 
         // Doc password
-        if (Firebase.getString(fbData, basePath + "/password"))
+        if (Firebase.getString(fbNetData, basePath + "/password"))
         {
-            pass = fbData.stringData();
+            pass = fbNetData.stringData();
             DBGLN("[Network] Firebase password: OK");
         }
         else
         {
-            DBGF("[Network] Doc password FAIL: %s\n", fbData.errorReason().c_str());
+            DBGF("[Network] Doc password FAIL: %s\n", fbNetData.errorReason().c_str());
             return false;
         }
 
@@ -375,8 +376,8 @@ public:
         sw.set("message", message);
         sw.set("timestamp", (int64_t)ts);
 
-        Firebase.updateNode(fbData, path, sw);
-        DBGF("[Network] network_setup → %s | %s\n", status, message);
+        Firebase.updateNode(fbNetData, path, sw);
+        DBGF("[Network] network_setup -> %s | %s\n", status, message);
     }
 
     // connection_status nằm trong system_monitor, không tạo collection mới
