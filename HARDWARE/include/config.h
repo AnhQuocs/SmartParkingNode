@@ -17,6 +17,9 @@
 
 #ifndef CONFIG_H
 #define CONFIG_H
+#define DEVICE_ID       "ESP32-TR-001"
+#define DEVICE_TYPE     "ESP32 Radar"
+#define FIRMWARE_VER    "v3.0"
 
 #include "secrets.h"
 
