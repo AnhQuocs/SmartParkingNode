@@ -53,17 +53,21 @@ volatile char g_vehicleId[32] = "UNKNOWN";
 // ─────────────────────────────────────────────
 //  ĐỐI TƯỢNG TOÀN CỤC
 // ─────────────────────────────────────────────
-SpeedSensor     speedSensor;
+SpeedSensor speedSensor;
 FirebaseManager firebaseMgr;
-RfidReader      rfidReader;
+RfidReader rfidReader;
 ServoController servo;
-float           g_vmax_kmh = VMAX_DEFAULT_KMH;
+float g_vmax_kmh = VMAX_DEFAULT_KMH;
+uint32_t g_reconnectCount = 0;
+unsigned long g_lastCycleTime_ms = 0;
+float g_cycleTime_ms = 0;
 
 // ─────────────────────────────────────────────
 //  CƠ CẤU CẢNH BÁO
 //  Servo đã implement; Laser/Buzzer để TODO khi có phần cứng
 // ─────────────────────────────────────────────
-void triggerAlarm(float speed_kmh) {
+void triggerAlarm(float speed_kmh)
+{
     DBGF("[ALARM] Vi phạm %.2f km/h — kích hoạt cảnh báo\n", speed_kmh);
 
     digitalWrite(PIN_LASER, HIGH);
@@ -80,23 +84,28 @@ void triggerAlarm(float speed_kmh) {
 // ─────────────────────────────────────────────
 //  KẾT NỐI WIFI
 // ─────────────────────────────────────────────
-void connectWiFi() {
+void connectWiFi()
+{
     DBGF("[WiFi] Kết nối tới '%s' ", WIFI_SSID);
     WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
     uint8_t attempts = 0;
-    while (WiFi.status() != WL_CONNECTED && attempts < 30) {
+    while (WiFi.status() != WL_CONNECTED && attempts < 30)
+    {
         delay(500);
         DBG(".");
         attempts++;
     }
 
-    if (WiFi.status() == WL_CONNECTED) {
+    if (WiFi.status() == WL_CONNECTED)
+    {
         DBGLN("");
         DBGF("[WiFi] OK — IP: %s | RSSI: %d dBm\n",
              WiFi.localIP().toString().c_str(), WiFi.RSSI());
-    } else {
+    }
+    else
+    {
         DBGLN("\n[WiFi] THẤT BẠI — hệ thống chạy offline, không gửi Firebase");
     }
 }
@@ -104,7 +113,8 @@ void connectWiFi() {
 // ─────────────────────────────────────────────
 //  SETUP
 // ─────────────────────────────────────────────
-void setup() {
+void setup()
+{
     Serial.begin(115200);
     delay(500);
 
@@ -129,18 +139,20 @@ void setup() {
     // while (true) { rfidReader.scanOnlyUpdate(); delay(100); }
 
     // ── 3. Servo MG90S ──
-    servo.begin();   // Tự động về 90° khi khởi động
+    servo.begin(); // Tự động về 90° khi khởi động
 
     // ── 4. WiFi ──
     connectWiFi();
 
     // ── 5. Đồng bộ giờ NTP (UTC+7 Hà Nội) ──
-    if (WiFi.status() == WL_CONNECTED) {
+    if (WiFi.status() == WL_CONNECTED)
+    {
         configTime(7 * 3600, 0, "pool.ntp.org", "time.google.com");
         DBGLN("[NTP] Đang đồng bộ giờ...");
         delay(2000);
         struct tm ti;
-        if (getLocalTime(&ti)) {
+        if (getLocalTime(&ti))
+        {
             char tbuf[30];
             strftime(tbuf, sizeof(tbuf), "%Y-%m-%d %H:%M:%S", &ti);
             DBGF("[NTP] Giờ hiện tại: %s\n", tbuf);
@@ -161,7 +173,8 @@ void setup() {
 // ─────────────────────────────────────────────
 //  LOOP
 // ─────────────────────────────────────────────
-void loop() {
+void loop()
+{
 
     // ── 1. Đọc RFID liên tục ──
     // rfidReader.update() tự ghi vào g_vehicleId khi có thẻ mới
@@ -169,16 +182,19 @@ void loop() {
 
     // ── 2. Xử lý kết quả đo tốc độ ──
     SpeedResult result;
-    if (speedSensor.update(result)) {
+    if (speedSensor.update(result))
+    {
 
-        if (!result.valid) {
+        if (!result.valid)
+        {
             // Kết quả không hợp lệ (nhiễu, timeout, v.v.)
             DBGF("[SKIP] %s\n", result.reason.c_str());
-
-        } else {
+        }
+        else
+        {
             // In kết quả ra Serial để debug
             DBGLN("─────────────────────────────────────────");
-            DBGF("  Xe         : %s\n",   (char*)g_vehicleId);
+            DBGF("  Xe         : %s\n", (char *)g_vehicleId);
             DBGF("  Tốc độ thô : %.2f km/h\n", result.rawSpeed_kmh);
             DBGF("  Tốc độ MA  : %.2f km/h\n", result.filtSpeed_kmh);
             DBGF("  Δt         : %lu µs (%.1f ms)\n",
@@ -187,21 +203,23 @@ void loop() {
 
             bool isViolation = (result.filtSpeed_kmh > g_vmax_kmh);
 
-            if (isViolation) {
+            if (isViolation)
+            {
                 DBGF("  ⚠  VI PHẠM! %.2f > %.1f km/h\n",
                      result.filtSpeed_kmh, g_vmax_kmh);
                 triggerAlarm(result.filtSpeed_kmh);
-            } else {
+            }
+            else
+            {
                 DBGLN("  ✓  Bình thường");
             }
             DBGLN("─────────────────────────────────────────");
 
             // Đẩy sự kiện lên Firebase
             firebaseMgr.pushVehicleEvent(
-                (const char*)g_vehicleId,
+                (const char *)g_vehicleId,
                 result.filtSpeed_kmh,
-                isViolation
-            );
+                isViolation);
 
             // [Tuỳ chọn] Reset vehicleId sau mỗi lần đo
             // Bỏ comment nếu mỗi lần qua trạm đều phải quẹt thẻ mới
@@ -212,7 +230,8 @@ void loop() {
     // ── 3. Polling Firebase mỗi 30 giây ──
     // Cập nhật Vmax từ app + gửi ping trạng thái "online"
     static unsigned long lastPoll = 0;
-    if (millis() - lastPoll > FIREBASE_POLL_INTERVAL_MS) {
+    if (millis() - lastPoll > FIREBASE_POLL_INTERVAL_MS)
+    {
         g_vmax_kmh = firebaseMgr.fetchVmax(g_vmax_kmh);
         firebaseMgr.updateSystemStatus("online");
         lastPoll = millis();
@@ -220,13 +239,36 @@ void loop() {
 
     // ── 4. Tự reconnect WiFi nếu mất kết nối ──
     static unsigned long lastWifiCheck = 0;
-    if (millis() - lastWifiCheck > 10000) {
-        if (WiFi.status() != WL_CONNECTED) {
+    if (millis() - lastWifiCheck > 10000)
+    {
+        if (WiFi.status() != WL_CONNECTED)
+        {
             DBGLN("[WiFi] Mất kết nối — đang thử lại...");
             WiFi.reconnect();
+            g_reconnectCount++;
         }
         lastWifiCheck = millis();
     }
 
-    delay(5);   // Nhường CPU, không block ngắt IR
+    delay(5); // Nhường CPU, không block ngắt IR
+
+    // ── Tính cycle time / FPS ──
+    g_cycleTime_ms = millis() - g_lastCycleTime_ms;
+    g_lastCycleTime_ms = millis();
+
+    // ── Push system monitor mỗi 10 giây ──
+    static unsigned long lastMonitor = 0;
+    if (millis() - lastMonitor > 10000)
+    {
+
+        // Kiểm tra sensor status
+        bool ir1_ok = (digitalRead(PIN_IR1) != -1);
+        bool ir2_ok = (digitalRead(PIN_IR2) != -1);
+        bool rfid_ok = (strlen((char *)g_vehicleId) > 0);
+
+        firebaseMgr.pushSystemMonitor(g_reconnectCount);
+        firebaseMgr.pushSensorStatus(ir1_ok, ir2_ok, rfid_ok, g_cycleTime_ms);
+
+        lastMonitor = millis();
+    }
 }
