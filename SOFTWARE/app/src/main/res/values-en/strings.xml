@@ -1,0 +1,91 @@
+<resources>
+    <string name="app_name">Smart Traffic Radar</string>
+
+    <!-- BOTTOM BAR -->
+    <string name="dashboard">Dashboard</string>
+    <string name="violations">Violations</string>
+    <string name="control">Control</string>
+    <string name="status">Status</string>
+
+    <!-- SETTING-LANGUAGE -->
+    <string name="language">Language</string>
+    <string name="change_language">Change Language</string>
+    <string name="select_language">Select Language</string>
+    <string name="english">English</string>
+    <string name="vietnamese">Vietnamese</string>
+    <string name="apply">Apply</string>
+
+    <!-- DASHBOARD -->
+    <string name="error_unexpected">An unexpected error occurred</string>
+    <string name="real_time_monitoring_active">Real-time monitoring active</string>
+    <string name="speed_analysis_recent_10">SPEED ANALYSIS (RECENT 10)</string>
+
+    <!-- VIOLATION -->
+    <string name="violation_level_critical">CRITICAL</string>
+    <string name="violation_level_high">HIGH</string>
+    <string name="violation_level_moderate">MODERATE</string>
+
+    <string name="violation_recorded_speed">Recorded Speed</string>
+    <string name="violation_speed_limit">Speed Limit</string>
+    <string name="violation_excess">Excess</string>
+    <string name="incidents">%1$d recent incidents</string>
+
+    <string name="just_now">Just now</string>
+    <plurals name="minutes_ago">
+        <item quantity="one">%d minute ago</item>
+        <item quantity="other">%d minutes ago</item>
+    </plurals>
+    <plurals name="hours_ago">
+        <item quantity="one">%d hour ago</item>
+        <item quantity="other">%d hours ago</item>
+    </plurals>
+    <plurals name="days_ago">
+        <item quantity="one">%d day ago</item>
+        <item quantity="other">%d days ago</item>
+    </plurals>
+    <plurals name="weeks_ago">
+        <item quantity="one">%d week ago</item>
+        <item quantity="other">%d weeks ago</item>
+    </plurals>
+
+    <string name="see_all">See All</string>
+
+    <!-- CONTROL -->
+    <string name="control_panel">Control Panel</string>
+    <string name="system_configuration">System Configuration</string>
+    <string name="speed_limit_threshold">Speed Limit Threshold</string>
+    <string name="trigger_violations_desc">Trigger violations above this speed</string>
+    <string name="kmh_unit">km/h</string>
+
+    <!-- SYSTEM MONITOR -->
+    <string name="connection_status">CONNECTION STATUS</string>
+    <string name="wifi_status">WiFi Status</string>
+    <string name="firebase_status">Firebase Status</string>
+    <string name="last_sync">Last Sync</string>
+    <string name="connected">CONNECTED</string>
+    <string name="disconnected">DISCONNECTED</string>
+    <string name="authenticated">AUTHENTICATED</string>
+    <string name="unauthenticated">UNAUTHENTICATED</string>
+    <string name="setup_network">Setup Network</string>
+    <string name="scan_wifi">Scan Wi-Fi</string>
+    <string name="select_wifi">Select Wi-Fi</string>
+    <string name="enter_password">Enter Password</string>
+    <string name="enter_password_for">Enter password for %1$s</string>
+    <string name="password">Password</string>
+    <string name="connect">Connect</string>
+    <string name="cancel">Cancel</string>
+    <string name="scanning">Scanning...</string>
+    <string name="connecting">Connecting...</string>
+    <string name="connection_success">Connection Successful</string>
+    <string name="connection_failed">Connection Failed</string>
+    <string name="connection_timeout">Connection Timeout. Device is not responding.</string>
+    <string name="current_task_format">Current Task: %1$s</string>
+    <string name="status_format">Status: %1$s</string>
+    <string name="signal_format">Signal: %1$d/5</string>
+    
+    <string name="wifi_status_idle">IDLE</string>
+    <string name="wifi_status_pending">PENDING</string>
+    <string name="wifi_status_success">SUCCESS</string>
+    <string name="wifi_status_failed">FAILED</string>
+
+</resources>

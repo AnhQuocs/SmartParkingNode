@@ -1,0 +1,88 @@
+<resources>
+    <string name="app_name">Smart Traffic Radar</string>
+
+    <!-- BOTTOM BAR -->
+    <string name="dashboard">Tổng quan</string>
+    <string name="violations">Vi phạm</string>
+    <string name="control">Điều khiển</string>
+    <string name="status">Trạng thái</string>
+
+    <!-- SETTING-LANGUAGE -->
+    <string name="language">Ngôn ngữ</string>
+    <string name="change_language">Thay đổi ngôn ngữ</string>
+    <string name="select_language">Chọn ngôn ngữ</string>
+    <string name="english">Tiếng Anh</string>
+    <string name="vietnamese">Tiếng Việt</string>
+    <string name="apply">Áp dụng</string>
+
+
+    <!-- DASHBOARD -->
+    <string name="error_unexpected">Đã xảy ra lỗi không mong muốn</string>
+    <string name="real_time_monitoring_active">Giám sát thời gian thực</string>
+    <string name="speed_analysis_recent_10">PHÂN TÍCH TỐC ĐỘ (10 XE GẦN NHẤT)</string>
+
+    <!-- VIOLATION -->
+    <string name="violation_level_critical">NGHIÊM TRỌNG</string>
+    <string name="violation_level_high">CAO</string>
+    <string name="violation_level_moderate">TRUNG BÌNH</string>
+
+    <string name="violation_recorded_speed">Tốc độ ghi nhận</string>
+    <string name="violation_speed_limit">Giới hạn tốc độ</string>
+    <string name="violation_excess">Vượt quá</string>
+    <string name="incidents">%1$d vi phạm gần đây</string>
+
+    <string name="just_now">Vừa xong</string>
+    <plurals name="minutes_ago">
+        <item quantity="other">%d phút trước</item>
+    </plurals>
+    <plurals name="hours_ago">
+        <item quantity="other">%d giờ trước</item>
+    </plurals>
+    <plurals name="days_ago">
+        <item quantity="other">%d ngày trước</item>
+    </plurals>
+    <plurals name="weeks_ago">
+        <item quantity="other">%d tuần trước</item>
+    </plurals>
+
+    <string name="see_all">Xem tất cả</string>
+
+    <!-- CONTROL -->
+    <string name="control_panel">Bảng điều khiển</string>
+    <string name="system_configuration">Cấu hình hệ thống</string>
+    <string name="speed_limit_threshold">Ngưỡng giới hạn tốc độ</string>
+    <string name="trigger_violations_desc">Kích hoạt vi phạm trên tốc độ này</string>
+    <string name="kmh_unit">km/h</string>
+
+    <!-- SYSTEM MONITOR -->
+    <string name="connection_status">TRẠNG THÁI KẾT NỐI</string>
+    <string name="wifi_status">Trạng thái WiFi</string>
+    <string name="firebase_status">Trạng thái Firebase</string>
+    <string name="last_sync">Đồng bộ cuối</string>
+    <string name="connected">ĐÃ KẾT NỐI</string>
+    <string name="disconnected">MẤT KẾT NỐI</string>
+    <string name="authenticated">ĐÃ XÁC THỰC</string>
+    <string name="unauthenticated">CHƯA XÁC THỰC</string>
+    <string name="setup_network">Thiết lập mạng</string>
+    <string name="scan_wifi">Dò tìm Wi-Fi</string>
+    <string name="select_wifi">Chọn Wi-Fi</string>
+    <string name="enter_password">Nhập mật khẩu</string>
+    <string name="enter_password_for">Nhập mật khẩu cho %1$s</string>
+    <string name="password">Mật khẩu</string>
+    <string name="connect">Kết nối</string>
+    <string name="cancel">Hủy</string>
+    <string name="scanning">Đang dò tìm...</string>
+    <string name="connecting">Đang kết nối...</string>
+    <string name="connection_success">Kết nối thành công</string>
+    <string name="connection_failed">Kết nối thất bại</string>
+    <string name="connection_timeout">Hết thời gian kết nối. Thiết bị không phản hồi.</string>
+    <string name="current_task_format">Tác vụ hiện tại: %1$s</string>
+    <string name="status_format">Trạng thái: %1$s</string>
+    <string name="signal_format">Tín hiệu: %1$d/5</string>
+
+    <string name="wifi_status_idle">CHỜ</string>
+    <string name="wifi_status_pending">ĐANG XỬ LÝ</string>
+    <string name="wifi_status_success">THÀNH CÔNG</string>
+    <string name="wifi_status_failed">THẤT BẠI</string>
+
+</resources>
