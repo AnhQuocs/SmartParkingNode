@@ -35,6 +35,8 @@ unsigned long g_lastCycle = 0;
 // ─────────────────────────────────────────────
 //  ĐỐI TƯỢNG TOÀN CỤC
 // ─────────────────────────────────────────────
+
+
 SpeedSensor speedSensor;
 FirebaseManager firebaseMgr;
 RfidReader rfidReader;
