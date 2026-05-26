@@ -57,4 +57,35 @@
     <string name="trigger_violations_desc">Trigger violations above this speed</string>
     <string name="kmh_unit">km/h</string>
 
+    <!-- SYSTEM MONITOR -->
+    <string name="connection_status">CONNECTION STATUS</string>
+    <string name="wifi_status">WiFi Status</string>
+    <string name="firebase_status">Firebase Status</string>
+    <string name="last_sync">Last Sync</string>
+    <string name="connected">CONNECTED</string>
+    <string name="disconnected">DISCONNECTED</string>
+    <string name="authenticated">AUTHENTICATED</string>
+    <string name="unauthenticated">UNAUTHENTICATED</string>
+    <string name="setup_network">Setup Network</string>
+    <string name="scan_wifi">Scan Wi-Fi</string>
+    <string name="select_wifi">Select Wi-Fi</string>
+    <string name="enter_password">Enter Password</string>
+    <string name="enter_password_for">Enter password for %1$s</string>
+    <string name="password">Password</string>
+    <string name="connect">Connect</string>
+    <string name="cancel">Cancel</string>
+    <string name="scanning">Scanning...</string>
+    <string name="connecting">Connecting...</string>
+    <string name="connection_success">Connection Successful</string>
+    <string name="connection_failed">Connection Failed</string>
+    <string name="connection_timeout">Connection Timeout. Device is not responding.</string>
+    <string name="current_task_format">Current Task: %1$s</string>
+    <string name="status_format">Status: %1$s</string>
+    <string name="signal_format">Signal: %1$d/5</string>
+    
+    <string name="wifi_status_idle">IDLE</string>
+    <string name="wifi_status_pending">PENDING</string>
+    <string name="wifi_status_success">SUCCESS</string>
+    <string name="wifi_status_failed">FAILED</string>
+
 </resources>

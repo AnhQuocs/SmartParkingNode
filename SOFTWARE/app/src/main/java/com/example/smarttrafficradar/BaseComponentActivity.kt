@@ -2,8 +2,8 @@ package com.example.smarttrafficradar
 
 import android.content.Context
 import androidx.activity.ComponentActivity
-import com.example.smarttrafficradar.features.system.language.data.preference.LanguagePreferenceManager
-import com.example.smarttrafficradar.features.system.language.domain.model.AppLanguage
+import com.example.smarttrafficradar.features.app_system.language.data.preference.LanguagePreferenceManager
+import com.example.smarttrafficradar.features.app_system.language.domain.model.AppLanguage
 import com.example.smarttrafficradar.utils.LangUtils
 import com.example.smarttrafficradar.utils.LanguageManager
 import dagger.hilt.EntryPoint

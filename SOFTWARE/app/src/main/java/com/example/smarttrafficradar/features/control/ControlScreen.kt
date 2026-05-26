@@ -17,8 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.smarttrafficradar.features.system.language.presentation.ui.ChangeLanguageActivity
-import com.example.smarttrafficradar.features.system.language.presentation.viewmodel.LanguageViewModel
+import com.example.smarttrafficradar.features.app_system.language.presentation.ui.ChangeLanguageActivity
+import com.example.smarttrafficradar.features.app_system.language.presentation.viewmodel.LanguageViewModel
 import com.example.smarttrafficradar.features.system_config.presentation.viewmodel.SystemConfigState
 import com.example.smarttrafficradar.features.system_config.presentation.viewmodel.SystemConfigViewModel
 import com.example.smarttrafficradar.ui.dimens.AppSpacing

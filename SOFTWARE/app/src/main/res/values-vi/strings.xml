@@ -54,4 +54,35 @@
     <string name="trigger_violations_desc">Kích hoạt vi phạm trên tốc độ này</string>
     <string name="kmh_unit">km/h</string>
 
+    <!-- SYSTEM MONITOR -->
+    <string name="connection_status">TRẠNG THÁI KẾT NỐI</string>
+    <string name="wifi_status">Trạng thái WiFi</string>
+    <string name="firebase_status">Trạng thái Firebase</string>
+    <string name="last_sync">Đồng bộ cuối</string>
+    <string name="connected">ĐÃ KẾT NỐI</string>
+    <string name="disconnected">MẤT KẾT NỐI</string>
+    <string name="authenticated">ĐÃ XÁC THỰC</string>
+    <string name="unauthenticated">CHƯA XÁC THỰC</string>
+    <string name="setup_network">Thiết lập mạng</string>
+    <string name="scan_wifi">Dò tìm Wi-Fi</string>
+    <string name="select_wifi">Chọn Wi-Fi</string>
+    <string name="enter_password">Nhập mật khẩu</string>
+    <string name="enter_password_for">Nhập mật khẩu cho %1$s</string>
+    <string name="password">Mật khẩu</string>
+    <string name="connect">Kết nối</string>
+    <string name="cancel">Hủy</string>
+    <string name="scanning">Đang dò tìm...</string>
+    <string name="connecting">Đang kết nối...</string>
+    <string name="connection_success">Kết nối thành công</string>
+    <string name="connection_failed">Kết nối thất bại</string>
+    <string name="connection_timeout">Hết thời gian kết nối. Thiết bị không phản hồi.</string>
+    <string name="current_task_format">Tác vụ hiện tại: %1$s</string>
+    <string name="status_format">Trạng thái: %1$s</string>
+    <string name="signal_format">Tín hiệu: %1$d/5</string>
+
+    <string name="wifi_status_idle">CHỜ</string>
+    <string name="wifi_status_pending">ĐANG XỬ LÝ</string>
+    <string name="wifi_status_success">THÀNH CÔNG</string>
+    <string name="wifi_status_failed">THẤT BẠI</string>
+
 </resources>
