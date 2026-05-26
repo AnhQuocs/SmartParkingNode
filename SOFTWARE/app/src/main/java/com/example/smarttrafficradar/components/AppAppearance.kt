@@ -5,7 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.example.smarttrafficradar.features.system.appearance.domain.model.ThemeConfig
+import com.example.smarttrafficradar.features.app_system.appearance.domain.model.ThemeConfig
 import com.example.smarttrafficradar.ui.theme.SmartTrafficRadarTheme
 
 @Composable
