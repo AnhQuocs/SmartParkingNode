@@ -35,8 +35,6 @@ unsigned long g_lastCycle = 0;
 // ─────────────────────────────────────────────
 //  ĐỐI TƯỢNG TOÀN CỤC
 // ─────────────────────────────────────────────
-
-
 SpeedSensor speedSensor;
 FirebaseManager firebaseMgr;
 RfidReader rfidReader;
@@ -295,6 +293,8 @@ void loop()
     static unsigned long lastNetCheck = 0;
     if (millis() - lastNetCheck > 5000)
     {
+        DBGF("[Main] Checking network config... WiFi=%s\n",
+             WiFi.status() == WL_CONNECTED ? "OK" : "FAIL");
         String newSsid, newPass;
         if (firebaseMgr.fetchNetworkConfig(newSsid, newPass))
         {
