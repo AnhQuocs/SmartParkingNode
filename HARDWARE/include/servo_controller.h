@@ -1,10 +1,5 @@
 #pragma once
 
-// ============================================================
-//  servo_controller.h — Điều khiển Barrier (Servo MG90S)
-//                        và âm thanh (DFPlayer Mini)
-// ============================================================
-
 #include <Arduino.h>
 #include <ESP32Servo.h>
 #include <HardwareSerial.h>

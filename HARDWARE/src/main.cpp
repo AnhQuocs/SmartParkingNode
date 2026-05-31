@@ -11,6 +11,8 @@
 
 ServoController barrier;
 FirebaseManager firebase;
+RFIDReader rfid;       
+SpeedSensor irSensor;
 
 enum GateState { IDLE, WAITING_IR, CONFIRMED };
 GateState     gateState     = IDLE;
@@ -99,7 +101,7 @@ void handleRemoteWiFiChange() {
 
     if (!ok) {
         Serial.println("[WIFI] Reverting to default WiFi");
-        connectWiFi(DEFAULT_SSID, DEFAULT_PASSWORD);
+        connectWiFi(WIFI_SSID, WIFI_PASSWORD);
     }
 }
 
@@ -111,7 +113,7 @@ void setup() {
     irSensor.begin();
     barrier.begin();
 
-    connectWiFi(DEFAULT_SSID, DEFAULT_PASSWORD);
+    connectWiFi(WIFI_SSID, WIFI_PASSWORD);
 
     if (WiFi.status() == WL_CONNECTED) {
         firebase.begin();
@@ -163,7 +165,7 @@ void loop() {
         if (millis() - lastWifiRetryMs > WIFI_RETRY_INTERVAL_MS) {
             lastWifiRetryMs = millis();
             Serial.println("[WIFI] Lost â€” retrying...");
-            connectWiFi(DEFAULT_SSID, DEFAULT_PASSWORD);
+            connectWiFi(WIFI_SSID, WIFI_PASSWORD);
             if (WiFi.status() == WL_CONNECTED) {
                 firebase.begin();
                 firebase.scanAndUploadNetworks();

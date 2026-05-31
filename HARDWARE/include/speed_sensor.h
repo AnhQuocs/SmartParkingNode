@@ -1,10 +1,6 @@
 #pragma once
 
-// ============================================================
-//  speed_sensor.h — Xử lý cặp cảm biến hồng ngoại IR
-//  Xác nhận xe đã thực sự đi qua barrier (tránh quẹt thẻ rồi lùi)
-//  Chuỗi hợp lệ: IR_A chắn → IR_B chắn → cả 2 thả ra
-// ============================================================
+
 
 #include <Arduino.h>
 #include "config.h"
@@ -12,7 +8,6 @@
 class SpeedSensor {
 public:
     void begin() {
-        // GPIO 34, 35 là INPUT_ONLY trên ESP32 — không dùng INPUT_PULLUP
         pinMode(PIN_IR_A, INPUT);
         pinMode(PIN_IR_B, INPUT);
         reset();
