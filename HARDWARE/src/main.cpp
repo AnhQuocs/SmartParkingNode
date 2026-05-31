@@ -1,330 +1,175 @@
-/**
- * main.cpp — Smart Traffic Monitor v3.0
- *
- * CẤU TRÚC PROJECT (PlatformIO):
- *   src/
- *   ├── main.cpp
- *   include/
- *   ├── config.h
- *   ├── speed_sensor.h
- *   ├── firebase_manager.h
- *   ├── rfid_reader.h
- *   └── servo_controller.h
- */
 
 #include <Arduino.h>
 #include <WiFi.h>
-#include <Preferences.h>
-#include <time.h>
 
 #include "config.h"
-#include "speed_sensor.h"
-#include "firebase_manager.h"
+#include "secrets.h"
 #include "rfid_reader.h"
+#include "speed_sensor.h"
 #include "servo_controller.h"
+#include "firebase_manager.h"
 
-// ─────────────────────────────────────────────
-//  BIẾN TOÀN CỤC
-// ─────────────────────────────────────────────
-volatile char g_vehicleId[32] = "UNKNOWN"; // RFID ghi vào đây
-float g_vmax_kmh = VMAX_DEFAULT_KMH;
-uint32_t g_reconnectCount = 0;
-float g_cycleTime_ms = 5.0f;
-unsigned long g_lastCycle = 0;
+ServoController barrier;
+FirebaseManager firebase;
 
-// ─────────────────────────────────────────────
-//  ĐỐI TƯỢNG TOÀN CỤC
-// ─────────────────────────────────────────────
-SpeedSensor speedSensor;
-FirebaseManager firebaseMgr;
-RfidReader rfidReader;
-ServoController servo;
-Preferences prefs;
+enum GateState { IDLE, WAITING_IR, CONFIRMED };
+GateState     gateState     = IDLE;
+String        pendingUID    = "";
+String        pendingAction = "";   // "IN" hoáº·c "OUT"
+unsigned long stateTs       = 0;
 
-// ─────────────────────────────────────────────
-//  NVS — LƯU/ĐỌC WIFI CREDENTIALS
-//  Giữ WiFi đã switch sau khi reset điện
-// ─────────────────────────────────────────────
-void loadWifiCredentials(String &ssid, String &pass)
-{
-    prefs.begin("wifi", true);
-    ssid = prefs.getString("ssid", WIFI_SSID); // fallback secrets.h
-    pass = prefs.getString("pass", WIFI_PASSWORD);
-    prefs.end();
-}
+unsigned long lastTelemetryMs = 0;
+unsigned long lastWifiRetryMs = 0;
 
-void saveWifiCredentials(const String &ssid, const String &pass)
-{
-    prefs.begin("wifi", false);
-    prefs.putString("ssid", ssid);
-    prefs.putString("pass", pass);
-    prefs.end();
-    DBGF("[Prefs] Đã lưu WiFi: %s\n", ssid.c_str());
-}
-
-// ─────────────────────────────────────────────
-//  KẾT NỐI WIFI
-// ─────────────────────────────────────────────
-void connectWiFi()
-{
-    String ssid, pass;
-    loadWifiCredentials(ssid, pass); // đọc NVS hoặc secrets.h
-
-    DBGF("[WiFi] Kết nối tới '%s' ", ssid.c_str());
+void connectWiFi(const String &ssid, const String &pass) {
+    Serial.printf("[WIFI] Connecting to %s ...\n", ssid.c_str());
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid.c_str(), pass.c_str());
-
-    uint8_t attempts = 0;
-    while (WiFi.status() != WL_CONNECTED && attempts < 30)
-    {
-        delay(500);
-        DBG(".");
-        attempts++;
+    unsigned long t = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - t < 15000) {
+        delay(500); Serial.print(".");
     }
-
+    Serial.println();
     if (WiFi.status() == WL_CONNECTED)
-    {
-        DBGLN("");
-        DBGF("[WiFi] OK — IP: %s | RSSI: %d dBm\n",
-             WiFi.localIP().toString().c_str(), WiFi.RSSI());
-    }
+        Serial.printf("[WIFI] Connected â€” IP: %s\n", WiFi.localIP().toString().c_str());
     else
-    {
-        DBGLN("\n[WiFi] THẤT BẠI — chạy offline");
+        Serial.println("[WIFI] Failed");
+}
+
+void onCloudCommand(String cmd, String uid, String action) {
+    pendingUID    = uid;
+    pendingAction = action;
+
+    if (cmd == "OPEN") {
+        barrier.open();
+        firebase.setGateStatus("open");
+        irSensor.reset();
+        gateState = WAITING_IR;
+        stateTs   = millis();
+
+    } else if (cmd == "CLOSE") {
+        barrier.close();
+        firebase.setGateStatus("auto");
+        gateState = IDLE;
+
+    } else if (cmd == "BUZZER_ALERT") {
+        barrier.playAudio(AUDIO_DEBT_EXCEED);
+
+    } else if (cmd == "CARD_UNKNOWN") {
+        barrier.playAudio(AUDIO_CARD_UNKNOWN);
     }
 }
 
-// ─────────────────────────────────────────────
-//  SCAN WIFI → ĐẨY LÊN FIREBASE
-// ─────────────────────────────────────────────
-void scanAndPushWifi()
-{
-    DBGLN("[WiFiScan] Đang quét...");
+void commitTransaction() {
+    firebase.confirmIR();
 
-    int n = WiFi.scanNetworks(false, false, false, 300);
-    if (n <= 0)
-    {
-        DBGLN("[WiFiScan] Không tìm thấy mạng nào.");
-        return;
+    if (pendingAction == "IN")
+        barrier.playAudio(AUDIO_WELCOME);
+    else
+        barrier.playAudio(AUDIO_GOODBYE);
+
+    gateState = CONFIRMED;
+    stateTs   = millis();
+    Serial.printf("[COMMIT] %s â€” UID: %s\n", pendingAction.c_str(), pendingUID.c_str());
+}
+
+void revertTransaction() {
+    barrier.close();
+    firebase.revertSwipe();
+    firebase.setGateStatus("auto");
+
+    irSensor.reset();
+    pendingUID    = "";
+    pendingAction = "";
+    gateState     = IDLE;
+    Serial.println("[REVERT] No log written.");
+}
+
+void handleRemoteWiFiChange() {
+    String newSSID, newPass;
+    if (!firebase.checkRemoteWiFiChange(newSSID, newPass)) return;
+
+    Serial.printf("[WIFI] Remote switch â†’ %s\n", newSSID.c_str());
+    WiFi.disconnect();
+    delay(1000);
+    connectWiFi(newSSID, newPass);
+
+    bool ok = (WiFi.status() == WL_CONNECTED);
+    firebase.reportWiFiSwitchResult(ok);
+
+    if (!ok) {
+        Serial.println("[WIFI] Reverting to default WiFi");
+        connectWiFi(DEFAULT_SSID, DEFAULT_PASSWORD);
     }
-
-    DBGF("[WiFiScan] Tìm thấy %d mạng\n", n);
-    firebaseMgr.pushWifiScanResults(n);
-    WiFi.scanDelete();
 }
 
-// ─────────────────────────────────────────────
-//  CƠ CẤU CẢNH BÁO KHI VI PHẠM
-// ─────────────────────────────────────────────
-void triggerAlarm(float speed_kmh)
-{
-    DBGF("[ALARM] Vi phạm %.2f km/h\n", speed_kmh);
-
-    digitalWrite(PIN_LASER, HIGH); // Bật laser
-
-    servo.smoothTo(0.0f, 300);
-    delay(200);
-    servo.smoothTo(180.0f, 500);
-    delay(200);
-    servo.smoothTo(0.0f, 500); // Kết thúc về 0°
-
-    digitalWrite(PIN_LASER, LOW); // Tắt laser
-}
-
-// ─────────────────────────────────────────────
-//  SETUP
-// ─────────────────────────────────────────────
-void setup()
-{
+void setup() {
     Serial.begin(115200);
-    delay(500);
+    Serial.println("\n[BOOT] Smart Parking Node starting...");
 
-    DBGLN("\n╔══════════════════════════════════════════╗");
-    DBGLN("║   Smart Traffic Monitor — v3.0          ║");
-    DBGLN("║   IR + RFID RC522 + Servo + Laser       ║");
-    DBGLN("╚══════════════════════════════════════════╝");
+    rfid.begin();
+    irSensor.begin();
+    barrier.begin();
 
-    // ── 1. Laser ──
-    pinMode(PIN_LASER, OUTPUT);
-    digitalWrite(PIN_LASER, LOW);
+    connectWiFi(DEFAULT_SSID, DEFAULT_PASSWORD);
 
-    // ── 2. IR Sensor ──
-    speedSensor.begin();
-    speedSensor.printCalibrationInfo();
-
-    // ── 3. RFID RC522 ──
-    rfidReader.begin();
-    // [Quét UID lần đầu] Uncomment 2 dòng dưới để lấy UID thực tế:
-    // rfidReader.scanOnlyMode();
-    // while (true) { rfidReader.scanOnlyUpdate(); delay(100); }
-
-    // ── 4. Servo MG90S ──
-    servo.begin(); // Về 90° khi khởi động
-
-    // ── 5. WiFi ──
-    connectWiFi();
-
-    // ── 6. NTP ──
-    if (WiFi.status() == WL_CONNECTED)
-    {
-        configTime(7 * 3600, 0, "pool.ntp.org", "time.google.com");
-        DBGLN("[NTP] Đang đồng bộ giờ...");
-        delay(2000);
-        struct tm ti;
-        if (getLocalTime(&ti))
-        {
-            char tbuf[30];
-            strftime(tbuf, sizeof(tbuf), "%Y-%m-%d %H:%M:%S", &ti);
-            DBGF("[NTP] %s\n", tbuf);
-        }
+    if (WiFi.status() == WL_CONNECTED) {
+        firebase.begin();
+        firebase.scanAndUploadNetworks();
     }
 
-    // ── 7. Firebase ──
-    firebaseMgr.begin();
-    g_vmax_kmh = firebaseMgr.fetchVmax(VMAX_DEFAULT_KMH);
-
-    // ── 8. Scan WiFi lần đầu ──
-    scanAndPushWifi();
-
-    DBGLN("\n─────────────────────────────────────────");
-    DBGF("[READY] Vmax=%.1f km/h | d=%.1f cm | GPIO Servo=%d | Laser=%d\n",
-         g_vmax_kmh, SENSOR_DISTANCE_CM, PIN_SERVO, PIN_LASER);
-    DBGLN("[READY] Quẹt thẻ RFID → lái xe qua 2 cảm biến IR");
-    DBGLN("─────────────────────────────────────────");
+    Serial.println("[BOOT] Setup complete.");
 }
 
-// ─────────────────────────────────────────────
-//  LOOP
-// ─────────────────────────────────────────────
-void loop()
-{
+void loop() {
 
-    // ── Tính cycle time ──
-    g_cycleTime_ms = (float)(millis() - g_lastCycle);
-    g_lastCycle = millis();
+    firebase.loop();
 
-    // ── 1. Đọc RFID ──
-    rfidReader.update();
-
-    // ── 2. Đo tốc độ ──
-    SpeedResult result;
-    if (speedSensor.update(result))
-    {
-        if (!result.valid)
-        {
-            DBGF("[SKIP] %s\n", result.reason.c_str());
-        }
-        else
-        {
-            DBGLN("─────────────────────────────────────────");
-            DBGF("  Xe         : %s\n", (char *)g_vehicleId);
-            DBGF("  Tốc độ thô : %.2f km/h\n", result.rawSpeed_kmh);
-            DBGF("  Tốc độ MA  : %.2f km/h\n", result.filtSpeed_kmh);
-            DBGF("  Δt         : %lu µs (%.1f ms)\n",
-                 result.dt_us, result.dt_us / 1000.0f);
-            DBGF("  Vmax       : %.1f km/h\n", g_vmax_kmh);
-
-            bool isViolation = (result.filtSpeed_kmh > g_vmax_kmh);
-            if (isViolation)
-            {
-                DBGF("  ⚠  VI PHẠM! %.2f > %.1f km/h\n",
-                     result.filtSpeed_kmh, g_vmax_kmh);
-                triggerAlarm(result.filtSpeed_kmh);
-            }
-            else
-            {
-                DBGLN("  ✓  Bình thường");
-            }
-            DBGLN("─────────────────────────────────────────");
-
-            firebaseMgr.pushVehicleEvent(
-                (const char *)g_vehicleId,
-                result.filtSpeed_kmh,
-                isViolation);
+    if (gateState == IDLE) {
+        String uid = rfid.readUID();
+        if (!uid.isEmpty()) {
+            Serial.printf("[RFID] Card: %s\n", uid.c_str());
+            firebase.sendSwipeEvent(uid);
         }
     }
 
-    // ── 3. Polling Vmax + ping mỗi 30 giây ──
-    static unsigned long lastPoll = 0;
-    if (millis() - lastPoll > FIREBASE_POLL_INTERVAL_MS)
-    {
-        g_vmax_kmh = firebaseMgr.fetchVmax(g_vmax_kmh);
-        firebaseMgr.updateSystemStatus("online");
-        lastPoll = millis();
-    }
-
-    // ── 4. Reconnect WiFi nếu mất kết nối ──
-    static unsigned long lastWifiCheck = 0;
-    if (millis() - lastWifiCheck > 10000)
-    {
-        if (WiFi.status() != WL_CONNECTED)
-        {
-            DBGLN("[WiFi] Mất kết nối — đang thử lại...");
-            WiFi.reconnect();
-            g_reconnectCount++;
+    if (gateState == WAITING_IR) {
+        if (irSensor.update()) {
+            commitTransaction();
+        } else if (millis() - stateTs > TIMEOUT_REVERT_MS) {
+            Serial.println("[TIMEOUT] Reverting...");
+            revertTransaction();
         }
-        lastWifiCheck = millis();
     }
 
-    // ── 5. System monitor mỗi 10 giây ──
-    static unsigned long lastMonitor = 0;
-    if (millis() - lastMonitor > 10000)
-    {
-        bool ir1_ok = (digitalRead(PIN_IR1) != -1);
-        bool ir2_ok = (digitalRead(PIN_IR2) != -1);
-        bool rfid_ok = (strlen((char *)g_vehicleId) > 0);
-
-        firebaseMgr.pushSystemMonitor(g_reconnectCount, g_cycleTime_ms);
-        firebaseMgr.pushSensorStatus(ir1_ok, ir2_ok, rfid_ok, g_cycleTime_ms);
-        firebaseMgr.pushConnectionStatus();
-        lastMonitor = millis();
+    if (gateState == CONFIRMED) {
+        if (millis() - stateTs > GATE_AUTO_CLOSE_MS) {
+            barrier.close();
+            firebase.setGateStatus("auto");
+            gateState = IDLE;
+            Serial.println("[GATE] Barrier closed â€” IDLE");
+        }
     }
 
-    // ── 6. Switch WiFi từ app mỗi 5 giây ──
-    //
-    //  Flow:
-    //  a) fetchNetworkConfig() đọc ssid+pass mới từ Firebase
-    //     (chỉ trả về true nếu khác WiFi đang dùng)
-    //  b) Lưu WiFi hiện tại làm fallback
-    //  c) performNetworkSwitch() thực hiện switch
-    //     - Thành công → main.cpp lưu NVS → giữ sau khi reset
-    //     - Thất bại   → tự fallback về WiFi cũ (NVS/secrets.h)
-    // ─────────────────────────────────────────────
-    static unsigned long lastNetCheck = 0;
-    if (millis() - lastNetCheck > 5000)
-    {
-        DBGF("[Main] Checking network config... WiFi=%s\n",
-             WiFi.status() == WL_CONNECTED ? "OK" : "FAIL");
-        String newSsid, newPass;
-        if (firebaseMgr.fetchNetworkConfig(newSsid, newPass))
-        {
+    if (millis() - lastTelemetryMs > TELEMETRY_INTERVAL_MS) {
+        lastTelemetryMs = millis();
+        bool irA_ok = (digitalRead(PIN_IR_A) != -1);
+        bool irB_ok = (digitalRead(PIN_IR_B) != -1);
+        firebase.sendTelemetry(irA_ok, irB_ok);
+        handleRemoteWiFiChange();
+    }
 
-            // Lưu WiFi hiện tại để fallback nếu switch thất bại
-            String curSsid, curPass;
-            loadWifiCredentials(curSsid, curPass);
-
-            bool ok = firebaseMgr.performNetworkSwitch(
-                newSsid, newPass, // WiFi mới
-                curSsid, curPass  // fallback = WiFi hiện tại
-            );
-
-            if (ok)
-            {
-                // Switch thành công → lưu NVS, giữ sau khi reset điện
-                saveWifiCredentials(newSsid, newPass);
-                DBGF("[Main] Đã lưu WiFi mới vào NVS: %s\n", newSsid.c_str());
+    if (WiFi.status() != WL_CONNECTED) {
+        if (millis() - lastWifiRetryMs > WIFI_RETRY_INTERVAL_MS) {
+            lastWifiRetryMs = millis();
+            Serial.println("[WIFI] Lost â€” retrying...");
+            connectWiFi(DEFAULT_SSID, DEFAULT_PASSWORD);
+            if (WiFi.status() == WL_CONNECTED) {
+                firebase.begin();
+                firebase.scanAndUploadNetworks();
             }
         }
-        lastNetCheck = millis();
     }
 
-    // ── 7. Auto scan WiFi mỗi 60 giây ──
-    static unsigned long lastScan = 0;
-    if (millis() - lastScan > 60000)
-    {
-        scanAndPushWifi();
-        lastScan = millis();
-    }
-
-    delay(5); // Nhường CPU, không block ngắt IR
+    delay(50);
 }

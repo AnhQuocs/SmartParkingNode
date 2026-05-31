@@ -1,108 +1,45 @@
-/**
- * config.h — Toàn bộ thông số cấu hình hệ thống
- * SỬA FILE NÀY trước khi nạp firmware, không cần đụng file khác
- *
- * v3.0 — Tích hợp: IR Sensor + RFID RC522 + Servo MG90S
- *
- * BẢNG CHÂN GPIO TỔNG HỢP:
- *   GPIO 35  → IR Sensor 1  (input-only, cần pull-up ngoài 10kΩ)
- *   GPIO 33  → IR Sensor 2
- *   GPIO 18  → RC522 SCK   (SPI mặc định)
- *   GPIO 19  → RC522 MISO  (SPI mặc định)
- *   GPIO 23  → RC522 MOSI  (SPI mặc định)
- *   GPIO  5  → RC522 SDA/CS
- *   GPIO  4  → RC522 RST
- *   GPIO 13  → Servo MG90S Signal (PWM)
- */
+#pragma once
 
-#ifndef CONFIG_H
-#define CONFIG_H
-#define DEVICE_ID       "ESP32-TR-001"
-#define DEVICE_TYPE     "ESP32 Radar"
-#define FIRMWARE_VER    "v3.0"
+// ============================================================
+//  config.h — Cấu hình chân GPIO và hằng số hệ thống
+//  Đồng bộ với Long (Hardware Engineer)
+// ============================================================
 
-#include "secrets.h"
+// ── PIN MAP ──────────────────────────────────────────────────
+// RFID RC522 (SPI)
+#define PIN_RFID_SS     5
+#define PIN_RFID_RST    27
+// SCK=18, MOSI=23, MISO=19 — SPI mặc định của ESP32
 
-#define NODE_ID         "radar_node_01"
+// IR Sensors — GPIO 34,35 là INPUT_ONLY, KHÔNG có internal pull-up
+#define PIN_IR_A        34   // Cảm biến phía trong (xe vào chắn trước)
+#define PIN_IR_B        35   // Cảm biến phía ngoài
 
-// ═══════════════════════════════════════════════
-//  CHÂN GPIO — IR SENSOR
-//  ⚠️  GPIO 35 là input-only trên ESP32 DevKit v1:
-//      KHÔNG có pull-up nội, KHÔNG thể dùng INPUT_PULLUP
-//      → Gắn điện trở 10kΩ từ GPIO 35 lên 3.3V bên ngoài
-//  GPIO 33 dùng INPUT_PULLUP bình thường
-// ═══════════════════════════════════════════════
-#define PIN_IR1     35   // IR Sensor 1 — xe vào trước
-#define PIN_IR2     33   // IR Sensor 2 — xe vào sau
+// Servo MG90S — nguồn 5V riêng, tránh sụt áp
+#define PIN_SERVO       13
 
-// ═══════════════════════════════════════════════
-//  CHÂN GPIO — RFID RC522 (SPI bus)
-//  SCK  → GPIO 18  |  MOSI → GPIO 23  |  MISO → GPIO 19
-//  (Ba chân trên là SPI mặc định ESP32, không khai báo thêm)
-// ═══════════════════════════════════════════════
-#define PIN_RFID_SS     5    // SDA / CS của RC522
-#define PIN_RFID_RST    22    // RST của RC522
+// DFPlayer Mini — dùng Serial2 (RX2=16, TX2=17)
+#define PIN_DF_RX       16
+#define PIN_DF_TX       17
 
-// ═══════════════════════════════════════════════
-//  CHÂN GPIO — SERVO MG90S
-//  Dây cam/vàng → GPIO 13  (PWM signal)
-//  Dây đỏ       → 5V / VIN  (KHÔNG dùng 3.3V)
-//  Dây nâu/đen  → GND
-//  ⚡ Khuyến nghị: tụ 100µF giữa VIN và GND gần servo
-// ═══════════════════════════════════════════════
-#define PIN_SERVO   14
-#define PIN_LASER   26
+// ── SERVO ANGLES ─────────────────────────────────────────────
+#define SERVO_OPEN_ANGLE    90
+#define SERVO_CLOSE_ANGLE   0
 
-// ═══════════════════════════════════════════════
-//  RFID — CHỐNG ĐỌC LẶP
-// ═══════════════════════════════════════════════
-#define RFID_DEBOUNCE_MS   2000   // ms — bỏ qua đọc lại trong 2 giây
+// ── DEVICE ID ────────────────────────────────────────────────
+#define DEVICE_ID   "parking_node_01"
 
-// ═══════════════════════════════════════════════
-//  THÔNG SỐ VẬT LÝ — ĐO THỰC TẾ RỒI ĐIỀN
-// ═══════════════════════════════════════════════
-#define SENSOR_DISTANCE_CM   30.0f
-#define SENSOR_DISTANCE_M    (SENSOR_DISTANCE_CM / 100.0f)
+// ── TIMING (ms) ──────────────────────────────────────────────
+#define TIMEOUT_REVERT_MS       10000   // Chờ xe qua IR tối đa 10s
+#define GATE_AUTO_CLOSE_MS      5000    // Đóng barrier 5s sau khi xe qua
+#define TELEMETRY_INTERVAL_MS   15000   // Gửi telemetry mỗi 15s
+#define WIFI_RETRY_INTERVAL_MS  30000   // Thử kết nối lại WiFi mỗi 30s
 
-// ═══════════════════════════════════════════════
-//  NGƯỠNG TỐC ĐỘ
-// ═══════════════════════════════════════════════
-#define VMAX_DEFAULT_KMH    20.0f   // km/h — có thể cập nhật từ Firebase
-
-// ═══════════════════════════════════════════════
-//  MOVING AVERAGE FILTER
-// ═══════════════════════════════════════════════
-#define MA_WINDOW_SIZE   5   // Tăng → mượt hơn, phản ứng chậm hơn
-
-// ═══════════════════════════════════════════════
-//  GIỚI HẠN TỐC ĐỘ HỢP LỆ (lọc nhiễu IR)
-// ═══════════════════════════════════════════════
-#define SPEED_MIN_KMH    1.0f     // Dưới mức này: bỏ qua (người đi bộ)
-#define SPEED_MAX_KMH    120.0f   // Trên mức này: bỏ qua (nhiễu IR)
-
-// ═══════════════════════════════════════════════
-//  TIMEOUT ĐO TỐC ĐỘ
-// ═══════════════════════════════════════════════
-#define MEASUREMENT_TIMEOUT_MS   8000   // ms — huỷ nếu IR2 không kích trong 8s
-
-// ═══════════════════════════════════════════════
-//  POLLING FIREBASE (cập nhật Vmax từ app)
-// ═══════════════════════════════════════════════
-#define FIREBASE_POLL_INTERVAL_MS   30000   // ms — 30 giây
-
-// ═══════════════════════════════════════════════
-//  DEBUG — đặt 0 khi triển khai thật để tắt Serial
-// ═══════════════════════════════════════════════
-#define DEBUG_ENABLED   1
-
-#if DEBUG_ENABLED
-  #define DBG(x)    Serial.print(x)
-  #define DBGLN(x)  Serial.println(x)
-  #define DBGF(...) Serial.printf(__VA_ARGS__)
-#else
-  #define DBG(x)
-  #define DBGLN(x)
-  #define DBGF(...)
-#endif
-
-#endif // CONFIG_H
+// ── AUDIO TRACKS ─────────────────────────────────────────────
+// File đặt trong SD card DFPlayer: 001.mp3, 002.mp3, ...
+#define AUDIO_WELCOME       1   // "Chào mừng, mời vào"
+#define AUDIO_GOODBYE       2   // "Cảm ơn, hẹn gặp lại"
+#define AUDIO_DEBT_EXCEED   3   // "Vượt hạn mức công nợ"
+#define AUDIO_CARD_UNKNOWN  4   // "Thẻ chưa đăng ký"
+#define AUDIO_ERROR         5   // "Lỗi hệ thống"
+#define AUDIO_GATE_CLOSING  6   // "Barrier đang đóng"
