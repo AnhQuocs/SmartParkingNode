@@ -10,69 +10,59 @@
 #include "config.h"
 
 #ifndef DBGLN
-#define DBGLN(x) Serial.println(x)
-#define DBGF(...) Serial.printf(__VA_ARGS__)
+  #define DBGLN(x) Serial.println(x)
+  #define DBGF(...) Serial.printf(__VA_ARGS__)
 #endif
 
-class FirebaseManager
-{
+class FirebaseManager {
 private:
-    FirebaseData fbData;    // dùng cho việc đọc/ghi thông thường
-    FirebaseData fbNetData; // riêng cho network switch — tránh conflict
+    FirebaseData   fbData;        // dùng cho việc đọc/ghi thông thường
+    FirebaseData   fbNetData;     // riêng cho network switch — tránh conflict
     FirebaseConfig fbConfig;
-    FirebaseAuth fbAuth;
-    bool initialized = false;
+    FirebaseAuth   fbAuth;
+    bool           initialized = false;
 
-    uint32_t dayTotalVehicles = 0;
+    uint32_t dayTotalVehicles   = 0;
     uint32_t dayTotalViolations = 0;
-    float daySpeedSum = 0.0f;
-    String currentDate = "";
+    float    daySpeedSum        = 0.0f;
+    String   currentDate        = "";
 
-    unsigned long long getTimestampMs()
-    {
+    unsigned long long getTimestampMs() {
         struct tm ti;
-        if (!getLocalTime(&ti))
-            return (unsigned long long)millis();
+        if (!getLocalTime(&ti)) return (unsigned long long)millis();
         time_t t = mktime(&ti);
         return (unsigned long long)t * 1000ULL;
     }
 
-    String getDateStr()
-    {
+    String getDateStr() {
         struct tm ti;
-        if (!getLocalTime(&ti))
-            return "1970-01-01";
+        if (!getLocalTime(&ti)) return "1970-01-01";
         char buf[12];
         strftime(buf, sizeof(buf), "%Y-%m-%d", &ti);
         return String(buf);
     }
 
-    String getPeakHourStr()
-    {
+    String getPeakHourStr() {
         struct tm ti;
-        if (!getLocalTime(&ti))
-            return "00:00 - 01:00";
+        if (!getLocalTime(&ti)) return "00:00 - 01:00";
         char buf[20];
         snprintf(buf, sizeof(buf), "%02d:00 - %02d:00",
                  ti.tm_hour, (ti.tm_hour + 1) % 24);
         return String(buf);
     }
 
-    void checkDayRollover()
-    {
+    void checkDayRollover() {
         String today = getDateStr();
-        if (today != currentDate)
-        {
-            dayTotalVehicles = 0;
+        if (today != currentDate) {
+            dayTotalVehicles   = 0;
             dayTotalViolations = 0;
-            daySpeedSum = 0.0f;
-            currentDate = today;
+            daySpeedSum        = 0.0f;
+            currentDate        = today;
             DBGF("[Firebase] Ngày mới: %s — reset thống kê\n", today.c_str());
         }
     }
 
-    String makeViolId()
-    {
+    String makeViolId() {
         char buf[12];
         snprintf(buf, sizeof(buf), "viol_%05lx",
                  (unsigned long)(millis() & 0xFFFFF));
@@ -80,24 +70,21 @@ private:
     }
 
 public:
-    void begin()
-    {
+    void begin() {
         fbConfig.host = FIREBASE_HOST;
         fbConfig.signer.tokens.legacy_token = FIREBASE_AUTH;
 
         Firebase.begin(&fbConfig, &fbAuth);
         Firebase.reconnectWiFi(true);
-
+        
         initialized = true;
         currentDate = getDateStr();
         updateSystemStatus("online");
         DBGLN("[Firebase] Khởi tạo xong.");
     }
 
-    bool pushVehicleEvent(const char *vehicleId, float speed, bool isViolation)
-    {
-        if (!initialized || WiFi.status() != WL_CONNECTED)
-            return false;
+    bool pushVehicleEvent(const char* vehicleId, float speed, bool isViolation) {
+        if (!initialized || WiFi.status() != WL_CONNECTED) return false;
 
         checkDayRollover();
         unsigned long long ts = getTimestampMs();
@@ -124,8 +111,7 @@ public:
         Firebase.setJSON(fbData, base + "/recent_vehicles/" + recentKey, recent);
 
         // ── 3. violations ──
-        if (isViolation)
-        {
+        if (isViolation) {
             String violId = makeViolId();
             String violPath = "/violations/" + String(NODE_ID) + "/" + violId;
             FirebaseJson viol;
@@ -141,15 +127,13 @@ public:
         // ── 4. daily_stats ──
         dayTotalVehicles++;
         daySpeedSum += speed;
-        if (isViolation)
-            dayTotalViolations++;
+        if (isViolation) dayTotalViolations++;
         updateDailyStats();
 
         return ok;
     }
 
-    void updateDailyStats()
-    {
+    void updateDailyStats() {
         String path = "/daily_stats/" + String(NODE_ID) + "/" + currentDate;
         float avg = (dayTotalVehicles > 0) ? (daySpeedSum / (float)dayTotalVehicles) : 0.0f;
         float avgRounded = (float)((int)(avg * 10)) / 10.0f;
@@ -164,28 +148,22 @@ public:
         Firebase.updateNode(fbData, path, stats);
     }
 
-    float fetchVmax(float currentVmax)
-    {
-        if (!initialized || WiFi.status() != WL_CONNECTED)
-            return currentVmax;
+    float fetchVmax(float currentVmax) {
+        if (!initialized || WiFi.status() != WL_CONNECTED) return currentVmax;
         String path = "/system_config/" + String(NODE_ID) + "/v_max_threshold";
-
+        
         // SỬA: Gọi trực tiếp Firebase.getFloat
-        if (Firebase.getFloat(fbData, path))
-        {
+        if (Firebase.getFloat(fbData, path)) {
             float val = fbData.floatData();
-            if (val > 0.0f && abs(val - currentVmax) > 0.1f)
-            {
+            if (val > 0.0f && abs(val - currentVmax) > 0.1f) {
                 return val;
             }
         }
         return currentVmax;
     }
 
-    void updateSystemStatus(const char *status = "online")
-    {
-        if (!initialized || WiFi.status() != WL_CONNECTED)
-            return;
+    void updateSystemStatus(const char* status = "online") {
+        if (!initialized || WiFi.status() != WL_CONNECTED) return;
         String path = "/system_config/" + String(NODE_ID);
         unsigned long long ts = getTimestampMs();
 
@@ -214,15 +192,12 @@ public:
      * Kiểm tra app có yêu cầu đổi WiFi không
      * Đọc credentials TRƯỚC khi mất kết nối — quan trọng!
      */
-    bool fetchNetworkConfig(String &newSsid, String &newPass)
-    {
-        if (!initialized)
-        {
+    bool fetchNetworkConfig(String &newSsid, String &newPass) {
+        if (!initialized) {
             DBGLN("[Network] fetch: Firebase chua init");
             return false;
         }
-        if (WiFi.status() != WL_CONNECTED)
-        {
+        if (WiFi.status() != WL_CONNECTED) {
             DBGLN("[Network] fetch: WiFi mat ket noi");
             return false;
         }
@@ -231,42 +206,35 @@ public:
         String ssid = "", pass = "";
 
         // Doc ssid — dung fbNetData rieng, khong conflict fbData
-        if (Firebase.getString(fbNetData, basePath + "/ssid"))
-        {
+        if (Firebase.getString(fbNetData, basePath + "/ssid")) {
             ssid = fbNetData.stringData();
             DBGF("[Network] Firebase ssid: '%s'\n", ssid.c_str());
-        }
-        else
-        {
+        } else {
             DBGF("[Network] Doc ssid FAIL: %s\n", fbNetData.errorReason().c_str());
             return false;
         }
 
         // Doc password
-        if (Firebase.getString(fbNetData, basePath + "/password"))
-        {
+        if (Firebase.getString(fbNetData, basePath + "/password")) {
             pass = fbNetData.stringData();
             DBGLN("[Network] Firebase password: OK");
-        }
-        else
-        {
+        } else {
             DBGF("[Network] Doc password FAIL: %s\n", fbNetData.errorReason().c_str());
             return false;
         }
 
-        if (ssid.length() == 0 || pass.length() == 0)
-        {
-            DBGLN("[Network] ssid hoac password trong -- bo qua");
+        if (ssid.length() == 0 || pass.length() == 0) {
+            // Trường hợp bình thường sau khi clearNetworkRequest()
+            // Không cần log để tránh spam Serial
             return false;
         }
-        if (ssid == WiFi.SSID())
-        {
+        if (ssid == WiFi.SSID()) {
             DBGF("[Network] Cung WiFi hien tai '%s' -- bo qua\n", ssid.c_str());
             return false;
         }
 
         newSsid = ssid;
-        newPass = pass;
+        newPass  = pass;
         DBGF("[Network] WiFi moi phat hien: '%s' -> '%s'\n",
              WiFi.SSID().c_str(), ssid.c_str());
         return true;
@@ -285,8 +253,7 @@ public:
     bool performNetworkSwitch(const String &newSsid,
                               const String &newPass,
                               const String &fallbackSsid,
-                              const String &fallbackPass)
-    {
+                              const String &fallbackPass) {
         // Bước 1: Báo app SWITCHING — vẫn còn online
         pushSwitchStatus("SWITCHING", newSsid.c_str(), newPass.c_str(),
                          "Connecting to new WiFi...");
@@ -300,52 +267,51 @@ public:
         // Bước 3: Connect WiFi mới
         WiFi.begin(newSsid.c_str(), newPass.c_str());
         uint8_t tries = 0;
-        while (WiFi.status() != WL_CONNECTED && tries < 20)
-        {
-            delay(500);
-            DBG(".");
-            tries++;
+        while (WiFi.status() != WL_CONNECTED && tries < 20) {
+            delay(500); DBG("."); tries++;
         }
         DBGLN("");
 
-        if (WiFi.status() == WL_CONNECTED)
-        {
+        if (WiFi.status() == WL_CONNECTED) {
             // ── THÀNH CÔNG ──
             DBGF("[Network] Switch OK → %s | IP: %s\n",
                  newSsid.c_str(), WiFi.localIP().toString().c_str());
             delay(1000);
             Firebase.reconnectWiFi(true);
-            delay(500);
+            delay(1000);
+
+            // Xóa ssid khỏi Firebase để tránh switch lại vòng lặp
+            clearNetworkRequest();
+
             pushSwitchStatus("SUCCESS", newSsid.c_str(), newPass.c_str(),
-                             ("Connected. IP: " + WiFi.localIP().toString()).c_str());
+                ("Connected. IP: " + WiFi.localIP().toString()).c_str());
             pushConnectionStatus();
-            return true; // main.cpp sẽ lưu NVS
-        }
-        else
-        {
-            // ── THẤT BẠI → fallback WiFi cũ (từ NVS hoặc secrets.h) ──
-            DBGF("[Network] Thất bại — fallback về '%s'\n",
+            return true;
+
+        } else {
+            // ── THẤT BẠI → fallback WiFi cũ ──
+            DBGF("[Network] That bai — fallback ve '%s'\n",
                  fallbackSsid.c_str());
-            pushSwitchStatus("FAILED", newSsid.c_str(), newPass.c_str(),
-                             "Connection Timeout. Device is not responding.");
 
             WiFi.begin(fallbackSsid.c_str(), fallbackPass.c_str());
             tries = 0;
-            while (WiFi.status() != WL_CONNECTED && tries < 20)
-            {
-                delay(500);
-                tries++;
+            while (WiFi.status() != WL_CONNECTED && tries < 20) {
+                delay(500); tries++;
             }
-            if (WiFi.status() == WL_CONNECTED)
-            {
+            if (WiFi.status() == WL_CONNECTED) {
                 DBGLN("[Network] Fallback OK");
-                delay(500);
+                delay(1000);
                 Firebase.reconnectWiFi(true);
+                delay(500);
+
+                // Xóa ssid khỏi Firebase để tránh switch lại vòng lặp
+                clearNetworkRequest();
+
+                pushSwitchStatus("FAILED", newSsid.c_str(), newPass.c_str(),
+                                 "Connection Timeout. Device is not responding.");
                 pushConnectionStatus();
-            }
-            else
-            {
-                DBGLN("[Network] Fallback cũng thất bại!");
+            } else {
+                DBGLN("[Network] Fallback cung that bai!");
             }
             return false;
         }
@@ -358,22 +324,33 @@ public:
      */
     // Ghi thẳng vào /network_setup/{node} — cấu trúc phẳng
     // khớp Firebase thực tế: ssid, password, status, message, timestamp
-    void pushSwitchStatus(const char *status,
-                          const char *targetSsid,
-                          const char *targetPass,
-                          const char *message)
-    {
-        if (!initialized)
-            return;
+    /**
+     * Xóa ssid + password khỏi Firebase sau khi switch xong
+     * Quan trọng: ngăn ESP32 switch lại vòng lặp vô tận
+     */
+    void clearNetworkRequest() {
+        String path = "/network_setup/" + String(NODE_ID);
+
+        // Ghi ssid = "" để fetchNetworkConfig bỏ qua lần sau
+        Firebase.setString(fbNetData, path + "/ssid", "");
+        Firebase.setString(fbNetData, path + "/password", "");
+        DBGLN("[Network] Da xoa ssid/password tren Firebase");
+    }
+
+    void pushSwitchStatus(const char* status,
+                          const char* targetSsid,
+                          const char* targetPass,
+                          const char* message) {
+        if (!initialized) return;
 
         String path = "/network_setup/" + String(NODE_ID);
         unsigned long long ts = getTimestampMs();
 
         FirebaseJson sw;
-        sw.set("ssid", targetSsid);
-        sw.set("password", targetPass);
-        sw.set("status", status);
-        sw.set("message", message);
+        sw.set("ssid",      targetSsid);
+        sw.set("password",  targetPass);
+        sw.set("status",    status);
+        sw.set("message",   message);
         sw.set("timestamp", (int64_t)ts);
 
         Firebase.updateNode(fbNetData, path, sw);
@@ -381,136 +358,105 @@ public:
     }
 
     // connection_status nằm trong system_monitor, không tạo collection mới
-    void pushConnectionStatus()
-    {
-        if (!initialized)
-            return;
+    void pushConnectionStatus() {
+        if (!initialized) return;
 
         String path = "/system_monitor/" + String(NODE_ID) + "/connection_status";
         unsigned long long ts = getTimestampMs();
 
         FirebaseJson cs;
-        cs.set("wifi_status", WiFi.status() == WL_CONNECTED
-                                  ? "CONNECTED"
-                                  : "DISCONNECTED");
+        cs.set("wifi_status",     WiFi.status() == WL_CONNECTED
+                                  ? "CONNECTED" : "DISCONNECTED");
         cs.set("firebase_status", "AUTHENTICATED");
-        cs.set("current_ssid", WiFi.SSID().c_str());
-        cs.set("ip_address", WiFi.localIP().toString().c_str());
-        cs.set("last_sync", (int64_t)ts);
+        cs.set("current_ssid",    WiFi.SSID().c_str());
+        cs.set("ip_address",      WiFi.localIP().toString().c_str());
+        cs.set("last_sync",       (int64_t)ts);
 
         Firebase.updateNode(fbData, path, cs);
     }
 
-    void pushWifiScanResults(int networkCount)
-    {
-        if (!initialized)
-            return;
+    void pushWifiScanResults(int networkCount) {
+        if (!initialized) return;
 
         // available_networks nằm trong system_monitor
         String path = "/system_monitor/" + String(NODE_ID) + "/available_networks";
         Firebase.deleteNode(fbData, path);
 
-        for (int i = 0; i < networkCount; i++)
-        {
+        for (int i = 0; i < networkCount; i++) {
             String netPath = path + "/net_" + String(i);
-            int32_t rssi = WiFi.RSSI(i);
-            int signalPct = constrain((int)map(rssi, -100, -50, 0, 100), 0, 100);
+            int32_t rssi   = WiFi.RSSI(i);
+            int signalPct  = constrain((int)map(rssi, -100, -50, 0, 100), 0, 100);
 
-            const char *strength;
-            if (rssi >= -50)
-                strength = "Excellent";
-            else if (rssi >= -65)
-                strength = "Good";
-            else if (rssi >= -75)
-                strength = "Fair";
-            else
-                strength = "Weak";
+            const char* strength;
+            if      (rssi >= -50) strength = "Excellent";
+            else if (rssi >= -65) strength = "Good";
+            else if (rssi >= -75) strength = "Fair";
+            else                  strength = "Weak";
 
-            const char *security;
-            switch (WiFi.encryptionType(i))
-            {
-            case WIFI_AUTH_OPEN:
-                security = "Open";
-                break;
-            case WIFI_AUTH_WEP:
-                security = "WEP";
-                break;
-            case WIFI_AUTH_WPA_PSK:
-                security = "WPA";
-                break;
-            case WIFI_AUTH_WPA2_PSK:
-                security = "WPA2";
-                break;
-            case WIFI_AUTH_WPA_WPA2_PSK:
-                security = "WPA/WPA2";
-                break;
-            default:
-                security = "Unknown";
-                break;
+            const char* security;
+            switch (WiFi.encryptionType(i)) {
+                case WIFI_AUTH_OPEN:         security = "Open";     break;
+                case WIFI_AUTH_WEP:          security = "WEP";      break;
+                case WIFI_AUTH_WPA_PSK:      security = "WPA";      break;
+                case WIFI_AUTH_WPA2_PSK:     security = "WPA2";     break;
+                case WIFI_AUTH_WPA_WPA2_PSK: security = "WPA/WPA2"; break;
+                default:                     security = "Unknown";  break;
             }
 
             FirebaseJson net;
-            net.set("ssid", WiFi.SSID(i).c_str());
-            net.set("rssi", (int)rssi);
+            net.set("ssid",       WiFi.SSID(i).c_str());
+            net.set("rssi",       (int)rssi);
             net.set("signal_pct", (int)signalPct);
-            net.set("strength", strength);
-            net.set("security", security);
-            net.set("channel", (int)WiFi.channel(i));
+            net.set("strength",   strength);
+            net.set("security",   security);
+            net.set("channel",    (int)WiFi.channel(i));
 
             Firebase.setJSON(fbData, netPath, net);
             DBGF("[WiFiScan] %d. %s | %d dBm (%d%%) | %s\n",
-                 i + 1, WiFi.SSID(i).c_str(), rssi, signalPct, security);
+                 i+1, WiFi.SSID(i).c_str(), rssi, signalPct, security);
         }
 
         String metaPath = "/system_monitor/" + String(NODE_ID) + "/scan_meta";
         FirebaseJson meta;
         meta.set("total_found", (int)networkCount);
-        meta.set("scanned_at", (int64_t)getTimestampMs());
+        meta.set("scanned_at",  (int64_t)getTimestampMs());
         meta.set("scan_status", "DONE");
         Firebase.updateNode(fbData, metaPath, meta);
         DBGF("[WiFiScan] Đẩy %d mạng lên Firebase xong\n", networkCount);
     }
 
-    bool isReady() { return initialized; }
-    int measureFirebasePing()
-    {
-        if (!initialized || WiFi.status() != WL_CONNECTED)
-            return -1;
+        bool isReady() { return initialized; }
+    int measureFirebasePing() {
+        if (!initialized || WiFi.status() != WL_CONNECTED) return -1;
         // Dùng fbDataPing riêng để không conflict với fbData đang dùng
         FirebaseData fbPing;
         fbPing.setBSSLBufferSize(512, 256);
         unsigned long start = millis();
         Firebase.getString(fbPing,
-                           "/system_config/" + String(NODE_ID) + "/status");
+            "/system_config/" + String(NODE_ID) + "/status");
         int elapsed = (int)(millis() - start);
         // Trả về -1 nếu mất quá lâu (tránh block pushSystemMonitor)
         return (elapsed > 3000) ? -1 : elapsed;
     }
 
-    void pushSystemMonitor(uint32_t reconnectCount, float cycleTime_ms)
-    {
-        if (!initialized || WiFi.status() != WL_CONNECTED)
-            return;
+    void pushSystemMonitor(uint32_t reconnectCount, float cycleTime_ms) {
+        if (!initialized || WiFi.status() != WL_CONNECTED) return;
 
         String path = "/system_monitor/" + String(NODE_ID);
 
-        float cpu_temp = temperatureRead();
-        uint32_t heapFree = ESP.getFreeHeap();
+        float cpu_temp  = temperatureRead();
+        uint32_t heapFree  = ESP.getFreeHeap();
         uint32_t heapTotal = ESP.getHeapSize();
         float heapUsage = 100.0f - ((float)heapFree / heapTotal * 100.0f);
-        float cpuUsage = constrain((cycleTime_ms / 10.0f) * 100.0f, 0, 100);
+        float cpuUsage  = constrain((cycleTime_ms / 10.0f) * 100.0f, 0, 100);
 
-        int32_t rssi = WiFi.RSSI();
-        int signalPct = constrain((int)map(rssi, -100, -50, 0, 100), 0, 100);
-        const char *wifiStrength;
-        if (rssi >= -50)
-            wifiStrength = "Excellent";
-        else if (rssi >= -65)
-            wifiStrength = "Good";
-        else if (rssi >= -75)
-            wifiStrength = "Fair";
-        else
-            wifiStrength = "Weak";
+        int32_t rssi    = WiFi.RSSI();
+        int signalPct   = constrain((int)map(rssi, -100, -50, 0, 100), 0, 100);
+        const char* wifiStrength;
+        if      (rssi >= -50) wifiStrength = "Excellent";
+        else if (rssi >= -65) wifiStrength = "Good";
+        else if (rssi >= -75) wifiStrength = "Fair";
+        else                  wifiStrength = "Weak";
 
         int ping_ms = measureFirebasePing();
 
@@ -522,24 +468,24 @@ public:
         float fps = (cycleTime_ms > 0) ? (1000.0f / cycleTime_ms) : 0;
 
         FirebaseJson monitor;
-        monitor.set("device_id", DEVICE_ID);
-        monitor.set("device_type", DEVICE_TYPE);
-        monitor.set("firmware", FIRMWARE_VER);
-        monitor.set("uptime", uptimeBuf);
-        monitor.set("cpu_temp_c", (double)(int)(cpu_temp * 10) / 10.0);
-        monitor.set("cpu_usage_pct", (double)(int)(cpuUsage * 10) / 10.0);
-        monitor.set("heap_free_bytes", (int)heapFree);
-        monitor.set("heap_usage_pct", (double)(int)(heapUsage * 10) / 10.0);
-        monitor.set("wifi_ssid", WiFi.SSID().c_str());
-        monitor.set("wifi_rssi_dbm", (int)rssi);
-        monitor.set("wifi_signal_pct", (int)signalPct);
-        monitor.set("wifi_strength", wifiStrength);
+        monitor.set("device_id",        DEVICE_ID);
+        monitor.set("device_type",      DEVICE_TYPE);
+        monitor.set("firmware",         FIRMWARE_VER);
+        monitor.set("uptime",           uptimeBuf);
+        monitor.set("cpu_temp_c",       (double)(int)(cpu_temp * 10) / 10.0);
+        monitor.set("cpu_usage_pct",    (double)(int)(cpuUsage * 10) / 10.0);
+        monitor.set("heap_free_bytes",  (int)heapFree);
+        monitor.set("heap_usage_pct",   (double)(int)(heapUsage * 10) / 10.0);
+        monitor.set("wifi_ssid",        WiFi.SSID().c_str());
+        monitor.set("wifi_rssi_dbm",    (int)rssi);
+        monitor.set("wifi_signal_pct",  (int)signalPct);
+        monitor.set("wifi_strength",    wifiStrength);
         monitor.set("ping_firebase_ms", (int)ping_ms);
-        monitor.set("db_status", "CONNECTED");
-        monitor.set("reconnect_count", (int)reconnectCount);
-        monitor.set("cycle_time_ms", (double)(int)(cycleTime_ms * 10) / 10.0);
-        monitor.set("fps", (double)(int)(fps * 10) / 10.0);
-        monitor.set("last_updated", (int64_t)getTimestampMs());
+        monitor.set("db_status",        "CONNECTED");
+        monitor.set("reconnect_count",  (int)reconnectCount);
+        monitor.set("cycle_time_ms",    (double)(int)(cycleTime_ms * 10) / 10.0);
+        monitor.set("fps",              (double)(int)(fps * 10) / 10.0);
+        monitor.set("last_updated",     (int64_t)getTimestampMs());
 
         Firebase.updateNode(fbData, path, monitor);
         DBGF("[Monitor] Temp=%.1f | CPU=%.1f%% | Heap=%.1f%% | RSSI=%d | Ping=%dms\n",
@@ -547,25 +493,23 @@ public:
     }
 
     void pushSensorStatus(bool ir1_ok, bool ir2_ok, bool rfid_ok,
-                          float cycleTime_ms)
-    {
-        if (!initialized || WiFi.status() != WL_CONNECTED)
-            return;
+                          float cycleTime_ms) {
+        if (!initialized || WiFi.status() != WL_CONNECTED) return;
 
         String path = "/system_monitor/" + String(NODE_ID);
-        float fps = (cycleTime_ms > 0) ? (1000.0f / cycleTime_ms) : 0;
+        float fps   = (cycleTime_ms > 0) ? (1000.0f / cycleTime_ms) : 0;
 
         FirebaseJson sensor;
-        sensor.set("ir1_status", ir1_ok ? "OK" : "ERROR");
-        sensor.set("ir2_status", ir2_ok ? "OK" : "ERROR");
-        sensor.set("rfid_status", rfid_ok ? "OK" : "ERROR");
-        sensor.set("cycle_time_ms", (double)(int)(cycleTime_ms * 10) / 10.0);
-        sensor.set("fps", (double)(int)(fps * 10) / 10.0);
+        sensor.set("ir1_status",     ir1_ok   ? "OK" : "ERROR");
+        sensor.set("ir2_status",     ir2_ok   ? "OK" : "ERROR");
+        sensor.set("rfid_status",    rfid_ok  ? "OK" : "ERROR");
+        sensor.set("cycle_time_ms",  (double)(int)(cycleTime_ms * 10) / 10.0);
+        sensor.set("fps",            (double)(int)(fps * 10) / 10.0);
 
         Firebase.updateNode(fbData, path, sensor);
     }
 
-    FirebaseData &getFbData() { return fbData; }
+        FirebaseData& getFbData() { return fbData; }
 };
 
 #endif
