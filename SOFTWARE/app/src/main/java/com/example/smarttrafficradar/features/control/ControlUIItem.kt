@@ -16,6 +16,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -109,7 +113,7 @@ fun ControlTopBar() {
 
 @Composable
 fun LanguagesCard(selectedLang: AppLanguage, onChangeLanguage: () -> Unit) {
-    val lang = when(selectedLang) {
+    val lang = when (selectedLang) {
         AppLanguage.ENGLISH -> stringResource(id = R.string.english) + " 🇬🇧"
         AppLanguage.VIETNAMESE -> stringResource(id = R.string.vietnamese) + " 🇻🇳"
     }
@@ -204,7 +208,11 @@ fun SpeedLimitCard(
                         .size(Dimen.SizeXXL)
                         .clip(RoundedCornerShape(AppShape.ShapeM))
                         .background(color = YellowBackground)
-                        .border(1.dp, color = YellowBorder, shape = RoundedCornerShape(AppShape.ShapeM)),
+                        .border(
+                            1.dp,
+                            color = YellowBorder,
+                            shape = RoundedCornerShape(AppShape.ShapeM)
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -259,7 +267,7 @@ fun SpeedLimitCard(
                     onThresholdChange(sliderValue.toInt())
                 },
                 valueRange = 20f..120f,
-                steps = 19, // (120 - 20) / 5 - 1 = 100/5 - 1 = 19 steps for 5km/h intervals
+                steps = 19,
                 colors = SliderDefaults.colors(
                     thumbColor = OrangePrimary,
                     activeTrackColor = OrangePrimary,
@@ -284,5 +292,26 @@ fun SpeedLimitCard(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun SetupNetworkButton(onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E2230)),
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+    ) {
+        Icon(Icons.Default.Settings, contentDescription = null, tint = OrangePrimary)
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = stringResource(R.string.setup_network),
+            style = MaterialTheme.typography.s16.bold(),
+            color = Color.White
+        )
     }
 }

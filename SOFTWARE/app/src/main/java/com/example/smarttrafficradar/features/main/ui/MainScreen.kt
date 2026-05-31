@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -21,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.smarttrafficradar.components.AppBottomBar
 import com.example.smarttrafficradar.features.control.ControlScreen
 import com.example.smarttrafficradar.features.dashboard.ui.DashboardScreen
+import com.example.smarttrafficradar.features.system_monitor.presentation.ui.NetworkSetupScreen
 import com.example.smarttrafficradar.features.system_monitor.presentation.ui.StatusScreen
 import com.example.smarttrafficradar.features.violation.presentation.ui.ViolationScreen
 import com.example.smarttrafficradar.features.violation.presentation.viewmodel.ViolationViewModel
@@ -34,40 +36,48 @@ fun MainScreen(
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var previousTabIndex by remember { mutableIntStateOf(0) }
 
-    Scaffold(
-        bottomBar = {
-            AppBottomBar(
-                currentIndex = selectedTabIndex,
-                onTabSelected = { newIndex ->
-                    previousTabIndex = selectedTabIndex
-                    selectedTabIndex = newIndex
+    var showNetworkSetup by remember { mutableStateOf(false) }
+
+    if (showNetworkSetup) {
+        NetworkSetupScreen(onBack = { showNetworkSetup = false })
+    } else {
+        Scaffold(
+            bottomBar = {
+                AppBottomBar(
+                    currentIndex = selectedTabIndex,
+                    onTabSelected = { newIndex ->
+                        previousTabIndex = selectedTabIndex
+                        selectedTabIndex = newIndex
+                    }
+                )
+            }
+        ) { paddingValues ->
+
+            AnimatedContent(
+                targetState = selectedTabIndex,
+                transitionSpec = {
+                    if (targetState > initialState) {
+                        slideInHorizontally { it } + fadeIn() togetherWith slideOutHorizontally { -it } + fadeOut()
+                    } else {
+                        slideInHorizontally { -it } + fadeIn() togetherWith slideOutHorizontally { it } + fadeOut()
+                    }.using(SizeTransform(clip = false))
+                },
+                label = "StepTransition",
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize()
+            ) { step ->
+                when (step) {
+                    0 -> DashboardScreen()
+
+                    1 -> ViolationScreen(violationState = violationState)
+
+                    2 -> ControlScreen(
+                        showNetworkSetup = { showNetworkSetup = true }
+                    )
+
+                    3 -> StatusScreen()
                 }
-            )
-        }
-    ) { paddingValues ->
-
-        AnimatedContent(
-            targetState = selectedTabIndex,
-            transitionSpec = {
-                if (targetState > initialState) {
-                    slideInHorizontally { it } + fadeIn() togetherWith slideOutHorizontally { -it } + fadeOut()
-                } else {
-                    slideInHorizontally { -it } + fadeIn() togetherWith slideOutHorizontally { it } + fadeOut()
-                }.using(SizeTransform(clip = false))
-            },
-            label = "StepTransition",
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-        ) { step ->
-            when (step) {
-                0 -> DashboardScreen()
-
-                1 -> ViolationScreen(violationState = violationState)
-
-                2 -> ControlScreen()
-
-                3 -> StatusScreen()
             }
         }
     }

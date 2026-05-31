@@ -58,7 +58,50 @@
     <string name="kmh_unit">km/h</string>
 
     <!-- SYSTEM MONITOR -->
-    <string name="connection_status">CONNECTION STATUS</string>
+    <string name="device_status">Device Status</string>
+    <string name="hardware_monitoring">Hardware monitoring</string>
+    <string name="connection_status">Connection Status</string>
+    <string name="online">ONLINE</string>
+    <string name="offline">OFFLINE</string>
+    
+    <string name="device_information">Device Information</string>
+    <string name="hardware_details">Hardware details</string>
+    <string name="device_id">Device ID</string>
+    <string name="device_type">Device Type</string>
+    <string name="firmware">Firmware</string>
+    <string name="uptime">Uptime</string>
+    <string name="connected_to">Connected to</string>
+    
+    <string name="signal_strength">Signal Strength</string>
+    <string name="excellent_connection">Excellent connection</string>
+    <string name="good_connection">Good connection</string>
+    <string name="fair_connection">Fair connection</string>
+    <string name="weak_connection">Weak connection</string>
+    
+    <string name="data_synchronization">Data synchronization</string>
+    
+    <string name="database_status">Database Status</string>
+    <string name="firebase_connection">Firebase connection</string>
+    
+    <string name="hardware_health">Hardware Health</string>
+    <string name="system_performance">System performance</string>
+    <string name="cpu_usage">CPU Usage</string>
+    <string name="cpu_temp">CPU Temp</string>
+    <string name="ram_usage">RAM Usage</string>
+    <string name="ram_free">RAM Free</string>
+    <string name="cycle_time">Cycle Time</string>
+    <string name="fps">FPS</string>
+    
+    <string name="network_performance">Network Performance</string>
+    <string name="firebase_ping">Firebase Ping</string>
+    <string name="reconnect_count">Reconnect Count</string>
+    
+    <string name="sensor_status">Sensor Status</string>
+    <string name="peripheral_check">Peripheral check</string>
+    <string name="ir_sensor_1">IR Sensor 1</string>
+    <string name="ir_sensor_2">IR Sensor 2</string>
+    <string name="rfid_module">RFID Module</string>
+
     <string name="wifi_status">WiFi Status</string>
     <string name="firebase_status">Firebase Status</string>
     <string name="last_sync">Last Sync</string>
@@ -67,25 +110,25 @@
     <string name="authenticated">AUTHENTICATED</string>
     <string name="unauthenticated">UNAUTHENTICATED</string>
     <string name="setup_network">Setup Network</string>
-    <string name="scan_wifi">Scan Wi-Fi</string>
-    <string name="select_wifi">Select Wi-Fi</string>
-    <string name="enter_password">Enter Password</string>
+    <string name="available_networks">Available Networks</string>
+    <string name="current_connection">Current Connection</string>
     <string name="enter_password_for">Enter password for %1$s</string>
     <string name="password">Password</string>
     <string name="connect">Connect</string>
     <string name="cancel">Cancel</string>
     <string name="scanning">Scanning...</string>
-    <string name="connecting">Connecting...</string>
-    <string name="connection_success">Connection Successful</string>
-    <string name="connection_failed">Connection Failed</string>
     <string name="connection_timeout">Connection Timeout. Device is not responding.</string>
     <string name="current_task_format">Current Task: %1$s</string>
     <string name="status_format">Status: %1$s</string>
-    <string name="signal_format">Signal: %1$d/5</string>
+    <string name="signal_format">Signal: %1$d%%</string>
+    <string name="forget_network">Forget Network</string>
+    <string name="forget_confirm">Are you sure you want to forget this network?</string>
+    <string name="forget">Forget</string>
     
     <string name="wifi_status_idle">IDLE</string>
     <string name="wifi_status_pending">PENDING</string>
     <string name="wifi_status_success">SUCCESS</string>
     <string name="wifi_status_failed">FAILED</string>
+    <string name="wifi_status_switching">SWITCHING</string>
 
 </resources>

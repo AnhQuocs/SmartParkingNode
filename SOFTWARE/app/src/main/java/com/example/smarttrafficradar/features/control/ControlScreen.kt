@@ -13,6 +13,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -21,12 +22,14 @@ import com.example.smarttrafficradar.features.app_system.language.presentation.u
 import com.example.smarttrafficradar.features.app_system.language.presentation.viewmodel.LanguageViewModel
 import com.example.smarttrafficradar.features.system_config.presentation.viewmodel.SystemConfigState
 import com.example.smarttrafficradar.features.system_config.presentation.viewmodel.SystemConfigViewModel
+import com.example.smarttrafficradar.features.system_monitor.presentation.ui.NetworkSetupScreen
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
 import com.example.smarttrafficradar.ui.theme.DarkBackground
 
 @Composable
 fun ControlScreen(
+    showNetworkSetup: () -> Unit,
     languageViewModel: LanguageViewModel = hiltViewModel(),
     systemConfigViewModel: SystemConfigViewModel = hiltViewModel()
 ) {
@@ -34,7 +37,7 @@ fun ControlScreen(
 
     val currentLang by languageViewModel.currentLanguage.collectAsState()
     val selectedLang by remember(currentLang) { mutableStateOf(currentLang) }
-    
+
     val systemConfigState by systemConfigViewModel.state.collectAsState()
 
     Box(
@@ -63,9 +66,9 @@ fun ControlScreen(
 
             if (systemConfigState is SystemConfigState.Success) {
                 val config = (systemConfigState as SystemConfigState.Success).config
-                
+
                 Spacer(modifier = Modifier.height(AppSpacing.L))
-                
+
                 SpeedLimitCard(
                     currentThreshold = config.vMaxThreshold,
                     onThresholdChange = { newThreshold ->
@@ -73,6 +76,10 @@ fun ControlScreen(
                     }
                 )
             }
+
+            Spacer(modifier = Modifier.height(AppSpacing.XL))
+
+            SetupNetworkButton(onClick = showNetworkSetup)
         }
     }
 }

@@ -2,10 +2,11 @@ package com.example.smarttrafficradar.features.system_monitor.presentation.viewm
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.smarttrafficradar.features.system_monitor.data.preference.WifiPreferenceManager
+import com.example.smarttrafficradar.features.system_monitor.domain.model.SystemMonitor
 import com.example.smarttrafficradar.features.system_monitor.domain.model.WifiConfig
-import com.example.smarttrafficradar.features.system_monitor.domain.model.WifiNetwork
+import com.example.smarttrafficradar.features.system_monitor.domain.usecase.ObserveSystemMonitorUseCase
 import com.example.smarttrafficradar.features.system_monitor.domain.usecase.ObserveWifiConfigUseCase
-import com.example.smarttrafficradar.features.system_monitor.domain.usecase.ScanWifiUseCase
 import com.example.smarttrafficradar.features.system_monitor.domain.usecase.UpdateWifiConfigUseCase
 import com.example.smarttrafficradar.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,59 +19,82 @@ import javax.inject.Inject
 
 sealed class NetworkState {
     object Idle : NetworkState()
-    object Scanning : NetworkState()
-    data class Success(val networks: List<WifiNetwork>) : NetworkState()
+    object Loading : NetworkState()
+    data class Success(val monitor: SystemMonitor) : NetworkState()
     data class Error(val message: UiText) : NetworkState()
 }
 
 @HiltViewModel
 class NetworkViewModel @Inject constructor(
-    private val scanWifiUseCase: ScanWifiUseCase,
+    private val observeSystemMonitorUseCase: ObserveSystemMonitorUseCase,
     private val updateWifiConfigUseCase: UpdateWifiConfigUseCase,
-    private val observeWifiConfigUseCase: ObserveWifiConfigUseCase
+    private val observeWifiConfigUseCase: ObserveWifiConfigUseCase,
+    private val wifiPreferenceManager: WifiPreferenceManager
 ) : ViewModel() {
 
-    private val _networkState = MutableStateFlow<NetworkState>(NetworkState.Idle)
-    val networkState: StateFlow<NetworkState> = _networkState.asStateFlow()
+    private val _state = MutableStateFlow<NetworkState>(NetworkState.Loading)
+    val state: StateFlow<NetworkState> = _state.asStateFlow()
 
     private val _wifiConfig = MutableStateFlow<WifiConfig?>(null)
     val wifiConfig: StateFlow<WifiConfig?> = _wifiConfig.asStateFlow()
 
+    private val nodeId = "radar_node_01"
+
     init {
-        // Observe config by default for the status screen
-        observeWifiStatus("radar_node_01")
+        observeSystemMonitor()
+        observeWifiStatus()
     }
 
-    fun startScanning() {
-        _networkState.value = NetworkState.Scanning
+    private fun observeSystemMonitor() {
         viewModelScope.launch {
-            scanWifiUseCase()
+            observeSystemMonitorUseCase(nodeId)
                 .catch { e ->
-                    _networkState.value = NetworkState.Error(UiText.DynamicString(e.message ?: "Unknown error"))
+                    _state.value =
+                        NetworkState.Error(UiText.DynamicString(e.message ?: "Unknown error"))
                 }
-                .collect { networks ->
-                    _networkState.value = NetworkState.Success(networks)
+                .collect { monitor ->
+                    _state.value = NetworkState.Success(monitor)
                 }
         }
     }
 
-    fun connectToWifi(ssid: String, password: String, nodeId: String = "radar_node_01") {
-        viewModelScope.launch {
-            try {
-                updateWifiConfigUseCase(nodeId, ssid, password)
-            } catch (e: Exception) {
-                _networkState.value = NetworkState.Error(
-                    UiText.DynamicString(e.message ?: "Failed to update config")
-                )
-            }
-        }
-    }
-
-    private fun observeWifiStatus(nodeId: String) {
+    private fun observeWifiStatus() {
         viewModelScope.launch {
             observeWifiConfigUseCase(nodeId).collect { config ->
                 _wifiConfig.value = config
             }
+        }
+    }
+
+    fun handleWifiSelection(ssid: String, onRequirePassword: () -> Unit) {
+        viewModelScope.launch {
+            val currentSsid =
+                (state.value as? NetworkState.Success)?.monitor?.connectionStatus?.currentSsid
+            if (ssid == currentSsid) return@launch
+
+            val savedPassword = wifiPreferenceManager.getWifiPassword(ssid)
+            if (savedPassword != null) {
+                connectToWifi(ssid, savedPassword)
+            } else {
+                onRequirePassword()
+            }
+        }
+    }
+
+    fun connectToWifi(ssid: String, password: String) {
+        viewModelScope.launch {
+            try {
+                wifiPreferenceManager.saveWifiPassword(ssid, password)
+                updateWifiConfigUseCase(nodeId, ssid, password)
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
+
+    fun forgetWifi(ssid: String) {
+        viewModelScope.launch {
+            wifiPreferenceManager.forgetWifi(ssid)
         }
     }
 }
