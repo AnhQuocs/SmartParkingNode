@@ -128,4 +128,16 @@
     <string name="wifi_status_failed">THẤT BẠI</string>
     <string name="wifi_status_switching">ĐANG CHUYỂN MẠNG</string>
 
+    <!-- AUTH ERRORS -->
+    <string name="error_empty_username">Tên người dùng không được để trống</string>
+    <string name="error_invalid_email">Địa chỉ email không hợp lệ</string>
+    <string name="error_empty_password">Mật khẩu không được để trống</string>
+    <string name="error_password_too_short">Mật khẩu phải có ít nhất 6 ký tự</string>
+    <string name="error_empty_admin_code">Mã admin là bắt buộc</string>
+    <string name="error_user_not_found">Không tìm thấy người dùng</string>
+    <string name="error_wrong_password">Mật khẩu không chính xác</string>
+    <string name="error_email_already_in_use">Email này đã được sử dụng</string>
+    <string name="error_invalid_admin_code">Mã admin không hợp lệ hoặc đã được dùng</string>
+    <string name="error_auth_failed">Xác thực thất bại</string>
+
 </resources>

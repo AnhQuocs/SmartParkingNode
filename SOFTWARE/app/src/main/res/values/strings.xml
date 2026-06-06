@@ -131,4 +131,16 @@
     <string name="wifi_status_failed">FAILED</string>
     <string name="wifi_status_switching">SWITCHING</string>
 
+    <!-- AUTH ERRORS -->
+    <string name="error_empty_username">Username cannot be empty</string>
+    <string name="error_invalid_email">Invalid email address</string>
+    <string name="error_empty_password">Password cannot be empty</string>
+    <string name="error_password_too_short">Password must be at least 6 characters</string>
+    <string name="error_empty_admin_code">Admin code is required</string>
+    <string name="error_user_not_found">User not found</string>
+    <string name="error_wrong_password">Incorrect password</string>
+    <string name="error_email_already_in_use">Email is already in use</string>
+    <string name="error_invalid_admin_code">Invalid or already used admin code</string>
+    <string name="error_auth_failed">Authentication failed</string>
+
 </resources>

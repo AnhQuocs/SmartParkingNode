@@ -1,6 +1,8 @@
 package com.example.smarttrafficradar.features.app_system.language.data.preference
 
+import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.dataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
@@ -13,11 +15,13 @@ import java.io.IOException
 import javax.inject.Inject
 
 class LanguagePreferenceManager @Inject constructor(
-    private val dataStore: DataStore<Preferences>
+    context: Context
 ) {
     companion object {
         private val LANGUAGE_KEY = stringPreferencesKey("language_pref")
     }
+
+    private val dataStore = context.languageDataStore
 
     val languageFlow: Flow<AppLanguage> = dataStore.data
         .catch { exception ->
