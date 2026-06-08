@@ -66,14 +66,6 @@ val NeonGreen = Color(0xFF00FF41)
 val ErrorRed = Color(0xFFFF3B30)
 val SlateMist = Color(0xFF919191)
 
-val RedPrimary = Color(0xFFFF3E5D)
-val RedBorder = Color(0xFF492431)
-val RedBackground = Color(0xFF24171E)
-
-val NeutralPrimary = Color.White
-val NeutralBorder = Color(0xFF2E3544)
-val NeutralBackground = Color(0xFF1A1F29)
-
 val YellowPrimary = Color(0xFFFFB200)
 val YellowBorder = Color(0xFF42341C)
 val YellowBackground = Color(0xFF24201A)
@@ -86,11 +78,12 @@ val CyanPrimary = Color(0xFF00D4FF)
 val CyanBorder = Color(0xFF06586F)
 val CyanBackground = Color(0xFF092331)
 
-val AmberPrimary  = Color(0xFFF59E0B)
-val AmberDark = Color(0xFFD97706)
-
 val SurfaceDark = Color(0xFF0E1117)
 val TextSecondary = Color(0xFF8690A0)
 
 val NavyBackground = Color(0xFF0A0E1A)
 val DeepBlack = Color(0xFF070809)
+
+val ActionDanger = Color(0xFFF41F52)
+val InputBackground = Color(0xFFF6F6F6)
+val TextTertiary = Color(0xFF78828A)

@@ -17,7 +17,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.SmartTrafficRadar">
+        android:theme="@style/Theme.SMART_PARKING">
         <activity
             android:name=".features.app_system.language.presentation.ui.ChangeLanguageActivity"
             android:exported="false" />
@@ -25,7 +25,7 @@
             android:name=".features.main.ui.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.SmartTrafficRadar">
+            android:theme="@style/Theme.SMART_PARKING_SPLASH">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

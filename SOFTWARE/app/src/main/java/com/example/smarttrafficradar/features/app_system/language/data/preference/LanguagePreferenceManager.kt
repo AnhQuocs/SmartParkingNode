@@ -15,13 +15,13 @@ import java.io.IOException
 import javax.inject.Inject
 
 class LanguagePreferenceManager @Inject constructor(
-    context: Context
+    private val dataStore: DataStore<Preferences>
 ) {
-    companion object {
-        private val LANGUAGE_KEY = stringPreferencesKey("language_pref")
-    }
 
-    private val dataStore = context.languageDataStore
+    companion object {
+        private val LANGUAGE_KEY =
+            stringPreferencesKey("language_pref")
+    }
 
     val languageFlow: Flow<AppLanguage> = dataStore.data
         .catch { exception ->
@@ -29,7 +29,8 @@ class LanguagePreferenceManager @Inject constructor(
             else throw exception
         }
         .map { preferences ->
-            val code = preferences[LANGUAGE_KEY] ?: AppLanguage.ENGLISH.code
+            val code = preferences[LANGUAGE_KEY]
+                ?: AppLanguage.ENGLISH.code
             AppLanguage.fromCode(code)
         }
 
