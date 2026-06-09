@@ -14,8 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Icon
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -41,29 +41,22 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.smarttrafficradar.R
-import com.example.smarttrafficradar.components.AppButton
 import com.example.smarttrafficradar.features.auth.domain.model.UserRole
 import com.example.smarttrafficradar.features.auth.presentation.components.AuthOptions
-import com.example.smarttrafficradar.features.auth.presentation.components.AuthOutlinedTextField
-import com.example.smarttrafficradar.features.auth.presentation.components.PasswordOutlinedTextField
 import com.example.smarttrafficradar.features.auth.presentation.viewmodel.AuthState
 import com.example.smarttrafficradar.features.auth.presentation.viewmodel.AuthViewModel
-import com.example.smarttrafficradar.features.auth.util.AuthValidation
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
-import com.example.smarttrafficradar.ui.theme.ActionDanger
 import com.example.smarttrafficradar.ui.theme.LightPrimary
 import com.example.smarttrafficradar.ui.theme.TextTertiary
-import com.example.smarttrafficradar.utils.bold
-import com.example.smarttrafficradar.utils.s13
 import com.example.smarttrafficradar.utils.s16
-import com.example.smarttrafficradar.utils.s18
+import com.example.smarttrafficradar.utils.s24
 import com.example.smarttrafficradar.utils.semiBold
+import com.example.smarttrafficradar.utils.withColor
 
 @Composable
 fun SignInScreen(
-    navController: NavController,
-    authViewModel: AuthViewModel = hiltViewModel()
+    navController: NavController, authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState = authViewModel.state.collectAsState()
 
@@ -91,8 +84,7 @@ fun SignInScreen(
             }
 
             is AuthState.Error -> {
-                Toast.makeText(context, failedMessage, Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(context, failedMessage, Toast.LENGTH_SHORT).show()
                 authViewModel.clearError()
             }
 
@@ -106,7 +98,9 @@ fun SignInScreen(
             .background(color = Color.White)
     ) {
         Box(
-            modifier = Modifier.fillMaxWidth().height(650.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(650.dp)
         ) {
             Image(
                 painter = painterResource(id = R.drawable.auth),
@@ -116,7 +110,9 @@ fun SignInScreen(
             )
 
             Column(
-                modifier = Modifier.fillMaxWidth().padding(top = Dimen.PaddingXXL),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = Dimen.PaddingXXL),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -134,9 +130,7 @@ fun SignInScreen(
                     style = TextStyle(
                         brush = Brush.horizontalGradient(
                             colors = listOf(
-                                Color(0xFF0D47A1),
-                                Color(0xFF1976D2),
-                                Color(0xFF26D9E8)
+                                Color(0xFF0D47A1), Color(0xFF1976D2), Color(0xFF26D9E8)
                             )
                         )
                     )
@@ -150,6 +144,27 @@ fun SignInScreen(
                     color = LightPrimary
                 )
             }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = Dimen.PaddingUltra)
+                    .align(Alignment.Center),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = stringResource(id = R.string.welcome_back),
+                    style = MaterialTheme.typography.s24.withColor(Color.Black)
+                )
+
+                Spacer(modifier = Modifier.height(AppSpacing.S))
+
+                Text(
+                    text = stringResource(id = R.string.sign_in_hint),
+                    style = MaterialTheme.typography.s16.withColor(Color.Black)
+                )
+            }
         }
 
         Box(
@@ -160,8 +175,7 @@ fun SignInScreen(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color.Transparent,
-                            Color.White
+                            Color.Transparent, Color.White
                         )
                     )
                 )
@@ -170,7 +184,7 @@ fun SignInScreen(
         Column(
             modifier = Modifier
                 .padding(Dimen.PaddingM)
-                .padding(bottom = 80.dp)
+                .padding(bottom = Dimen.PaddingXXL)
                 .align(Alignment.BottomCenter)
         ) {
             SignInForm(
@@ -181,16 +195,14 @@ fun SignInScreen(
                 onShowDialog = { showDialog = true },
                 onSignIn = { email, password ->
                     authViewModel.signIn(email, password)
-                }
-            )
+                })
 
             Spacer(modifier = Modifier.height(Dimen.PaddingL))
 
             AuthOptions(
                 onClick = {
 
-                }
-            )
+                })
 
             Spacer(modifier = Modifier.height(Dimen.PaddingL))
 
@@ -211,98 +223,25 @@ fun SignInScreen(
                         navController.navigate("sign_up") {
                             popUpTo("sign_in") { inclusive = true }
                         }
-                    }
-                )
+                    })
             }
         }
-    }
-}
 
-@Composable
-fun SignInForm(
-    email: String,
-    password: String,
-    onEmailChange: (String) -> Unit,
-    onPasswordChange: (String) -> Unit,
-    onShowDialog: () -> Unit,
-    onSignIn: (String, String) -> Unit
-) {
-    var emailTouched by remember { mutableStateOf(false) }
-    var passwordTouched by remember { mutableStateOf(false) }
-
-    val showEmailError = emailTouched && !AuthValidation.validateEmail(email)
-    val showPasswordError = passwordTouched && !AuthValidation.validatePassword(password)
-
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        AuthOutlinedTextField(
-            value = email,
-            title = stringResource(id = R.string.email_address),
-            onValueChange = {
-                onEmailChange(it)
-                emailTouched = true
-            },
-            icon = painterResource(id = R.drawable.ic_email),
-            placeholder = stringResource(id = R.string.email_placeholder),
-            isError = showEmailError,
-            errorMessage = if (showEmailError) stringResource(id = R.string.error_invalid_email) else ""
-        )
-
-        Spacer(modifier = Modifier.height(Dimen.PaddingM))
-
-        PasswordOutlinedTextField(
-            value = password,
-            onValueChange = {
-                onPasswordChange(it)
-                passwordTouched = true
-            },
-            isError = showPasswordError,
-            errorMessage = if (showPasswordError) stringResource(id = R.string.error_password_too_short) else ""
-        )
-
-        Spacer(modifier = Modifier.height(Dimen.PaddingSM))
-
-        Text(
-            text = stringResource(id = R.string.forgot_password),
-            color = ActionDanger,
-            style = MaterialTheme.typography.s13,
-            textAlign = TextAlign.End,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onShowDialog() }
-        )
-
-        Spacer(modifier = Modifier.height(Dimen.PaddingL))
-
-        val isButtonEnable = emailTouched && passwordTouched && !showEmailError && !showPasswordError
-
-        AppButton(
-            onClick = { onSignIn(email, password) },
-            enabled = isButtonEnable,
-            modifier = Modifier.fillMaxWidth(),
-            content = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_sign_in),
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(Dimen.SizeM)
-                    )
-
-                    Spacer(modifier = Modifier.width(AppSpacing.S))
-
-                    Text(
-                        text = stringResource(id = R.string.sign_in),
-                        color = Color.White,
-                        style = MaterialTheme.typography.s18
-                    )
-                }
+        if (uiState.value == AuthState.Loading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = Color.Black.copy(alpha = 0.2f))
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                awaitPointerEvent()
+                            }
+                        }
+                    }, contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = LightPrimary)
             }
-        )
+        }
     }
 }

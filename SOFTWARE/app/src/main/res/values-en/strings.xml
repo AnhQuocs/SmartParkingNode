@@ -141,7 +141,9 @@
     <string name="error_email_already_in_use">Email is already in use</string>
     <string name="error_invalid_admin_code">Invalid or already used admin code</string>
     <string name="error_auth_failed">Authentication failed</string>
+    <string name="error_username_too_short">Username must be at least 8 characters long</string>
     <string name="sign_in_failed">Sign in failed. Please try again!</string>
+    <string name="sign_up_failed">Sign up failed. Please try again!</string>
 
     <!-- AUTH -->
     <string name="welcome_back">Welcome Back!</string>
@@ -149,6 +151,7 @@
     <string name="create_account">Create account</string>
     <string name="create_account_hint">Create an account to experience the smart parking system</string>
 
+    <string name="username">Username</string>
     <string name="email_address">Email</string>
     <string name="password">Password</string>
     <string name="email_placeholder">Enter your email address</string>
@@ -168,6 +171,7 @@
     <string name="register_admin">Register as Admin</string>
     <string name="admin_code">Admin Code</string>
     <string name="admin_code_placeholder">Enter secret code</string>
+    <string name="code_is_required">Code is required</string>
 
     <!-- ONBOARDING -->
     <string name="onboarding_title_1">Welcome to Smart Parking</string>

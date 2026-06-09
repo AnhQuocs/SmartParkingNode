@@ -77,34 +77,34 @@ fun OnboardingScreen(
             .background(color = Color.White)
             .padding(top = Dimen.PaddingM)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.app_logo),
-                contentDescription = "Logo",
-                modifier = Modifier.size(60.dp)
-            )
-
-            Text(
-                text = stringResource(R.string.app_name),
-                letterSpacing = 1.sp,
-                style = TextStyle(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            Color(0xFF0D47A1),
-                            Color(0xFF1976D2),
-                            Color(0xFF26D9E8)
-                        )
-                    ),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            )
-        }
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(60.dp),
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            Image(
+//                painter = painterResource(id = R.drawable.app_logo),
+//                contentDescription = "Logo",
+//                modifier = Modifier.size(60.dp)
+//            )
+//
+//            Text(
+//                text = stringResource(R.string.app_name),
+//                letterSpacing = 1.sp,
+//                style = TextStyle(
+//                    brush = Brush.horizontalGradient(
+//                        colors = listOf(
+//                            Color(0xFF0D47A1),
+//                            Color(0xFF1976D2),
+//                            Color(0xFF26D9E8)
+//                        )
+//                    ),
+//                    fontSize = 16.sp,
+//                    fontWeight = FontWeight.SemiBold
+//                )
+//            )
+//        }
 
         // Pager Content
         HorizontalPager(
