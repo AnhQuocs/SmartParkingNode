@@ -151,6 +151,13 @@
     <string name="sign_in_failed">Sign in failed. Please try again!</string>
     <string name="sign_up_failed">Sign up failed. Please try again!</string>
 
+    <!-- PROFILE ERRORS -->
+    <string name="error_identifier_exists">Identifier is already registered</string>
+    <string name="error_identifier_not_found">Identifier not found in organization</string>
+    <string name="error_profile_not_found">User profile not found</string>
+    <string name="error_debt_limit">Debt limit exceeded (Max 100k)</string>
+    <string name="error_invalid_fullname">Invalid full name format</string>
+
     <!-- AUTH -->
     <string name="welcome_back">Welcome Back!</string>
     <string name="sign_in_hint">Sign in to continue using the service</string>
@@ -186,8 +193,31 @@
     <string name="onboarding_desc_2">RFID authentication and vehicle recognition for safe and accurate access control.</string>
     <string name="onboarding_title_3">Your Parking Information, Anytime</string>
     <string name="onboarding_desc_3">View parking history, manage accounts, and update vehicle info right on your phone.</string>
-    <string name="onboarding_skip">Skip</string>
     <string name="onboarding_next">Next</string>
+    <string name="onboarding_skip">Skip</string>
     <string name="onboarding_get_started">Get Started</string>
+
+    <!-- COMPLETE PROFILE -->
+    <string name="are_you_a">Are you a…</string>
+    <string name="student">Student</string>
+    <string name="student_desc">I am studying at the university</string>
+    <string name="employee">Employee</string>
+    <string name="employee_desc">I am working at the organization</string>
+    <string name="complete_your_profile">Complete Your Profile</string>
+    <string name="student_account">Student Account</string>
+    <string name="employee_account">Employee Account</string>
+    <string name="email_address_label">Email Address</string>
+    <string name="student_id_label">Student ID</string>
+    <string name="employee_id_label">Employee ID</string>
+    <string name="full_name_label">Full Name</string>
+    <string name="validated_from_organization">Validated from organization</string>
+    <string name="department_faculty_label">Department / Faculty</string>
+    <string name="phone_number_label">Phone Number</string>
+    <string name="confirm_finish">Confirm &amp; Finish</string>
+    <string name="error_enter_valid_id">Please enter a valid ID</string>
+    <string name="switch_to_employee">Are you an Employee? Switch here</string>
+    <string name="switch_to_student">Are you a Student? Switch here</string>
+    <string name="phone_required">Please enter your phone number</string>
+    <string name="phone_invalid">Invalid phone number</string>
 
 </resources>

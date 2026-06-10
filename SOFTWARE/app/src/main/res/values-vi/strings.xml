@@ -148,6 +148,13 @@
     <string name="sign_in_failed">Đăng nhập thất bại. Vui lòng thử lại!</string>
     <string name="sign_up_failed">Đăng ký thất bại. Vui lòng thử lại!</string>
 
+    <!-- PROFILE ERRORS -->
+    <string name="error_identifier_exists">Mã định danh này đã được đăng ký</string>
+    <string name="error_identifier_not_found">Mã định danh không tồn tại trong tổ chức</string>
+    <string name="error_profile_not_found">Không tìm thấy thông tin cá nhân</string>
+    <string name="error_debt_limit">Vượt quá hạn mức nợ (Tối đa 100k)</string>
+    <string name="error_invalid_fullname">Định dạng họ tên không hợp lệ</string>
+
     <!-- AUTH -->
     <string name="welcome_back">Chào mừng trở lại!</string>
     <string name="sign_in_hint">Đăng nhập để tiếp tục sử dụng dịch vụ</string>
@@ -186,5 +193,28 @@
     <string name="onboarding_skip">Bỏ qua</string>
     <string name="onboarding_next">Tiếp theo</string>
     <string name="onboarding_get_started">Bắt đầu</string>
+
+    <!-- COMPLETE PROFILE -->
+    <string name="are_you_a">Bạn là…</string>
+    <string name="student">Sinh viên</string>
+    <string name="student_desc">Tôi đang học tập tại trường</string>
+    <string name="employee">Nhân viên</string>
+    <string name="employee_desc">Tôi đang làm việc tại tổ chức</string>
+    <string name="complete_your_profile">Hoàn thiện hồ sơ</string>
+    <string name="student_account">Tài khoản sinh viên</string>
+    <string name="employee_account">Tài khoản nhân viên</string>
+    <string name="email_address_label">Địa chỉ Email</string>
+    <string name="student_id_label">Mã số sinh viên</string>
+    <string name="employee_id_label">Mã số nhân viên</string>
+    <string name="full_name_label">Họ và tên</string>
+    <string name="validated_from_organization">Đã xác thực từ tổ chức</string>
+    <string name="department_faculty_label">Khoa / Phòng ban</string>
+    <string name="phone_number_label">Số điện thoại</string>
+    <string name="confirm_finish">Xác nhận &amp; Hoàn tất</string>
+    <string name="error_enter_valid_id">Vui lòng nhập mã định danh hợp lệ</string>
+    <string name="switch_to_employee">Bạn là Nhân viên? Chuyển tại đây</string>
+    <string name="switch_to_student">Bạn là Sinh viên? Chuyển tại đây</string>
+    <string name="phone_required">Vui lòng nhập số điện thoại</string>
+    <string name="phone_invalid">Số điện thoại không hợp lệ</string>
 
 </resources>

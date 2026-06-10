@@ -1,5 +1,6 @@
 package com.example.smarttrafficradar.features.main.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.smarttrafficradar.features.onboarding.data.local.OnboardingDataStore
@@ -31,20 +32,29 @@ class SplashViewModel @Inject constructor(
             }
 
             try {
-                val role = FirebaseFirestore.getInstance()
+                val document = FirebaseFirestore.getInstance()
                     .collection("users")
                     .document(user.uid)
                     .get()
                     .await()
-                    .getString("role") ?: "USER"
+
+                val role = document.getString("role") ?: "USER"
+                val status = document.getString("status") ?: "PROFILE_INCOMPLETE"
+
+                Log.d("SplashViewModel", "Role: $role")
+                Log.d("SplashViewModel", "Status: $status")
 
                 if (role == "ADMIN") {
                     onResult("admin_root")
                 } else {
-                    onResult("user_root")
+                    if (status == "PROFILE_INCOMPLETE") {
+                        onResult("profile_completion_root")
+                    } else {
+                        onResult("user_root")
+                    }
                 }
             } catch (e: Exception) {
-                onResult("user_root")
+                onResult("auth")
             }
         }
     }

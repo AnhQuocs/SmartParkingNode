@@ -41,6 +41,7 @@ import com.example.smarttrafficradar.features.auth.presentation.ui.SignUpScreen
 import com.example.smarttrafficradar.features.main.viewmodel.MainViewModel
 import com.example.smarttrafficradar.features.main.viewmodel.SplashViewModel
 import com.example.smarttrafficradar.features.onboarding.presentation.ui.OnboardingScreen
+import com.example.smarttrafficradar.features.user_profile.presentation.ui.CompleteProfileScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -72,8 +73,7 @@ class MainActivity : BaseComponentActivity() {
 
                 val allGranted = permissionsToRequest.all {
                     ContextCompat.checkSelfPermission(
-                        context,
-                        it
+                        context, it
                     ) == PackageManager.PERMISSION_GRANTED
                 }
 
@@ -96,12 +96,12 @@ fun MainApp(gotoAuth: Boolean) {
     val startRoute = if (gotoAuth) "auth" else "splash_root"
 
     NavHost(
-        navController = navController,
-        startDestination = startRoute
+        navController = navController, startDestination = startRoute
     ) {
         splashGraph(navController)
         authGraph(navController)
         onboardingGraph(navController)
+        profileCompletionGraph(navController)
         userGraph(navController)
         adminGraph(navController)
     }
@@ -109,8 +109,7 @@ fun MainApp(gotoAuth: Boolean) {
 
 fun NavGraphBuilder.authGraph(navController: NavController) {
     navigation(
-        startDestination = "sign_in",
-        route = "auth"
+        startDestination = "sign_in", route = "auth"
     ) {
         composable("sign_in") {
             SignInScreen(navController = navController)
@@ -124,8 +123,7 @@ fun NavGraphBuilder.authGraph(navController: NavController) {
 
 fun NavGraphBuilder.onboardingGraph(navController: NavController) {
     navigation(
-        startDestination = "onboarding",
-        route = "onboarding_root"
+        startDestination = "onboarding", route = "onboarding_root"
     ) {
         composable("onboarding") {
             OnboardingScreen(navController)
@@ -133,10 +131,19 @@ fun NavGraphBuilder.onboardingGraph(navController: NavController) {
     }
 }
 
+fun NavGraphBuilder.profileCompletionGraph(navController: NavController) {
+    navigation(
+        startDestination = "complete_profile", route = "profile_completion_root"
+    ) {
+        composable("complete_profile") {
+            CompleteProfileScreen(navController = navController)
+        }
+    }
+}
+
 fun NavGraphBuilder.userGraph(navController: NavController) {
     navigation(
-        startDestination = "user_main",
-        route = "user_root"
+        startDestination = "user_main", route = "user_root"
     ) {
         composable("user_main") {
             UserMainScreen(navController = navController)
@@ -146,8 +153,7 @@ fun NavGraphBuilder.userGraph(navController: NavController) {
 
 fun NavGraphBuilder.adminGraph(navController: NavController) {
     navigation(
-        startDestination = "admin_main",
-        route = "admin_root"
+        startDestination = "admin_main", route = "admin_root"
     ) {
         composable("admin_main") {
             AdminMainScreen(navController = navController)
@@ -157,8 +163,7 @@ fun NavGraphBuilder.adminGraph(navController: NavController) {
 
 fun NavGraphBuilder.splashGraph(navController: NavController) {
     navigation(
-        startDestination = "splash",
-        route = "splash_root"
+        startDestination = "splash", route = "splash_root"
     ) {
         composable("splash") {
             SplashScreen(navController)
@@ -168,8 +173,7 @@ fun NavGraphBuilder.splashGraph(navController: NavController) {
 
 @Composable
 fun SplashScreen(
-    navController: NavController,
-    viewModel: SplashViewModel = hiltViewModel()
+    navController: NavController, viewModel: SplashViewModel = hiltViewModel()
 ) {
     Box(
         modifier = Modifier
@@ -185,9 +189,7 @@ fun SplashScreen(
             style = TextStyle(
                 brush = Brush.horizontalGradient(
                     colors = listOf(
-                        Color(0xFF0D47A1),
-                        Color(0xFF1976D2),
-                        Color(0xFF26D9E8)
+                        Color(0xFF0D47A1), Color(0xFF1976D2), Color(0xFF26D9E8)
                     )
                 )
             )

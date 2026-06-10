@@ -42,6 +42,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.smarttrafficradar.R
 import com.example.smarttrafficradar.features.auth.domain.model.UserRole
+import com.example.smarttrafficradar.features.auth.domain.model.UserStatus
 import com.example.smarttrafficradar.features.auth.presentation.components.AuthOptions
 import com.example.smarttrafficradar.features.auth.presentation.viewmodel.AuthState
 import com.example.smarttrafficradar.features.auth.presentation.viewmodel.AuthViewModel
@@ -71,9 +72,10 @@ fun SignInScreen(
     LaunchedEffect(key1 = uiState.value) {
         when (val state = uiState.value) {
             is AuthState.Success -> {
-                val destination = when (state.user.role) {
-                    UserRole.ADMIN -> "admin_root"
-                    UserRole.USER -> "user_root"
+                val destination = when {
+                    state.user.role == UserRole.ADMIN -> "admin_root"
+                    state.user.status == UserStatus.PROFILE_INCOMPLETE -> "profile_completion_root"
+                    else -> "user_root"
                 }
 
                 navController.navigate(destination) {
