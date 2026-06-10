@@ -46,7 +46,6 @@ import com.example.smarttrafficradar.features.app_system.language.domain.model.A
 import com.example.smarttrafficradar.ui.dimens.AppShape
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
-import com.example.smarttrafficradar.ui.theme.CyanBackground
 import com.example.smarttrafficradar.ui.theme.CyanBorder
 import com.example.smarttrafficradar.ui.theme.CyanPrimary
 import com.example.smarttrafficradar.ui.theme.NavyBackground
@@ -75,14 +74,18 @@ fun ControlTopBar() {
             modifier = Modifier
                 .size(Dimen.SizeXXLPlus)
                 .clip(RoundedCornerShape(AppShape.ShapeM))
-                .background(color = CyanBackground)
-                .border(1.dp, color = CyanBorder, shape = RoundedCornerShape(AppShape.ShapeM)),
+                .background(color = CyanPrimary.copy(alpha = 0.1f))
+                .border(
+                    1.dp,
+                    color = CyanPrimary.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(AppShape.ShapeM)
+                ),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_control),
                 contentDescription = null,
-                tint = CyanPrimary,
+                tint = CyanBorder,
                 modifier = Modifier.size(Dimen.SizeXLPlus)
             )
         }
@@ -99,7 +102,7 @@ fun ControlTopBar() {
             Text(
                 text = stringResource(id = R.string.control_panel),
                 style = MaterialTheme.typography.s24.bold(),
-                color = Color.White
+                color = NavyBackground
             )
 
             Text(
@@ -119,10 +122,10 @@ fun LanguagesCard(selectedLang: AppLanguage, onChangeLanguage: () -> Unit) {
     }
 
     Card(
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(AppShape.ShapeM),
         colors = CardDefaults.cardColors(
-            containerColor = NavyBackground
+            containerColor = Color.White
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -140,7 +143,7 @@ fun LanguagesCard(selectedLang: AppLanguage, onChangeLanguage: () -> Unit) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_language),
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = NavyBackground,
                     modifier = Modifier.size(Dimen.SizeM)
                 )
 
@@ -149,13 +152,13 @@ fun LanguagesCard(selectedLang: AppLanguage, onChangeLanguage: () -> Unit) {
                 Text(
                     text = stringResource(id = R.string.language) + ": ",
                     style = MaterialTheme.typography.s18.semiBold(),
-                    color = Color.White
+                    color = NavyBackground
                 )
 
                 Text(
                     text = lang,
                     style = MaterialTheme.typography.s16,
-                    color = Color.White
+                    color = SlateMist
                 )
             }
 
@@ -164,13 +167,13 @@ fun LanguagesCard(selectedLang: AppLanguage, onChangeLanguage: () -> Unit) {
             OutlinedButton(
                 onClick = { onChangeLanguage() },
                 shape = RoundedCornerShape(AppShape.ShapeM),
-                border = BorderStroke(1.dp, color = CyanBorder),
-                modifier = Modifier.fillMaxWidth()
+                border = BorderStroke(1.dp, color = NavyBackground.copy(alpha = 0.12f)),
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = NavyBackground)
             ) {
                 Text(
                     text = stringResource(id = R.string.change_language),
-                    style = MaterialTheme.typography.s15,
-                    color = Color.White
+                    style = MaterialTheme.typography.s15.semiBold()
                 )
             }
         }
@@ -185,10 +188,10 @@ fun SpeedLimitCard(
     var sliderValue by remember(currentThreshold) { mutableFloatStateOf(currentThreshold.toFloat()) }
 
     Card(
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(AppShape.ShapeM),
         colors = CardDefaults.cardColors(
-            containerColor = NavyBackground
+            containerColor = Color.White
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -207,10 +210,10 @@ fun SpeedLimitCard(
                     modifier = Modifier
                         .size(Dimen.SizeXXL)
                         .clip(RoundedCornerShape(AppShape.ShapeM))
-                        .background(color = YellowBackground)
+                        .background(color = YellowPrimary.copy(alpha = 0.1f))
                         .border(
                             1.dp,
-                            color = YellowBorder,
+                            color = YellowPrimary.copy(alpha = 0.2f),
                             shape = RoundedCornerShape(AppShape.ShapeM)
                         ),
                     contentAlignment = Alignment.Center
@@ -229,7 +232,7 @@ fun SpeedLimitCard(
                     Text(
                         text = stringResource(id = R.string.speed_limit_threshold),
                         style = MaterialTheme.typography.s18.bold(),
-                        color = Color.White
+                        color = NavyBackground
                     )
                     Text(
                         text = stringResource(id = R.string.trigger_violations_desc),
@@ -271,7 +274,7 @@ fun SpeedLimitCard(
                 colors = SliderDefaults.colors(
                     thumbColor = OrangePrimary,
                     activeTrackColor = OrangePrimary,
-                    inactiveTrackColor = Color.DarkGray
+                    inactiveTrackColor = Color.LightGray.copy(alpha = 0.5f)
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -302,16 +305,19 @@ fun SetupNetworkButton(onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E2230)),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+        shape = RoundedCornerShape(AppShape.ShapeM),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.White,
+            contentColor = Color.Black
+        ),
+        border = BorderStroke(1.dp, color = Color.Black.copy(alpha = 0.2f)),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
     ) {
         Icon(Icons.Default.Settings, contentDescription = null, tint = OrangePrimary)
         Spacer(modifier = Modifier.width(12.dp))
         Text(
             text = stringResource(R.string.setup_network),
-            style = MaterialTheme.typography.s16.bold(),
-            color = Color.White
+            style = MaterialTheme.typography.s16.bold()
         )
     }
 }

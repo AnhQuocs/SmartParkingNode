@@ -1,11 +1,17 @@
 <resources>
     <string name="app_name">Smart Parking</string>
 
-    <!-- BOTTOM BAR -->
+    <!-- USER BOTTOM BAR -->
     <string name="dashboard">Dashboard</string>
-    <string name="violations">Violations</string>
-    <string name="control">Control</string>
-    <string name="status">Status</string>
+    <string name="history">History</string>
+    <string name="payment">Payment</string>
+    <string name="profile">Profile</string>
+
+    <!-- ADMIN BOTTOM BAR -->
+    <string name="monitor">Monitor</string>
+    <string name="management">Management</string>
+    <string name="hardware">Hardware</string>
+    <string name="analytics">Analytics</string>
 
     <!-- SETTING-LANGUAGE -->
     <string name="language">Language</string>
@@ -115,7 +121,7 @@
     <string name="enter_password_for">Enter password for %1$s</string>
     <string name="connect">Connect</string>
     <string name="cancel">Cancel</string>
-    <string name="scanning">Scanning...</string>
+    <string name="scanning">Scanning…</string>
     <string name="connection_timeout">Connection Timeout. Device is not responding.</string>
     <string name="current_task_format">Current Task: %1$s</string>
     <string name="status_format">Status: %1$s</string>

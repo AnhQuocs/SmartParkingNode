@@ -1,11 +1,17 @@
 <resources>
     <string name="app_name">Smart Parking</string>
 
-    <!-- BOTTOM BAR -->
-    <string name="dashboard">Tổng quan</string>
-    <string name="violations">Vi phạm</string>
-    <string name="control">Điều khiển</string>
-    <string name="status">Trạng thái</string>
+    <!-- USER BOTTOM BAR -->
+    <string name="dashboard">Trang chủ</string>
+    <string name="history">Lịch sử</string>
+    <string name="payment">Thanh toán</string>
+    <string name="profile">Cá nhân</string>
+
+    <!-- ADMIN BOTTOM BAR -->
+    <string name="monitor">Giám sát</string>
+    <string name="management">Quản lý</string>
+    <string name="hardware">Hệ thống</string>
+    <string name="analytics">Thống kê</string>
 
     <!-- SETTING-LANGUAGE -->
     <string name="language">Ngôn ngữ</string>
@@ -112,7 +118,7 @@
     <string name="enter_password_for">Nhập mật khẩu cho %1$s</string>
     <string name="connect">Kết nối</string>
     <string name="cancel">Hủy</string>
-    <string name="scanning">Đang dò tìm...</string>
+    <string name="scanning">Đang dò tìm…</string>
     <string name="connection_timeout">Hết thời gian kết nối. Thiết bị không phản hồi.</string>
     <string name="current_task_format">Tác vụ hiện tại: %1$s</string>
     <string name="status_format">Trạng thái: %1$s</string>

@@ -38,8 +38,6 @@ import com.example.smarttrafficradar.R
 import com.example.smarttrafficradar.components.AppAppearance
 import com.example.smarttrafficradar.features.auth.presentation.ui.SignInScreen
 import com.example.smarttrafficradar.features.auth.presentation.ui.SignUpScreen
-import com.example.smarttrafficradar.features.dashboard.presentation.ui.admin.AdminDashboardScreen
-import com.example.smarttrafficradar.features.dashboard.presentation.ui.user.UserDashboardScreen
 import com.example.smarttrafficradar.features.main.viewmodel.MainViewModel
 import com.example.smarttrafficradar.features.main.viewmodel.SplashViewModel
 import com.example.smarttrafficradar.features.onboarding.presentation.ui.OnboardingScreen

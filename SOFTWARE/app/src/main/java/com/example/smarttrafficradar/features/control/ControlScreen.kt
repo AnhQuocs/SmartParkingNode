@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.smarttrafficradar.features.app_system.language.presentation.ui.ChangeLanguageActivity
@@ -43,14 +44,14 @@ fun ControlScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = DarkBackground),
+            .background(color = Color.White),
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = Dimen.PaddingXS)
-                .padding(horizontal = Dimen.PaddingM)
+                .padding(top = Dimen.PaddingM)
+                .padding(Dimen.PaddingM)
         ) {
             ControlTopBar()
 

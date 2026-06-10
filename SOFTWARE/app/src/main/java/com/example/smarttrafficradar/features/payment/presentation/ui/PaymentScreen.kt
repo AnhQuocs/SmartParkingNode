@@ -1,4 +1,4 @@
-package com.example.smarttrafficradar.features.dashboard.presentation.ui.admin
+package com.example.smarttrafficradar.features.payment.presentation.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -8,16 +8,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.navigation.NavController
 
 @Composable
-fun AdminDashboardScreen(navController: NavController) {
+fun PaymentScreen(modifier: Modifier = Modifier) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color.White),
         contentAlignment = Alignment.Center
     ) {
-        Text("Admin Dashboard", color = Color.Black)
+        Text(
+            text = "Payment", color = Color.Black
+        )
     }
 }
