@@ -1,5 +1,7 @@
 package com.example.smarttrafficradar.features.user_profile.data.dto
 
+import com.google.firebase.firestore.PropertyName
+
 data class UserProfileDto(
     var uid: String = "",
     var identifier: String = "",
@@ -10,6 +12,8 @@ data class UserProfileDto(
     var avatarUrl: String? = null,
     var rfidUid: String? = null,
     var currentDebt: Long = 0,
+    @get:PropertyName("isActive")
+    @set:PropertyName("isActive")
     var isActive: Boolean = false,
     var vehicleType: String? = null,
     var createdAt: Long = 0,

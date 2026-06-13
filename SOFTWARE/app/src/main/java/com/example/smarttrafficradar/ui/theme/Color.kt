@@ -87,3 +87,8 @@ val DeepBlack = Color(0xFF070809)
 val ActionDanger = Color(0xFFF41F52)
 val InputBackground = Color(0xFFF6F6F6)
 val TextTertiary = Color(0xFF78828A)
+val SmartBlue = Color(0xFF0092CE)
+val BabyBlue = Color(0xFFC1E5F3)
+
+val NatureBackground = Color(0xFFF0FDF4)
+val NatureGreen = Color(0xFF90C8A5)

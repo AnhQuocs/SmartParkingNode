@@ -220,4 +220,13 @@
     <string name="phone_required">Please enter your phone number</string>
     <string name="phone_invalid">Invalid phone number</string>
 
+    <!-- DASHBOARD -->
+    <string name="parking_card">Parking Card</string>
+    <string name="activated">Activated</string>
+    <string name="not_activated">Not Activated</string>
+    <string name="rfid_card_code">RFID Card Code</string>
+    <string name="vehicle_type">Vehicle Type</string>
+    <string name="car">Car</string>
+    <string name="motorcycle">Motorcycle</string>
+
 </resources>

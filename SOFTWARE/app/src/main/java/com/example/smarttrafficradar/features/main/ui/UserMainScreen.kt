@@ -1,5 +1,6 @@
 package com.example.smarttrafficradar.features.main.ui
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.tween
@@ -14,14 +15,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.smarttrafficradar.components.UserBottomBar
+import com.example.smarttrafficradar.features.auth.presentation.viewmodel.AuthViewModel
 import com.example.smarttrafficradar.features.dashboard.presentation.ui.user.DashboardScreen
 import com.example.smarttrafficradar.features.history.presentation.ui.HistoryScreen
 import com.example.smarttrafficradar.features.payment.presentation.ui.PaymentScreen
@@ -29,8 +34,12 @@ import com.example.smarttrafficradar.features.profile.presentation.ui.ProfileScr
 
 @Composable
 fun UserMainScreen(
-    navController: NavController
+    navController: NavController,
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
+    val authState by authViewModel.state.collectAsState()
+    val currentUser by authViewModel.currentUser.collectAsState()
+
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var previousTabIndex by remember { mutableIntStateOf(0) }
 
@@ -91,9 +100,16 @@ fun UserMainScreen(
                 .fillMaxSize()
         ) { tab ->
             when (tab) {
-                0 -> DashboardScreen(
-                    navController = navController
-                )
+                0 -> {
+                    currentUser?.let { user ->
+                        DashboardScreen(
+                            uid = user.uid
+//                    navController = navController
+                        )
+                    }
+
+                    Log.d("DASHBOARD", "USER: $currentUser")
+                }
 
                 1 -> {
                     HistoryScreen()

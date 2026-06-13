@@ -217,4 +217,13 @@
     <string name="phone_required">Vui lòng nhập số điện thoại</string>
     <string name="phone_invalid">Số điện thoại không hợp lệ</string>
 
+    <!-- DASHBOARD -->
+    <string name="parking_card">Thẻ gửi xe</string>
+    <string name="activated">Đã kích hoạt</string>
+    <string name="not_activated">Chưa kích hoạt</string>
+    <string name="rfid_card_code">Mã thẻ RFID</string>
+    <string name="vehicle_type">Loại xe</string>
+    <string name="car">Ô tô</string>
+    <string name="motorcycle">Xe máy</string>
+
 </resources>

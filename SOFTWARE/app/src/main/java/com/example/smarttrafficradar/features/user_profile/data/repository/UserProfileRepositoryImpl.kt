@@ -21,14 +21,23 @@ class UserProfileRepositoryImpl @Inject constructor(
     private val orgUsersCollection = firestore.collection("organization_members")
 
     override fun getUserProfile(uid: String): Flow<UserProfile?> = callbackFlow {
-        val subscription = profilesCollection.document(uid).addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                close(error)
-                return@addSnapshotListener
-            }
-            val profile = snapshot?.toObject(UserProfileDto::class.java)?.toDomain()
-            trySend(profile)
+        if (uid.isBlank()) {
+            close(IllegalArgumentException("UID is blank"))
+            return@callbackFlow
         }
+
+        val subscription = profilesCollection
+            .document(uid)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+
+                val profile = snapshot?.toObject(UserProfileDto::class.java)?.toDomain()
+                trySend(profile)
+            }
+
         awaitClose { subscription.remove() }
     }
 
