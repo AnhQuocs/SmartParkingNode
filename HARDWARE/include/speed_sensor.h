@@ -21,8 +21,8 @@ public:
 
     // Gọi trong loop() — trả về true khi xe đã đi qua hoàn toàn
     bool update() {
-        bool irA = (digitalRead(PIN_IR_A) == LOW);  // LOW = có vật
-        bool irB = (digitalRead(PIN_IR_B) == LOW);
+        bool irA = (digitalRead(PIN_IR_A) == HIGH);  // HIGH = có vật
+        bool irB = (digitalRead(PIN_IR_B) == HIGH);
 
         if (irA && !_irA_triggered) {
             _irA_triggered = true;
