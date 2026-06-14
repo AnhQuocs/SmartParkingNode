@@ -177,8 +177,11 @@ void loop()
         {
             barrier.close();
             firebase.setGateStatus("auto");
+            pendingUID = "";
+            pendingAction = "";
+            irSensor.reset();
             gateState = IDLE;
-            Serial.println("[GATE] Barrier closed â€” IDLE");
+            Serial.println("[GATE] Barrier closed — IDLE, ready for next card");
         }
     }
 
