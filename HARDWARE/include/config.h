@@ -23,8 +23,8 @@
 #define PIN_DF_TX       17
 
 // ── SERVO ANGLES ─────────────────────────────────────────────
-#define SERVO_OPEN_ANGLE    90
-#define SERVO_CLOSE_ANGLE   0
+#define SERVO_OPEN_ANGLE    180
+#define SERVO_CLOSE_ANGLE   90
 
 // ── DEVICE ID ────────────────────────────────────────────────
 #define DEVICE_ID   "parking_node_01"
