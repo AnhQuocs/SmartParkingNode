@@ -8,23 +8,23 @@
 // ── PIN MAP ──────────────────────────────────────────────────
 // RFID RC522 (SPI)
 #define PIN_RFID_SS     5
-#define PIN_RFID_RST    27
+#define PIN_RFID_RST    22
 // SCK=18, MOSI=23, MISO=19 — SPI mặc định của ESP32
 
 // IR Sensors — GPIO 34,35 là INPUT_ONLY, KHÔNG có internal pull-up
-#define PIN_IR_A        34   // Cảm biến phía trong (xe vào chắn trước)
-#define PIN_IR_B        35   // Cảm biến phía ngoài
+#define PIN_IR_A        35   // Cảm biến phía trong (xe vào chắn trước)
+#define PIN_IR_B        33   // Cảm biến phía ngoài
 
 // Servo MG90S — nguồn 5V riêng, tránh sụt áp
-#define PIN_SERVO       13
+#define PIN_SERVO       14
 
 // DFPlayer Mini — dùng Serial2 (RX2=16, TX2=17)
 #define PIN_DF_RX       16
 #define PIN_DF_TX       17
 
 // ── SERVO ANGLES ─────────────────────────────────────────────
-#define SERVO_OPEN_ANGLE    90
-#define SERVO_CLOSE_ANGLE   0
+#define SERVO_OPEN_ANGLE    180
+#define SERVO_CLOSE_ANGLE   90
 
 // ── DEVICE ID ────────────────────────────────────────────────
 #define DEVICE_ID   "parking_node_01"
