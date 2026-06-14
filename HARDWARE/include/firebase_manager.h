@@ -4,6 +4,8 @@
 #include <WiFi.h>
 #include <FirebaseESP32.h>
 #include "config.h"
+#include <ArduinoJson.h>
+#include <HTTPClient.h>
 
 extern void onCloudCommand(String cmd, String uid, String action);
 
@@ -64,79 +66,85 @@ public:
     // Hàm mới: ESP32 query trực tiếp vào node /profiles
     void processSwipeOnHardware(String uid)
     {
-        if (!initialized)
+        if (!initialized || WiFi.status() != WL_CONNECTED)
             return;
 
-        Serial.printf("[LOGIC] Đang tìm thẻ %s trong /profiles...\n", uid.c_str());
+        Serial.printf("[LOGIC] Đang query thẻ %s trên Cloud Firestore...\n", uid.c_str());
 
-        // 1. Tạo bộ lọc tìm kiếm theo trường rfidUid
-        QueryFilter query;
-        query.clear();
-        query.orderBy("rfidUid");
-        query.equalTo(uid);
+        HTTPClient http;
+        String url = "https://firestore.googleapis.com/v1/projects/smarttrafficradar/databases/(default)/documents:runQuery?key=" + String(FIREBASE_WEB_API_KEY);
 
-        // 2. Query dữ liệu từ Realtime DB
-        if (Firebase.getJSON(fbData, "/profiles", query))
+        http.begin(url);
+        http.addHeader("Content-Type", "application/json");
+
+        // Tạo cục JSON chứa câu lệnh truy vấn: Tìm rfidUid == uid
+        String queryPayload = "{"
+                              "\"structuredQuery\": {"
+                              "\"from\": [{\"collectionId\": \"profiles\"}],"
+                              "\"where\": {"
+                              "\"fieldFilter\": {"
+                              "\"field\": {\"fieldPath\": \"rfidUid\"},"
+                              "\"op\": \"EQUAL\","
+                              "\"value\": {\"stringValue\": \"" +
+                              uid + "\"}"
+                                    "}"
+                                    "}"
+                                    "}"
+                                    "}";
+
+        int httpResponseCode = http.POST(queryPayload);
+
+        if (httpResponseCode > 0)
         {
-            FirebaseJson &json = fbData.jsonObject();
-            size_t len = json.iteratorBegin();
+            String payload = http.getString();
 
-            // Nếu len > 0 nghĩa là tìm thấy ít nhất 1 profile có rfidUid này
-            if (len > 0)
+            // Nếu payload chứa "document", nghĩa là tìm thấy kết quả
+            if (payload.indexOf("\"document\":") > 0)
             {
-                String key, value;
-                int type;
+                // Parse chuỗi JSON bằng ArduinoJson
+                DynamicJsonDocument doc(2048);
+                DeserializationError error = deserializeJson(doc, payload);
 
-                // Lấy profile đầu tiên tìm được (key là ID của profile, value là cục JSON chứa UserProfileDto)
-                json.iteratorGet(0, type, key, value);
-
-                // Parse cục JSON value để lấy trường isActive
-                FirebaseJson profileJson;
-                profileJson.setJsonData(value);
-
-                FirebaseJsonData isActiveData;
-                profileJson.get(isActiveData, "isActive");
-
-                bool isActive = isActiveData.boolValue;
-
-                // 3. Kiểm tra isActive và ra lệnh Servo
-                if (isActive)
+                if (!error)
                 {
-                    Serial.printf("[LOGIC] Thẻ %s hợp lệ (isActive=true). Mở Barie.\n", uid.c_str());
-                    onCloudCommand("OPEN", uid, "IN");
-                }
-                else
-                {
-                    Serial.printf("[LOGIC] Thẻ %s đã bị khóa (isActive=false).\n", uid.c_str());
-                    logInvalidSwipe(uid, "BLOCKED");
-                    onCloudCommand("BUZZER_ALERT", uid, "");
-                }
+                    // Firestore trả về mảng, lấy phần tử đầu tiên
+                    // Đường dẫn JSON khá sâu do cấu trúc của Firestore
+                    bool isActive = doc[0]["document"]["fields"]["isActive"]["booleanValue"];
 
-                json.iteratorEnd();
-                return; // Xử lý xong, thoát hàm
+                    if (isActive)
+                    {
+                        Serial.printf("[LOGIC] Thẻ %s hợp lệ (isActive=true). Mở Barie.\n", uid.c_str());
+                        onCloudCommand("OPEN", uid, "IN");
+                    }
+                    else
+                    {
+                        Serial.printf("[LOGIC] Thẻ %s đã bị khóa (isActive=false).\n", uid.c_str());
+                        logInvalidSwipe(uid, "BLOCKED");
+                        onCloudCommand("BUZZER_ALERT", uid, "");
+                    }
+                }
             }
-            json.iteratorEnd();
-        }
+            else
+            {
+                // Không tìm thấy document nào có rfidUid khớp
+                Serial.printf("[LOGIC] Thẻ %s chưa được gán. Đẩy vào pending_cards...\n", uid.c_str());
 
-        // 4. --- Trường hợp query không ra kết quả (rfidUid null hoặc chưa gán) ---
-        Serial.printf("[LOGIC] Thẻ %s chưa được gán vào profile nào. Đẩy vào pending_cards...\n", uid.c_str());
+                String pendingPath = "/pending_cards/" + uid;
+                FirebaseJson pendingJson;
+                pendingJson.set("timestamp", (int64_t)millis());
+                pendingJson.set("status", "waiting");
 
-        String pendingPath = "/pending_cards/" + uid;
-        FirebaseJson pendingJson;
-        pendingJson.set("timestamp", (int64_t)millis());
-        pendingJson.set("status", "waiting"); // Đẩy lên để Quốc bắt sự kiện [cite: 413]
-
-        if (Firebase.setJSON(fbData, pendingPath, pendingJson))
-        {
-            Serial.println("[FIREBASE] Đã đẩy thẻ vào /pending_cards thành công");
+                Firebase.setJSON(fbData, pendingPath, pendingJson);
+                logInvalidSwipe(uid, "UNKNOWN");
+                onCloudCommand("CARD_UNKNOWN", uid, "");
+            }
         }
         else
         {
-            Serial.printf("[FIREBASE] Lỗi đẩy thẻ: %s\n", fbData.errorReason().c_str());
+            Serial.printf("[HTTP] Lỗi kết nối Firestore: %d\n", httpResponseCode);
         }
 
-        logInvalidSwipe(uid, "UNKNOWN");
-        onCloudCommand("CARD_UNKNOWN", uid, "");
+        http.end();
     }
 
     void logInvalidSwipe(String uid, String reason)
