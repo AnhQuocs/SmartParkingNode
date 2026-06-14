@@ -61,38 +61,82 @@ public:
             }
         }
     }
+    // Hàm mới: ESP32 query trực tiếp vào node /profiles
     void processSwipeOnHardware(String uid)
     {
         if (!initialized)
             return;
 
-        String path = "/authorized_cards/" + uid + "/isActive";
+        Serial.printf("[LOGIC] Đang tìm thẻ %s trong /profiles...\n", uid.c_str());
 
-        // Cố gắng đọc giá trị isActive từ node UID
-        if (Firebase.getBool(fbData, path))
+        // 1. Tạo bộ lọc tìm kiếm theo trường rfidUid
+        QueryFilter query;
+        query.clear();
+        query.orderBy("rfidUid");
+        query.equalTo(uid);
+
+        // 2. Query dữ liệu từ Realtime DB
+        if (Firebase.getJSON(fbData, "/profiles", query))
         {
-            bool isActive = fbData.boolData();
+            FirebaseJson &json = fbData.jsonObject();
+            size_t len = json.iteratorBegin();
 
-            if (isActive)
+            // Nếu len > 0 nghĩa là tìm thấy ít nhất 1 profile có rfidUid này
+            if (len > 0)
             {
-                Serial.printf("[LOGIC] Thẻ %s hợp lệ. Mở Barie.\n", uid.c_str());
-                // Gọi thẳng lệnh mở Barie
-                onCloudCommand("OPEN", uid, "IN");
+                String key, value;
+                int type;
+
+                // Lấy profile đầu tiên tìm được (key là ID của profile, value là cục JSON chứa UserProfileDto)
+                json.iteratorGet(0, type, key, value);
+
+                // Parse cục JSON value để lấy trường isActive
+                FirebaseJson profileJson;
+                profileJson.setJsonData(value);
+
+                FirebaseJsonData isActiveData;
+                profileJson.get(isActiveData, "isActive");
+
+                bool isActive = isActiveData.boolValue;
+
+                // 3. Kiểm tra isActive và ra lệnh Servo
+                if (isActive)
+                {
+                    Serial.printf("[LOGIC] Thẻ %s hợp lệ (isActive=true). Mở Barie.\n", uid.c_str());
+                    onCloudCommand("OPEN", uid, "IN");
+                }
+                else
+                {
+                    Serial.printf("[LOGIC] Thẻ %s đã bị khóa (isActive=false).\n", uid.c_str());
+                    logInvalidSwipe(uid, "BLOCKED");
+                    onCloudCommand("BUZZER_ALERT", uid, "");
+                }
+
+                json.iteratorEnd();
+                return; // Xử lý xong, thoát hàm
             }
-            else
-            {
-                Serial.printf("[LOGIC] Thẻ %s đã bị khóa (isActive = false).\n", uid.c_str());
-                logInvalidSwipe(uid, "BLOCKED");
-                onCloudCommand("BUZZER_ALERT", uid, "");
-            }
+            json.iteratorEnd();
+        }
+
+        // 4. --- Trường hợp query không ra kết quả (rfidUid null hoặc chưa gán) ---
+        Serial.printf("[LOGIC] Thẻ %s chưa được gán vào profile nào. Đẩy vào pending_cards...\n", uid.c_str());
+
+        String pendingPath = "/pending_cards/" + uid;
+        FirebaseJson pendingJson;
+        pendingJson.set("timestamp", (int64_t)millis());
+        pendingJson.set("status", "waiting"); // Đẩy lên để Quốc bắt sự kiện [cite: 413]
+
+        if (Firebase.setJSON(fbData, pendingPath, pendingJson))
+        {
+            Serial.println("[FIREBASE] Đã đẩy thẻ vào /pending_cards thành công");
         }
         else
         {
-            // Không tìm thấy node này trong authorized_cards -> Thẻ null / chưa đăng ký
-            Serial.printf("[LOGIC] Thẻ %s chưa được đăng ký.\n", uid.c_str());
-            logInvalidSwipe(uid, "UNKNOWN");
-            onCloudCommand("CARD_UNKNOWN", uid, "");
+            Serial.printf("[FIREBASE] Lỗi đẩy thẻ: %s\n", fbData.errorReason().c_str());
         }
+
+        logInvalidSwipe(uid, "UNKNOWN");
+        onCloudCommand("CARD_UNKNOWN", uid, "");
     }
 
     void logInvalidSwipe(String uid, String reason)
