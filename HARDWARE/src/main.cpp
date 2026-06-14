@@ -11,25 +11,33 @@
 
 ServoController barrier;
 FirebaseManager firebase;
-RFIDReader rfid;       
+RFIDReader rfid;
 SpeedSensor irSensor;
 
-enum GateState { IDLE, WAITING_IR, CONFIRMED };
-GateState     gateState     = IDLE;
-String        pendingUID    = "";
-String        pendingAction = "";   // "IN" hoáº·c "OUT"
-unsigned long stateTs       = 0;
+enum GateState
+{
+    IDLE,
+    WAITING_IR,
+    CONFIRMED
+};
+GateState gateState = IDLE;
+String pendingUID = "";
+String pendingAction = ""; // "IN" hoáº·c "OUT"
+unsigned long stateTs = 0;
 
 unsigned long lastTelemetryMs = 0;
 unsigned long lastWifiRetryMs = 0;
 
-void connectWiFi(const String &ssid, const String &pass) {
+void connectWiFi(const String &ssid, const String &pass)
+{
     Serial.printf("[WIFI] Connecting to %s ...\n", ssid.c_str());
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid.c_str(), pass.c_str());
     unsigned long t = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - t < 15000) {
-        delay(500); Serial.print(".");
+    while (WiFi.status() != WL_CONNECTED && millis() - t < 15000)
+    {
+        delay(500);
+        Serial.print(".");
     }
     Serial.println();
     if (WiFi.status() == WL_CONNECTED)
@@ -38,31 +46,37 @@ void connectWiFi(const String &ssid, const String &pass) {
         Serial.println("[WIFI] Failed");
 }
 
-void onCloudCommand(String cmd, String uid, String action) {
-    pendingUID    = uid;
+void onCloudCommand(String cmd, String uid, String action)
+{
+    pendingUID = uid;
     pendingAction = action;
 
-    if (cmd == "OPEN") {
+    if (cmd == "OPEN")
+    {
         barrier.open();
         firebase.setGateStatus("open");
         irSensor.reset();
         gateState = WAITING_IR;
-        stateTs   = millis();
-
-    } else if (cmd == "CLOSE") {
+        stateTs = millis();
+    }
+    else if (cmd == "CLOSE")
+    {
         barrier.close();
         firebase.setGateStatus("auto");
         gateState = IDLE;
-
-    } else if (cmd == "BUZZER_ALERT") {
+    }
+    else if (cmd == "BUZZER_ALERT")
+    {
         barrier.playAudio(AUDIO_DEBT_EXCEED);
-
-    } else if (cmd == "CARD_UNKNOWN") {
+    }
+    else if (cmd == "CARD_UNKNOWN")
+    {
         barrier.playAudio(AUDIO_CARD_UNKNOWN);
     }
 }
 
-void commitTransaction() {
+void commitTransaction()
+{
     firebase.confirmIR();
 
     if (pendingAction == "IN")
@@ -71,25 +85,28 @@ void commitTransaction() {
         barrier.playAudio(AUDIO_GOODBYE);
 
     gateState = CONFIRMED;
-    stateTs   = millis();
+    stateTs = millis();
     Serial.printf("[COMMIT] %s â€” UID: %s\n", pendingAction.c_str(), pendingUID.c_str());
 }
 
-void revertTransaction() {
+void revertTransaction()
+{
     barrier.close();
     firebase.revertSwipe();
     firebase.setGateStatus("auto");
 
     irSensor.reset();
-    pendingUID    = "";
+    pendingUID = "";
     pendingAction = "";
-    gateState     = IDLE;
+    gateState = IDLE;
     Serial.println("[REVERT] No log written.");
 }
 
-void handleRemoteWiFiChange() {
+void handleRemoteWiFiChange()
+{
     String newSSID, newPass;
-    if (!firebase.checkRemoteWiFiChange(newSSID, newPass)) return;
+    if (!firebase.checkRemoteWiFiChange(newSSID, newPass))
+        return;
 
     Serial.printf("[WIFI] Remote switch â†’ %s\n", newSSID.c_str());
     WiFi.disconnect();
@@ -99,13 +116,15 @@ void handleRemoteWiFiChange() {
     bool ok = (WiFi.status() == WL_CONNECTED);
     firebase.reportWiFiSwitchResult(ok);
 
-    if (!ok) {
+    if (!ok)
+    {
         Serial.println("[WIFI] Reverting to default WiFi");
         connectWiFi(WIFI_SSID, WIFI_PASSWORD);
     }
 }
 
-void setup() {
+void setup()
+{
     Serial.begin(115200);
     Serial.println("\n[BOOT] Smart Parking Node starting...");
 
@@ -115,7 +134,8 @@ void setup() {
 
     connectWiFi(WIFI_SSID, WIFI_PASSWORD);
 
-    if (WiFi.status() == WL_CONNECTED) {
+    if (WiFi.status() == WL_CONNECTED)
+    {
         firebase.begin();
         firebase.scanAndUploadNetworks();
     }
@@ -123,29 +143,38 @@ void setup() {
     Serial.println("[BOOT] Setup complete.");
 }
 
-void loop() {
+void loop()
+{
 
     firebase.loop();
 
-    if (gateState == IDLE) {
+    if (gateState == IDLE)
+    {
         String uid = rfid.readUID();
-        if (!uid.isEmpty()) {
+        if (!uid.isEmpty())
+        {
             Serial.printf("[RFID] Card: %s\n", uid.c_str());
-            firebase.sendSwipeEvent(uid);
+            firebase.processSwipeOnHardware(uid);
         }
     }
 
-    if (gateState == WAITING_IR) {
-        if (irSensor.update()) {
+    if (gateState == WAITING_IR)
+    {
+        if (irSensor.update())
+        {
             commitTransaction();
-        } else if (millis() - stateTs > TIMEOUT_REVERT_MS) {
+        }
+        else if (millis() - stateTs > TIMEOUT_REVERT_MS)
+        {
             Serial.println("[TIMEOUT] Reverting...");
             revertTransaction();
         }
     }
 
-    if (gateState == CONFIRMED) {
-        if (millis() - stateTs > GATE_AUTO_CLOSE_MS) {
+    if (gateState == CONFIRMED)
+    {
+        if (millis() - stateTs > GATE_AUTO_CLOSE_MS)
+        {
             barrier.close();
             firebase.setGateStatus("auto");
             gateState = IDLE;
@@ -153,7 +182,8 @@ void loop() {
         }
     }
 
-    if (millis() - lastTelemetryMs > TELEMETRY_INTERVAL_MS) {
+    if (millis() - lastTelemetryMs > TELEMETRY_INTERVAL_MS)
+    {
         lastTelemetryMs = millis();
         bool irA_ok = (digitalRead(PIN_IR_A) != -1);
         bool irB_ok = (digitalRead(PIN_IR_B) != -1);
@@ -161,12 +191,15 @@ void loop() {
         handleRemoteWiFiChange();
     }
 
-    if (WiFi.status() != WL_CONNECTED) {
-        if (millis() - lastWifiRetryMs > WIFI_RETRY_INTERVAL_MS) {
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        if (millis() - lastWifiRetryMs > WIFI_RETRY_INTERVAL_MS)
+        {
             lastWifiRetryMs = millis();
             Serial.println("[WIFI] Lost â€” retrying...");
             connectWiFi(WIFI_SSID, WIFI_PASSWORD);
-            if (WiFi.status() == WL_CONNECTED) {
+            if (WiFi.status() == WL_CONNECTED)
+            {
                 firebase.begin();
                 firebase.scanAndUploadNetworks();
             }
