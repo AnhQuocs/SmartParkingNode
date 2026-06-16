@@ -77,8 +77,11 @@ void onCloudCommand(String cmd, String uid, String action)
 
 void commitTransaction()
 {
+    delay(50);
     firebase.confirmIR();
+    delay(50);
 
+    // Phát âm thanh tùy theo chiều đi thực tế
     if (pendingAction == "IN")
         barrier.playAudio(AUDIO_WELCOME);
     else
@@ -86,7 +89,7 @@ void commitTransaction()
 
     gateState = CONFIRMED;
     stateTs = millis();
-    Serial.printf("[COMMIT] %s â€” UID: %s\n", pendingAction.c_str(), pendingUID.c_str());
+    Serial.printf("[COMMIT] %s ma UID: %s\n", pendingAction.c_str(), pendingUID.c_str());
 }
 
 void revertTransaction()
@@ -162,7 +165,18 @@ void loop()
     {
         if (irSensor.update())
         {
+            // TỰ ĐỘNG CẬP NHẬT CHIỀU ĐI DỰA TRÊN CẢM BIẾN
+            if (irSensor.getDirection() == SpeedSensor::OUT)
+            {
+                pendingAction = "OUT";
+            }
+            else
+            {
+                pendingAction = "IN";
+            }
+
             commitTransaction();
+            irSensor.reset(); // Xóa trạng thái cảm biến chuẩn bị cho xe tiếp theo
         }
         else
         {
@@ -171,10 +185,9 @@ void loop()
                 stateTs = millis();
             }
 
-            // Nếu không có xe che quá 10 giây thì mới hủy giao dịch
             if (millis() - stateTs > TIMEOUT_REVERT_MS)
             {
-                Serial.println("[TIMEOUT] Reverting... No vehicle passed.");
+                Serial.println("[TIMEOUT] Reverting...");
                 revertTransaction();
             }
         }
