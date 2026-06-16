@@ -20,6 +20,12 @@ public:
         _irB_triggered = false;
     }
 
+    // HÀM MỚI: Kiểm tra xem có xe đang đứng chắn ở cổng không (Tính năng an toàn)
+    bool isDetecting()
+    {
+        return (digitalRead(PIN_IR_A) == LOW) || (digitalRead(PIN_IR_B) == LOW);
+    }
+
     // Gọi trong loop() — trả về true khi xe đã đi qua hoàn toàn
     bool update()
     {

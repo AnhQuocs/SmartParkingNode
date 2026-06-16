@@ -164,10 +164,19 @@ void loop()
         {
             commitTransaction();
         }
-        else if (millis() - stateTs > TIMEOUT_REVERT_MS)
+        else
         {
-            Serial.println("[TIMEOUT] Reverting...");
-            revertTransaction();
+            if (irSensor.isDetecting())
+            {
+                stateTs = millis();
+            }
+
+            // Nếu không có xe che quá 10 giây thì mới hủy giao dịch
+            if (millis() - stateTs > TIMEOUT_REVERT_MS)
+            {
+                Serial.println("[TIMEOUT] Reverting... No vehicle passed.");
+                revertTransaction();
+            }
         }
     }
 
