@@ -184,15 +184,7 @@ public:
         Firebase.setString(fbData, "/parking_status/gate_control", status);
     }
 
-    void confirmIR()
-    {
-        if (!initialized)
-            return;
-        // Báo cho Cloud biết xe đã thực sự qua cụm cảm biến hồng ngoại
-        Firebase.setBool(fbData, "/hardware_events/latest_swipe/ir_confirmed", true);
-    }
-
-    void revertSwipe()
+        void revertSwipe()
     {
         if (!initialized)
             return;
@@ -302,10 +294,7 @@ public:
     {
         if (!initialized)
             return;
-        fbData.setBSSLBufferSize(1024, 1024); // giảm buffer tránh treo
-        if (!Firebase.setBool(fbData, "/hardware_events/latest_swipe/ir_confirmed", true))
-        {
-            Serial.printf("[Firebase] confirmIR lỗi: %s\n", fbData.errorReason().c_str());
-        }
+        // Báo cho Cloud biết xe đã thực sự qua cụm cảm biến hồng ngoại
+        Firebase.setBool(fbData, "/hardware_events/latest_swipe/ir_confirmed", true);
     }
 };
