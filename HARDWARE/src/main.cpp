@@ -77,11 +77,7 @@ void onCloudCommand(String cmd, String uid, String action)
 
 void commitTransaction()
 {
-    delay(50);
-    firebase.confirmIR();
-    delay(50);
-
-    // Phát âm thanh tùy theo chiều đi thực tế
+    // Xử lý phần cứng TRƯỚC — không phụ thuộc Firebase
     if (pendingAction == "IN")
         barrier.playAudio(AUDIO_WELCOME);
     else
@@ -90,6 +86,9 @@ void commitTransaction()
     gateState = CONFIRMED;
     stateTs = millis();
     Serial.printf("[COMMIT] %s ma UID: %s\n", pendingAction.c_str(), pendingUID.c_str());
+
+    // Gọi Firebase sau, không block flow chính nếu lỗi
+    firebase.confirmIR();
 }
 
 void revertTransaction()

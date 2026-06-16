@@ -74,7 +74,8 @@ public:
         if (_irA_triggered && _irB_triggered && !irA && !irB)
         {
             Serial.println("[IR] Xe đã đi qua hoàn toàn!");
-            return true; // Trả về true để Main gọi commitTransaction
+            reset();
+            return true; 
         }
 
         return false;

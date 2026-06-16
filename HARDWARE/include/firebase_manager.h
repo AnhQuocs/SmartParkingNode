@@ -297,4 +297,15 @@ public:
 
         Firebase.updateNode(fbData, path, json);
     }
+
+    void confirmIR()
+    {
+        if (!initialized)
+            return;
+        fbData.setBSSLBufferSize(1024, 1024); // giảm buffer tránh treo
+        if (!Firebase.setBool(fbData, "/hardware_events/latest_swipe/ir_confirmed", true))
+        {
+            Serial.printf("[Firebase] confirmIR lỗi: %s\n", fbData.errorReason().c_str());
+        }
+    }
 };
