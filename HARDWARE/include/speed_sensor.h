@@ -11,7 +11,6 @@ public:
         pinMode(PIN_IR_A, INPUT);
         pinMode(PIN_IR_B, INPUT);
         reset();
-        Serial.println("[IR] Sensors initialized on GPIO 34, 35");
     }
 
     void reset()
