@@ -12,8 +12,10 @@
 // SCK=18, MOSI=23, MISO=19 — SPI mặc định của ESP32
 
 // IR Sensors — GPIO 34,35 là INPUT_ONLY, KHÔNG có internal pull-up
-#define PIN_IR_A        35   // Cảm biến phía trong (xe vào chắn trước)
-#define PIN_IR_B        33   // Cảm biến phía ngoài
+// PIN_IR_A = cảm biến NGOÀI cổng (xe chạm đầu tiên khi đi VÀO)
+// PIN_IR_B = cảm biến TRONG cổng (xe chạm sau cùng khi đi VÀO)
+#define PIN_IR_A        35
+#define PIN_IR_B        33
 
 // Servo MG90S — nguồn 5V riêng, tránh sụt áp
 #define PIN_SERVO       14
@@ -30,11 +32,9 @@
 #define DEVICE_ID   "parking_node_01"
 
 // ── TIMING (ms) ──────────────────────────────────────────────
-#define TIMEOUT_REVERT_MS       10000   // Chờ xe qua IR tối đa 10s
-#define IR_SEQUENCE_TIMEOUT_MS  6000
-#define GATE_AUTO_CLOSE_MS      500    // Đóng barrier 0.5s sau khi xe qua
-#define TELEMETRY_INTERVAL_MS   15000   // Gửi telemetry mỗi 15s
-#define WIFI_RETRY_INTERVAL_MS  30000   // Thử kết nối lại WiFi mỗi 30s
+#define GATE_OPEN_DURATION_MS   5000   // Barie mở cố định 5s rồi tự đóng (KHÔNG dùng IR)
+#define TELEMETRY_INTERVAL_MS   15000  // Gửi telemetry mỗi 15s
+#define WIFI_RETRY_INTERVAL_MS  30000  // Thử kết nối lại WiFi mỗi 30s
 
 // ── AUDIO TRACKS ─────────────────────────────────────────────
 // File đặt trong SD card DFPlayer: 001.mp3, 002.mp3, ...
