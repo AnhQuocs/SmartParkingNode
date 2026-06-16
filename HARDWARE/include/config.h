@@ -31,6 +31,7 @@
 
 // ── TIMING (ms) ──────────────────────────────────────────────
 #define TIMEOUT_REVERT_MS       10000   // Chờ xe qua IR tối đa 10s
+#define IR_SEQUENCE_TIMEOUT_MS  6000
 #define GATE_AUTO_CLOSE_MS      500    // Đóng barrier 0.5s sau khi xe qua
 #define TELEMETRY_INTERVAL_MS   15000   // Gửi telemetry mỗi 15s
 #define WIFI_RETRY_INTERVAL_MS  30000   // Thử kết nối lại WiFi mỗi 30s
