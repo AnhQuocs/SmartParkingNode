@@ -15,9 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircleOutline
-import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.HourglassEmpty
-import androidx.compose.material.icons.filled.Motorcycle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -29,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.smarttrafficradar.R
@@ -36,12 +35,8 @@ import com.example.smarttrafficradar.features.user_profile.domain.model.VehicleT
 import com.example.smarttrafficradar.ui.dimens.AppShape
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
-import com.example.smarttrafficradar.ui.dimens.Dimen.PaddingS
-import com.example.smarttrafficradar.ui.theme.NatureBackground
-import com.example.smarttrafficradar.ui.theme.NatureGreen
-import com.example.smarttrafficradar.ui.theme.NeonGreen
 import com.example.smarttrafficradar.ui.theme.SlateMist
-import com.example.smarttrafficradar.utils.bold
+import com.example.smarttrafficradar.ui.theme.TextPrimaryDark
 import com.example.smarttrafficradar.utils.s14
 import com.example.smarttrafficradar.utils.s16
 import com.example.smarttrafficradar.utils.s18
@@ -59,7 +54,7 @@ data class CardStatus(
 @Composable
 fun ParkingCard(
     modifier: Modifier = Modifier,
-    isActive: Boolean,
+    isActive: Boolean = true,
     rfidUid: String? = null,
     vehicleType: VehicleType? = null,
 ) {
@@ -69,14 +64,14 @@ fun ParkingCard(
         stringResource(id = R.string.motorcycle)
 
     val vehicleIcon = if (vehicleType == VehicleType.CAR)
-        Icons.Default.DirectionsCar
+        painterResource(id = R.drawable.ic_car)
     else
-        Icons.Default.Motorcycle
+        painterResource(id = R.drawable.ic_motorcycle)
 
     val cardStatus = if (isActive) {
         CardStatus(
-            bgrColor = NatureBackground,
-            contentColor = NeonGreen,
+            bgrColor = Color(0xFFF0FDF4),
+            contentColor = Color(0xFF008236),
             icon = Icons.Default.CheckCircleOutline,
             activeStatus = stringResource(id = R.string.activated),
             rfidCardCode = rfidUid,
@@ -117,8 +112,8 @@ fun ParkingCard(
 
                 Box(
                     modifier = Modifier
-                        .height(20.dp)
-                        .clip(RoundedCornerShape(AppShape.ShapeXS))
+                        .height(22.dp)
+                        .clip(RoundedCornerShape(AppShape.ShapeL))
                         .background(color = cardStatus.bgrColor)
                 ) {
                     Row(
@@ -131,7 +126,7 @@ fun ParkingCard(
                             imageVector = cardStatus.icon,
                             contentDescription = null,
                             tint = cardStatus.contentColor,
-                            modifier = Modifier.size(Dimen.SizeSM)
+                            modifier = Modifier.size(Dimen.SizeS)
                         )
 
                         Spacer(modifier = Modifier.width(AppSpacing.S))
@@ -155,12 +150,12 @@ fun ParkingCard(
                 Text(
                     text = stringResource(id = R.string.rfid_card_code),
                     style = MaterialTheme.typography.s16,
-                    color = Color.Black
+                    color = TextPrimaryDark
                 )
 
                 Text(
                     text = cardStatus.rfidCardCode ?: "",
-                    style = MaterialTheme.typography.s16.bold(),
+                    style = MaterialTheme.typography.s16.semiBold(),
                     color = Color.Black
                 )
             }
@@ -175,22 +170,22 @@ fun ParkingCard(
                 Text(
                     text = stringResource(id = R.string.vehicle_type),
                     style = MaterialTheme.typography.s16,
-                    color = Color.Black
+                    color = TextPrimaryDark
                 )
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = vehicleIcon,
+                        painter = vehicleIcon,
                         contentDescription = null,
                         tint = Color.Black,
                         modifier = Modifier.size(Dimen.SizeSM)
                     )
 
-                    Spacer(modifier = Modifier.width(AppSpacing.XXS))
+                    Spacer(modifier = Modifier.width(AppSpacing.S))
 
                     Text(
                         text = cardStatus.vehicle ?: "",
-                        style = MaterialTheme.typography.s16.bold(),
+                        style = MaterialTheme.typography.s16.semiBold(),
                         color = Color.Black
                     )
                 }

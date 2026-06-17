@@ -11,7 +11,7 @@ data class UserProfileDto(
     var department: String = "",
     var avatarUrl: String? = null,
     var rfidUid: String? = null,
-    var currentDebt: Long = 0,
+    var currentDebt: Int = 0,
     @get:PropertyName("isActive")
     @set:PropertyName("isActive")
     var isActive: Boolean = false,

@@ -225,5 +225,16 @@
     <string name="vehicle_type">Loại xe</string>
     <string name="car">Ô tô</string>
     <string name="motorcycle">Xe máy</string>
+    <string name="amount_due">Số tiền cần thanh toán</string>
+    <string name="pay_now">Thanh toán ngay</string>
+
+    <string name="quick_actions">Thao tác nhanh</string>
+    <string name="register_card">Đăng ký thẻ</string>
+    <string name="view_history">Xem lịch sử</string>
+    <string name="support">Hỗ trợ</string>
+    <string name="recent_activities">Hoạt động gần đây</string>
+    <string name="view_all">Xem tất cả</string>
+    <string name="entry_gate">Vào bãi</string>
+    <string name="exit_gate">Ra bãi</string>
 
 </resources>

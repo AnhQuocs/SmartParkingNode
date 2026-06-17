@@ -10,7 +10,7 @@ data class UserProfile(
     val department: String = "",
     val avatarUrl: String? = null,
     val rfidUid: String? = null,
-    val currentDebt: Long = 0,
+    val currentDebt: Int = 0,
     val isActive: Boolean = false,
     val vehicleType: VehicleType? = null,
     val createdAt: Long = System.currentTimeMillis(),

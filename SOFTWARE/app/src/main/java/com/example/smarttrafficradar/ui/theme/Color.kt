@@ -92,3 +92,23 @@ val BabyBlue = Color(0xFFC1E5F3)
 
 val NatureBackground = Color(0xFFF0FDF4)
 val NatureGreen = Color(0xFF90C8A5)
+val TextPrimaryDark = Color(0xFF171725)
+val Charcoal = Color(0xFF212121)
+val SlateGray = Color(0xFF6B7280)
+
+val RoyalBlue = Color(0xFF115EEA)
+val RoyalBlueLight = Color(0xFFF2F7FF)
+
+val TealGreen = Color(0xFF078673)
+val TealGreenLight = Color(0xFFF1FAF6)
+
+val RoyalPurple = Color(0xFF5C44ED)
+val RoyalPurpleLight = Color(0xFFF4F3FF)
+
+val AmberOrange = Color(0xFFD76C00)
+val AmberOrangeLight = Color(0xFFFFF9EA)
+
+val OceanBlue = Color(0xFF0088CC)
+
+val Background = Color(0xFFF8FAFC)
+val GreenBright = Color(0xFF22C55E)

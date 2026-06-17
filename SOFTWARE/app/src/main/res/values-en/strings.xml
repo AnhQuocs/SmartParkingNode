@@ -228,5 +228,16 @@
     <string name="vehicle_type">Vehicle Type</string>
     <string name="car">Car</string>
     <string name="motorcycle">Motorcycle</string>
+    <string name="amount_due">Amount Due</string>
+    <string name="pay_now">Pay Now</string>
+
+    <string name="quick_actions">Quick Actions</string>
+    <string name="register_card">Register Card</string>
+    <string name="view_history">View History</string>
+    <string name="support">Support</string>
+    <string name="recent_activities">Recent Activities</string>
+    <string name="view_all">View All</string>
+    <string name="entry_gate">Entry</string>
+    <string name="exit_gate">Exit</string>
 
 </resources>
