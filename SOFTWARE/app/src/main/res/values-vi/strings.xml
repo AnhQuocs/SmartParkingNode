@@ -237,4 +237,15 @@
     <string name="entry_gate">Vào bãi</string>
     <string name="exit_gate">Ra bãi</string>
 
+    <!-- PROFILE -->
+    <string name="setting">Cài đặt</string>
+    <string name="security">Bảo mật</string>
+    <string name="notification">Thông báo</string>
+    <string name="turn_on">Bật</string>
+    <string name="turn_off">Tắt</string>
+    <string name="logout_title">Đăng xuất</string>
+    <string name="logout_message">Bạn có chắc chắn muốn đăng xuất không?</string>
+    <string name="logout_success">Đăng xuất thành công</string>
+    <string name="logout_confirm">Đăng xuất</string>
+
 </resources>

@@ -240,4 +240,15 @@
     <string name="entry_gate">Entry</string>
     <string name="exit_gate">Exit</string>
 
+    <!-- PROFILE -->
+    <string name="setting">Setting</string>
+    <string name="security">Security</string>
+    <string name="notification">Notification</string>
+    <string name="turn_on">Turn on</string>
+    <string name="turn_off">Turn off</string>
+    <string name="logout_title">Log out</string>
+    <string name="logout_message">Are you sure you want to log out?</string>
+    <string name="logout_success">Logged out successfully</string>
+    <string name="logout_confirm">Logout</string>
+
 </resources>

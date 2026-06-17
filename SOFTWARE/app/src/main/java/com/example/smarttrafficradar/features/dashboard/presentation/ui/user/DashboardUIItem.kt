@@ -52,6 +52,7 @@ import com.example.smarttrafficradar.ui.theme.SlateGray
 import com.example.smarttrafficradar.ui.theme.TealGreen
 import com.example.smarttrafficradar.ui.theme.TealGreenLight
 import com.example.smarttrafficradar.utils.s12
+import com.example.smarttrafficradar.utils.s14
 import com.example.smarttrafficradar.utils.s15
 import com.example.smarttrafficradar.utils.s16
 import com.example.smarttrafficradar.utils.s18
@@ -165,7 +166,7 @@ fun QuickActionsSection(
     ) {
         Text(
             text = stringResource(id = R.string.quick_actions),
-            style = MaterialTheme.typography.s18,
+            style = MaterialTheme.typography.s18.semiBold(),
             color = Color.Black
         )
 
@@ -250,7 +251,7 @@ fun RecentActivitiesSection(
         ) {
             Text(
                 text = stringResource(id = R.string.recent_activities),
-                style = MaterialTheme.typography.s18,
+                style = MaterialTheme.typography.s18.semiBold(),
                 color = Color.Black
             )
 
@@ -259,7 +260,7 @@ fun RecentActivitiesSection(
                 modifier = Modifier.clickable { onSeeAll() }) {
                 Text(
                     text = stringResource(id = R.string.see_all),
-                    style = MaterialTheme.typography.s15,
+                    style = MaterialTheme.typography.s14.semiBold(),
                     color = OceanBlue
                 )
 
@@ -269,7 +270,7 @@ fun RecentActivitiesSection(
                     painter = painterResource(id = R.drawable.ic_arrow_right),
                     contentDescription = null,
                     tint = OceanBlue,
-                    modifier = Modifier.size(Dimen.SizeS)
+                    modifier = Modifier.size(Dimen.SizeSM)
                 )
             }
         }
@@ -337,7 +338,7 @@ fun RecentActivitiesItem(
                     painter = painterResource(id = recentActivity.iconRes),
                     contentDescription = null,
                     tint = recentActivity.iconColor,
-                    modifier = Modifier.size(Dimen.SizeSM)
+                    modifier = Modifier.size(Dimen.SizeML)
                 )
             }
 
