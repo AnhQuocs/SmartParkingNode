@@ -33,7 +33,7 @@
 
 // ── TIMING (ms) ──────────────────────────────────────────────
 #define IR_WAIT_TIMEOUT_MS  8000
-#define GATE_CLOSE_DELAY_MS   5000   // Barie mở cố định 5s rồi tự đóng (KHÔNG dùng IR)
+#define GATE_CLOSE_DELAY_MS   1000   // Barie mở cố định 5s rồi tự đóng (KHÔNG dùng IR)
 #define TELEMETRY_INTERVAL_MS   15000  // Gửi telemetry mỗi 15s
 #define WIFI_RETRY_INTERVAL_MS  30000  // Thử kết nối lại WiFi mỗi 30s
 

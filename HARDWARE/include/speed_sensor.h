@@ -58,11 +58,6 @@ public:
 
     bool isWatching() { return _watching; }
 
-    // Gọi liên tục trong loop().
-    // Trả về CONFIRMED khi cảm biến đích đã chắn rồi thả ra (xe THỰC SỰ đi qua).
-    // Trả về TIMED_OUT khi quá IR_WAIT_TIMEOUT_MS mà KHÔNG xác nhận được —
-    //   trường hợp này Barie vẫn đóng để an toàn nhưng KHÔNG được ghi Firestore.
-    // Trả về NONE nếu chưa có gì xảy ra.
     Result update()
     {
         if (!_watching)

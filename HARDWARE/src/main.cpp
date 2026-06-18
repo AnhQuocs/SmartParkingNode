@@ -145,11 +145,13 @@ void onCloudCommand(String cmd, String uid, String action)
     }
     else if (cmd == "BUZZER_ALERT")
     {
-        barrier.playAudio(AUDIO_DEBT_EXCEED);
+        // barrier.playAudio(AUDIO_DEBT_EXCEED);
+        Serial.println("[AUDIO-DEBUG] Bỏ qua âm thanh cảnh báo nợ vượt hạn mức");
     }
     else if (cmd == "CARD_UNKNOWN")
     {
-        barrier.playAudio(AUDIO_CARD_UNKNOWN);
+        // barrier.playAudio(AUDIO_CARD_UNKNOWN);
+        Serial.println("[AUDIO-DEBUG] Bỏ qua âm thanh thẻ chưa đăng ký");
     }
 }
 

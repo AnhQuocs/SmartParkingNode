@@ -37,7 +37,8 @@ public:
     // Đóng ngay, không delay. Âm thanh cảnh báo phát đồng thời (không chờ).
     void close()
     {
-        playAudio(AUDIO_GATE_CLOSING);
+        // playAudio(AUDIO_GATE_CLOSING);
+        Serial.println("Đóng Barie ngay (không chờ), phát âm thanh cảnh báo đồng thời");
         _servo.write(SERVO_CLOSE_ANGLE);
         Serial.println("[SERVO] Barrier CLOSED");
     }

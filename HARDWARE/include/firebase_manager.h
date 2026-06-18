@@ -29,20 +29,29 @@ private:
 public:
     void begin()
     {
-        // 1. ÉP ĐỒNG BỘ THỜI GIAN THỰC (NTP) TRƯỚC KHI CHẠY TIẾP
-        Serial.print("[TIME] Đang đồng bộ thời gian NTP...");
-        configTime(0, 0, "pool.ntp.org", "time.nist.gov"); // Dùng UTC 0 để Firestore tự map Timestamp
+        Serial.print("\n[TIME] Đang đồng bộ máy chủ thời gian NTP...");
+        configTime(0, 0, "pool.ntp.org", "time.nist.gov", "time.windows.com");
+
         time_t now = time(nullptr);
-        // Đứng chờ cho đến khi năm hiện tại > 2020 (tức là timestamp > 1.6 tỷ)
+        int retries = 0;
+
         while (now < 1600000000)
         {
-            delay(500);
+            delay(1000);
             Serial.print(".");
             now = time(nullptr);
+            retries++;
+            if (retries % 10 == 0)
+            {
+                configTime(0, 0, "pool.ntp.org", "time.nist.gov");
+            }
         }
-        Serial.println("\n[TIME] Đồng bộ NTP thành công!");
 
-        // 2. Khởi tạo Firebase RTDB
+        struct tm timeinfo;
+        gmtime_r(&now, &timeinfo);
+        Serial.printf("\n[TIME] Đồng bộ thành công! Ngày: %d-%02d-%02d\n",
+                      timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday);
+
         fbConfig.host = FIREBASE_HOST;
         fbConfig.signer.tokens.legacy_token = FIREBASE_AUTH;
 
@@ -92,6 +101,8 @@ public:
         String direction = "";
         time_t checkInTime = 0;
         String openHistoryId = "";
+        int64_t currentDebt = 0;
+        String vehicleType = "";
     } _pending;
 
 public:
@@ -103,7 +114,7 @@ public:
         Serial.printf("[LOGIC] Đang query thẻ %s trên Cloud Firestore...\n", uid.c_str());
 
         HTTPClient http;
-        http.setReuse(false); // QUAN TRỌNG: Ngăn rò rỉ Socket gây treo mạch
+        http.setReuse(false);
         http.setTimeout(4000);
         String url = "https://firestore.googleapis.com/v1/projects/smarttrafficradar"
                      "/databases/(default)/documents:runQuery?key=" +
@@ -126,7 +137,7 @@ public:
 
         if (httpCode > 0)
         {
-            String payload = http.getString(); // Bắt buộc đọc để giải phóng buffer
+            String payload = http.getString();
             if (httpCode == 200)
             {
                 DynamicJsonDocument doc(2048);
@@ -138,7 +149,14 @@ public:
                     bool isActive = fields["isActive"]["booleanValue"] | false;
                     bool isParking = fields["isParking"]["booleanValue"] | false;
 
-                    // Lấy `uid` của profiles, nếu không có lấy `userId`, nếu trống lấy chính `rfidUid`
+                    int64_t currentDebt = 0;
+                    if (fields["currentDebt"]["integerValue"])
+                    {
+                        currentDebt = fields["currentDebt"]["integerValue"].as<long>();
+                    }
+
+                    String vehicleType = fields["vehicleType"]["stringValue"] | "MOTORBIKE";
+
                     String profileUid = fields["uid"]["stringValue"] | "";
                     if (profileUid == "")
                         profileUid = fields["userId"]["stringValue"] | "";
@@ -149,33 +167,46 @@ public:
 
                     if (isActive)
                     {
-                        String direction = isParking ? "OUT" : "IN";
-
-                        _pending.active = true;
-                        _pending.uid = uid;
-                        _pending.userId = profileUid;
-                        _pending.profileDocPath = docName;
-                        _pending.direction = direction;
-
-                        if (direction == "OUT")
+                        // <-- LOGIC KIỂM TRA HẠN MỨC NỢ TẠI ĐÂY -->
+                        if (currentDebt > 100000)
                         {
-                            _findOpenHistory(uid);
+                            Serial.printf("[LOGIC] Thẻ %s bị từ chối. Dư nợ hiện tại (%lldđ) vượt quá hạn mức 100.000đ.\n", uid.c_str(), currentDebt);
+                            logInvalidSwipe(uid, "DEBT_EXCEEDED");   // Lưu lịch sử quẹt lỗi lên Firebase
+                            onCloudCommand("BUZZER_ALERT", uid, ""); // Báo còi / phát loa AUDIO_DEBT_EXCEED
                         }
+                        else
+                        {
+                            // Nợ hợp lệ -> Xử lý mở cổng bình thường
+                            String direction = isParking ? "OUT" : "IN";
 
-                        Serial.printf("[LOGIC] Thẻ %s hợp lệ. Hướng: %s (chưa commit). Mở Barie.\n",
-                                      uid.c_str(), direction.c_str());
-                        onCloudCommand("OPEN", uid, direction);
+                            _pending.active = true;
+                            _pending.uid = uid;
+                            _pending.userId = profileUid;
+                            _pending.profileDocPath = docName;
+                            _pending.direction = direction;
+                            _pending.currentDebt = currentDebt;
+                            _pending.vehicleType = vehicleType;
+
+                            if (direction == "OUT")
+                            {
+                                _findOpenHistory(uid);
+                            }
+
+                            Serial.printf("[LOGIC] Thẻ %s hợp lệ. Xe: %s. Hướng: %s. Nợ cũ: %lld. Mở Barie.\n",
+                                          uid.c_str(), vehicleType.c_str(), direction.c_str(), currentDebt);
+                            onCloudCommand("OPEN", uid, direction);
+                        }
                     }
                     else
                     {
                         Serial.printf("[LOGIC] Thẻ %s bị khóa.\n", uid.c_str());
                         logInvalidSwipe(uid, "BLOCKED");
-                        onCloudCommand("BUZZER_ALERT", uid, "");
+                        onCloudCommand("BUZZER_ALERT", uid, ""); // Tái sử dụng âm thanh cảnh báo lỗi
                     }
                 }
                 else
                 {
-                    Serial.printf("[LOGIC] Thẻ %s chưa đăng ký. Đẩy pending_cards.\n", uid.c_str());
+                    Serial.printf("[LOGIC] Thẻ %s chưa đăng ký.\n", uid.c_str());
                     logInvalidSwipe(uid, "UNKNOWN");
                     onCloudCommand("CARD_UNKNOWN", uid, "");
                 }
@@ -183,10 +214,10 @@ public:
         }
         else
         {
-            Serial.printf("[HTTP] Lỗi kết nối Firestore: %d — bỏ qua lượt quẹt này\n", httpCode);
+            Serial.printf("[HTTP] Lỗi kết nối Firestore: %d\n", httpCode);
         }
 
-        http.end(); // Kết thúc an toàn
+        http.end();
     }
 
     void logInvalidSwipe(String uid, String reason)
@@ -250,17 +281,27 @@ public:
         if (!_pending.active)
             return;
 
-        time_t nowTs = time(nullptr); // Đã có giờ đúng do NTP sync ở begin()
-
-        _patchProfileIsParking(_pending.profileDocPath, _pending.direction == "IN");
+        time_t nowTs = time(nullptr);
 
         if (_pending.direction == "IN")
         {
+            _patchProfile(_pending.profileDocPath, true, false, 0);
             _createCheckInHistory(_pending.userId, _pending.uid, nowTs);
         }
         else
         {
-            _updateCheckOutHistory(_pending.openHistoryId, nowTs);
+            int64_t durationSec = nowTs - _pending.checkInTime;
+            if (durationSec < 0)
+                durationSec = 0;
+            int64_t durationMin = durationSec / 60;
+
+            double feeDouble = _calcFee(_pending.checkInTime, nowTs, durationMin, _pending.vehicleType);
+            int64_t feeInt = (int64_t)feeDouble;
+
+            int64_t newDebt = _pending.currentDebt + feeInt;
+
+            _patchProfile(_pending.profileDocPath, false, true, newDebt);
+            _updateCheckOutHistory(_pending.openHistoryId, nowTs, durationMin, feeDouble);
         }
 
         Serial.printf("[COMMIT-FIRESTORE] Hoàn tất ghi nhận %s cho UID %s\n",
@@ -279,7 +320,6 @@ public:
     }
 
 private:
-    // --- Format String thành ISO 8601 chuẩn Timestamp của Firestore ---
     String getIso8601Time(time_t now)
     {
         if (now < 100000)
@@ -291,7 +331,6 @@ private:
         return String(buf);
     }
 
-    // --- Chuyển từ Timestamp String của Firestore về Unix Epoch ---
     time_t parseIso8601(const String &iso)
     {
         if (iso.isEmpty())
@@ -304,25 +343,43 @@ private:
         return mktime(&t);
     }
 
-    void _patchProfileIsParking(const String &fullDocPath, bool newIsParking)
+    void _patchProfile(const String &fullDocPath, bool newIsParking, bool updateDebt, int64_t newDebt)
     {
         if (fullDocPath.isEmpty())
             return;
         HTTPClient http;
         http.setReuse(false);
         http.setTimeout(4000);
+
         String url = "https://firestore.googleapis.com/v1/" + fullDocPath +
-                     "?updateMask.fieldPaths=isParking&key=" + String(FIREBASE_WEB_API_KEY);
+                     "?updateMask.fieldPaths=isParking";
+
+        if (updateDebt)
+        {
+            url += "&updateMask.fieldPaths=currentDebt";
+        }
+        url += "&key=" + String(FIREBASE_WEB_API_KEY);
 
         http.begin(url);
         http.addHeader("Content-Type", "application/json");
 
-        String body = String("{\"fields\":{\"isParking\":{\"booleanValue\":") +
-                      (newIsParking ? "true" : "false") + "}}}";
+        String body = "{\"fields\":{\"isParking\":{\"booleanValue\":";
+        body += (newIsParking ? "true" : "false");
+        body += "}";
+
+        if (updateDebt)
+        {
+            body += ",\"currentDebt\":{\"integerValue\":\"" + String((long)newDebt) + "\"}";
+        }
+        body += "}}";
 
         if (http.PATCH(body) > 0)
         {
-            http.getString(); // Xả buffer socket
+            http.getString();
+            if (updateDebt)
+            {
+                Serial.printf("[FIRESTORE] Đã cập nhật công nợ mới: %lldđ\n", newDebt);
+            }
         }
         http.end();
     }
@@ -369,16 +426,10 @@ private:
         http.end();
     }
 
-    void _updateCheckOutHistory(const String &historyId, time_t nowTs)
+    void _updateCheckOutHistory(const String &historyId, time_t nowTs, int64_t durationMin, double fee)
     {
         if (historyId.isEmpty())
             return;
-
-        int64_t durationSec = nowTs - _pending.checkInTime;
-        if (durationSec < 0)
-            durationSec = 0; // Tránh âm nếu đồng hồ lệch
-        int64_t durationMin = durationSec / 60;
-        double fee = _calcFee(durationMin);
 
         HTTPClient http;
         http.setReuse(false);
@@ -425,12 +476,32 @@ private:
         http.end();
     }
 
-    // LOGIC TÍNH PHÍ: Dưới 30 phút là 0đ, từ 30 phút trở lên là 5000đ
-    double _calcFee(int64_t durationMin)
+    double _calcFee(time_t checkInTs, time_t checkOutTs, int64_t durationMin, const String &vehicleType)
     {
         if (durationMin <= 30)
             return 0.0;
-        return 5000.0;
+
+        time_t inLocal = checkInTs + 7 * 3600;
+        time_t outLocal = checkOutTs + 7 * 3600;
+
+        struct tm tmIn, tmOut;
+        gmtime_r(&inLocal, &tmIn);
+        gmtime_r(&outLocal, &tmOut);
+
+        bool isOvernight = (tmIn.tm_yday != tmOut.tm_yday) || (tmIn.tm_year != tmOut.tm_year);
+
+        if (isOvernight)
+        {
+            if (vehicleType == "CAR")
+                return 50000.0;
+            return 15000.0;
+        }
+        else
+        {
+            if (vehicleType == "CAR")
+                return 20000.0;
+            return 5000.0;
+        }
     }
 
 public:
