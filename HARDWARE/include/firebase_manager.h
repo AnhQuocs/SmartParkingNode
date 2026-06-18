@@ -65,8 +65,18 @@ public:
             }
         }
     }
+    struct PendingTx
+    {
+        bool active = false;
+        String uid = "";
+        String userId = "";
+        String profileDocPath = ""; // đường dẫn đầy đủ document trong profiles
+        String direction = "";      // "IN" hoặc "OUT"
+        int64_t checkInTime = 0;    // chỉ có giá trị khi direction == OUT (lấy từ history đang mở)
+        String openHistoryId = "";  // document ID của history_xxx đang CHECK_IN, để update khi OUT
+    } _pending;
 
-
+public:
     void processSwipeOnHardware(String uid)
     {
         if (!initialized || WiFi.status() != WL_CONNECTED)
@@ -106,11 +116,34 @@ public:
 
                 if (!err)
                 {
-                    bool isActive = doc[0]["document"]["fields"]["isActive"]["booleanValue"];
+                    auto fields = doc[0]["document"]["fields"];
+                    bool isActive = fields["isActive"]["booleanValue"] | false;
+                    bool isParking = fields["isParking"]["booleanValue"] | false;
+                    String userId = fields["userId"]["stringValue"] | "";
+                    String docName = doc[0]["document"]["name"] | ""; // full path
+
                     if (isActive)
                     {
-                        Serial.printf("[LOGIC] Thẻ %s hợp lệ. Mở Barie.\n", uid.c_str());
-                        onCloudCommand("OPEN", uid, "IN");
+                        // Hướng xác định theo isParking trong profiles (KHÔNG đảo ngay)
+                        String direction = isParking ? "OUT" : "IN";
+
+                        // Lưu tạm — CHƯA ghi/đảo gì lên Firestore.
+                        // Chỉ commit thật khi IR xác nhận xe đã đi qua (xem commitParkingTransaction).
+                        _pending.active = true;
+                        _pending.uid = uid;
+                        _pending.userId = userId;
+                        _pending.profileDocPath = docName;
+                        _pending.direction = direction;
+
+                        if (direction == "OUT")
+                        {
+                            // Cần tìm history đang mở (status=CHECK_IN) để lấy checkInTime + doc id
+                            _findOpenHistory(userId, uid);
+                        }
+
+                        Serial.printf("[LOGIC] Thẻ %s hợp lệ. Hướng: %s (chưa commit). Mở Barie.\n",
+                                      uid.c_str(), direction.c_str());
+                        onCloudCommand("OPEN", uid, direction);
                     }
                     else
                     {
@@ -150,21 +183,235 @@ public:
         Firebase.setJSON(fbData, "/pending_cards/" + uid, json);
     }
 
-    // Gọi SAU khi servo/audio đã xử lý — không chặn flow phần cứng nếu lỗi
-    void sendSwipeEvent(String uid)
+    void _findOpenHistory(const String &userId, const String &uid)
     {
-        if (!initialized)
-            return;
-        FirebaseJson json;
-        json.set("uid", uid);
-        json.set("timestamp", (int64_t)millis());
-        json.set("ir_confirmed", false);
-        json.set("processed", false);
-        if (!Firebase.setJSON(fbData, "/hardware_events/latest_swipe", json))
+        HTTPClient http;
+        http.setTimeout(4000);
+        String url = "https://firestore.googleapis.com/v1/projects/smarttrafficradar"
+                     "/databases/(default)/documents:runQuery?key=" +
+                     String(FIREBASE_WEB_API_KEY);
+        http.begin(url);
+        http.addHeader("Content-Type", "application/json");
+
+        // Tìm theo rfidUid + status == CHECK_IN
+        String payload =
+            "{\"structuredQuery\":{"
+            "\"from\":[{\"collectionId\":\"parking_history\"}],"
+            "\"where\":{\"compositeFilter\":{\"op\":\"AND\",\"filters\":["
+            "{\"fieldFilter\":{\"field\":{\"fieldPath\":\"rfidUid\"},\"op\":\"EQUAL\","
+            "\"value\":{\"stringValue\":\"" +
+            uid + "\"}}},"
+                  "{\"fieldFilter\":{\"field\":{\"fieldPath\":\"status\"},\"op\":\"EQUAL\","
+                  "\"value\":{\"stringValue\":\"CHECK_IN\"}}}"
+                  "]}},"
+                  "\"limit\":1"
+                  "}}";
+
+        int code = http.POST(payload);
+        if (code > 0)
         {
-            Serial.printf("[Firebase] sendSwipeEvent lỗi: %s\n", fbData.errorReason().c_str());
+            String resp = http.getString();
+            if (resp.indexOf("\"document\":") > 0)
+            {
+                DynamicJsonDocument doc(2048);
+                if (!deserializeJson(doc, resp))
+                {
+                    String fullPath = doc[0]["document"]["name"] | "";
+                    // fullPath dạng .../documents/parking_history/history_003
+                    int idx = fullPath.lastIndexOf('/');
+                    _pending.openHistoryId = (idx >= 0) ? fullPath.substring(idx + 1) : "";
+                    int64_t checkIn = doc[0]["document"]["fields"]["checkInTime"]["integerValue"] | (int64_t)0;
+                    _pending.checkInTime = checkIn;
+                    Serial.printf("[LOGIC] Tìm thấy history mở: %s, checkInTime=%lld\n",
+                                  _pending.openHistoryId.c_str(), checkIn);
+                }
+            }
+            else
+            {
+                Serial.println("[LOGIC] CẢNH BÁO: không tìm thấy history CHECK_IN tương ứng cho OUT");
+            }
         }
+        http.end();
     }
+
+    void commitParkingTransaction()
+    {
+        if (!_pending.active)
+        {
+            Serial.println("[LOGIC] commitParkingTransaction gọi nhưng không có pending — bỏ qua");
+            return;
+        }
+
+        int64_t nowTs = (int64_t)(millis() / 1000); // TODO: thay bằng NTP/epoch thật nếu có
+
+        // 1. Đảo isParking trong profiles
+        _patchProfileIsParking(_pending.profileDocPath, _pending.direction == "IN");
+
+        // 2. Ghi parking_history
+        if (_pending.direction == "IN")
+        {
+            _createCheckInHistory(_pending.userId, _pending.uid, nowTs);
+        }
+        else
+        {
+            _updateCheckOutHistory(_pending.openHistoryId, nowTs);
+        }
+
+        Serial.printf("[COMMIT-FIRESTORE] Hoàn tất ghi nhận %s cho UID %s\n",
+                      _pending.direction.c_str(), _pending.uid.c_str());
+
+        _pending = PendingTx(); // reset sạch
+    }
+
+    void abortParkingTransaction()
+    {
+        if (_pending.active)
+        {
+            Serial.printf("[ABORT] Hủy giao dịch UID %s — không ghi Firestore\n", _pending.uid.c_str());
+        }
+        _pending = PendingTx();
+    }
+
+private:
+    // PATCH chỉ field isParking trong profiles, dùng updateMask
+    void _patchProfileIsParking(const String &fullDocPath, bool newIsParking)
+    {
+        if (fullDocPath.isEmpty())
+        {
+            Serial.println("[FIRESTORE] Thiếu profileDocPath — không thể patch isParking");
+            return;
+        }
+        HTTPClient http;
+        http.setTimeout(4000);
+        // fullDocPath đã là URL đầy đủ dạng projects/.../documents/profiles/xxx
+        String url = "https://firestore.googleapis.com/v1/" + fullDocPath +
+                     "?updateMask.fieldPaths=isParking&key=" + String(FIREBASE_WEB_API_KEY);
+
+        http.begin(url);
+        http.addHeader("Content-Type", "application/json");
+
+        String body = String("{\"fields\":{\"isParking\":{\"booleanValue\":") +
+                      (newIsParking ? "true" : "false") + "}}}";
+
+        int code = http.PATCH(body);
+        if (code != 200)
+        {
+            Serial.printf("[FIRESTORE] Patch isParking lỗi HTTP %d\n", code);
+        }
+        else
+        {
+            Serial.printf("[FIRESTORE] isParking -> %s\n", newIsParking ? "true" : "false");
+        }
+        http.end();
+    }
+
+    // Tạo document mới trong parking_history với status=CHECK_IN
+    void _createCheckInHistory(const String &userId, const String &uid, int64_t nowTs)
+    {
+        HTTPClient http;
+        http.setTimeout(4000);
+        String url = "https://firestore.googleapis.com/v1/projects/smarttrafficradar"
+                     "/databases/(default)/documents/parking_history?key=" +
+                     String(FIREBASE_WEB_API_KEY);
+        http.begin(url);
+        http.addHeader("Content-Type", "application/json");
+
+        String body =
+            "{\"fields\":{"
+            "\"userId\":{\"stringValue\":\"" +
+            userId + "\"},"
+                     "\"rfidUid\":{\"stringValue\":\"" +
+            uid + "\"},"
+                  "\"checkInTime\":{\"integerValue\":" +
+            String((long)nowTs) + "},"
+                                  "\"checkOutTime\":{\"nullValue\":null},"
+                                  "\"durationMinutes\":{\"integerValue\":0},"
+                                  "\"fee\":{\"doubleValue\":0.0},"
+                                  "\"status\":{\"stringValue\":\"CHECK_IN\"},"
+                                  "\"createdAt\":{\"integerValue\":" +
+            String((long)nowTs) + "},"
+                                  "\"updatedAt\":{\"integerValue\":" +
+            String((long)nowTs) + "}"
+                                  "}}";
+
+        int code = http.POST(body);
+        if (code != 200)
+        {
+            Serial.printf("[FIRESTORE] Tạo parking_history lỗi HTTP %d\n", code);
+        }
+        else
+        {
+            Serial.println("[FIRESTORE] Đã tạo parking_history (CHECK_IN)");
+        }
+        http.end();
+    }
+
+    // Update document parking_history đã có sẵn -> CHECK_OUT, tính fee/duration
+    void _updateCheckOutHistory(const String &historyId, int64_t nowTs)
+    {
+        if (historyId.isEmpty())
+        {
+            Serial.println("[FIRESTORE] Thiếu historyId — không thể ghi CHECK_OUT");
+            return;
+        }
+
+        int64_t durationSec = nowTs - _pending.checkInTime;
+        int64_t durationMin = durationSec / 60;
+        double fee = _calcFee(durationMin); // TODO: đồng bộ công thức tính phí với Quốc
+
+        HTTPClient http;
+        http.setTimeout(4000);
+        String url = "https://firestore.googleapis.com/v1/projects/smarttrafficradar"
+                     "/databases/(default)/documents/parking_history/" +
+                     historyId +
+                     "?updateMask.fieldPaths=checkOutTime"
+                     "&updateMask.fieldPaths=durationMinutes"
+                     "&updateMask.fieldPaths=fee"
+                     "&updateMask.fieldPaths=status"
+                     "&updateMask.fieldPaths=updatedAt"
+                     "&key=" +
+                     String(FIREBASE_WEB_API_KEY);
+        http.begin(url);
+        http.addHeader("Content-Type", "application/json");
+
+        String body =
+            "{\"fields\":{"
+            "\"checkOutTime\":{\"integerValue\":" +
+            String((long)nowTs) + "},"
+                                  "\"durationMinutes\":{\"integerValue\":" +
+            String((long)durationMin) + "},"
+                                        "\"fee\":{\"doubleValue\":" +
+            String(fee) + "},"
+                          "\"status\":{\"stringValue\":\"CHECK_OUT\"},"
+                          "\"updatedAt\":{\"integerValue\":" +
+            String((long)nowTs) + "}"
+                                  "}}";
+
+        int code = http.PATCH(body);
+        if (code != 200)
+        {
+            Serial.printf("[FIRESTORE] Update CHECK_OUT lỗi HTTP %d\n", code);
+        }
+        else
+        {
+            Serial.printf("[FIRESTORE] Đã CHECK_OUT — duration=%lld phút, fee=%.0f\n", durationMin, fee);
+        }
+        http.end();
+    }
+
+    // TODO: thay bằng đúng công thức của Quốc (pricing_config: grace_period,
+    // base_rate, overnight_surcharge...). Đây là công thức tạm để test.
+    double _calcFee(int64_t durationMin)
+    {
+        if (durationMin < 15)
+            return 0.0;
+        return 5000.0; // base_rate tạm, Quốc sẽ thay bằng logic đầy đủ
+    }
+
+public:
+    // (Đã loại bỏ sendSwipeEvent / confirmIR / revertSwipe kiểu RTDB cũ —
+    //  giờ dùng commitParkingTransaction() / abortParkingTransaction()
+    //  ghi trực tiếp Firestore, xem phía trên.)
 
     void setGateStatus(String status)
     {
@@ -174,23 +421,6 @@ public:
         {
             Serial.printf("[Firebase] setGateStatus lỗi: %s\n", fbData.errorReason().c_str());
         }
-    }
-
-    void confirmIR()
-    {
-        if (!initialized)
-            return;
-        if (!Firebase.setBool(fbData, "/hardware_events/latest_swipe/ir_confirmed", true))
-        {
-            Serial.printf("[Firebase] confirmIR lỗi: %s\n", fbData.errorReason().c_str());
-        }
-    }
-
-    void revertSwipe()
-    {
-        if (!initialized)
-            return;
-        Firebase.setBool(fbData, "/hardware_events/latest_swipe/processed", true);
     }
 
     bool checkRemoteWiFiChange(String &newSSID, String &newPass)

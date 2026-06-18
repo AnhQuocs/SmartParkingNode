@@ -1,106 +1,96 @@
-// #pragma once
+#pragma once
 
-// #include <Arduino.h>
-// #include "config.h"
+#include <Arduino.h>
+#include "config.h"
 
-// class SpeedSensor
-// {
-// public:
-//     enum Status
-//     {
-//         IDLE_STATE,  // Chưa quẹt thẻ / đã xử lý xong
-//         ARMED,       // Đang chờ xe chắn IR_A
-//         A_TRIGGERED, // IR_A đã chắn, đang chờ IR_B
-//         B_TRIGGERED  // IR_B đã chắn, đang chờ cả 2 thả ra để xác nhận
-//     };
+class SpeedSensor
+{
+public:
+    enum Direction
+    {
+        DIR_IN,
+        DIR_OUT
+    };
+    enum Result
+    {
+        NONE,
+        CONFIRMED,
+        TIMED_OUT
+    };
 
-//     void begin()
-//     {
-//         pinMode(PIN_IR_A, INPUT);
-//         pinMode(PIN_IR_B, INPUT);
-//         _status = IDLE_STATE;
-//         Serial.println("[IR] Sensors initialized");
-//     }
+    void begin()
+    {
+        pinMode(PIN_IR_A, INPUT);
+        pinMode(PIN_IR_B, INPUT);
+        _watching = false;
+        Serial.println("[IR] Sensors initialized");
+    }
 
-//     // Gọi NGAY sau khi mở Barie — bắt đầu theo dõi 1 lượt xe mới, state sạch 100%
-//     void arm()
-//     {
-//         _status = ARMED;
-//         _lastEventMs = millis();
-//         Serial.println("[IR] Armed — chờ xe chắn IR_A");
-//     }
+    // Gọi NGAY khi mở Barie, truyền hướng xe đã biết (IN hoặc OUT)
+    void startWatch(Direction dir)
+    {
+        _direction = dir;
+        _watching = true;
+        _targetTriggered = false;
+        _startMs = millis();
 
-//     // Hủy theo dõi (dùng khi revert do timeout tổng)
-//     void reset()
-//     {
-//         _status = IDLE_STATE;
-//     }
+        Serial.printf("[IR] Theo dõi cảm biến %s — hướng %s\n",
+                      (dir == DIR_IN) ? "IR_B" : "IR_A",
+                      (dir == DIR_IN) ? "VÀO" : "RA");
+    }
 
-//     bool isArmed() { return _status != IDLE_STATE; }
-//     bool isDetecting() { return readA() || readB(); }
+    void stopWatch()
+    {
+        _watching = false;
+    }
 
-//     // Gọi liên tục trong loop(). Trả về true CHÍNH XÁC 1 LẦN khi xe đã qua hoàn toàn.
-//     // Tự reset nội bộ về IDLE_STATE ngay khi trả true — không cần gọi reset() ngoài.
-//     bool update()
-//     {
-//         if (_status == IDLE_STATE)
-//             return false;
+    bool isWatching() { return _watching; }
 
-//         bool a = readA();
-//         bool b = readB();
+    Result update()
+    {
+        if (!_watching)
+            return NONE;
 
-//         if (_status == ARMED)
-//         {
-//             if (a)
-//             {
-//                 _status = A_TRIGGERED;
-//                 _lastEventMs = millis();
-//                 Serial.println("[IR] IR_A chắn — xe đang vào cổng");
-//             }
-//             return false;
-//         }
+        bool targetBlocked = readTarget();
 
-//         if (_status == A_TRIGGERED)
-//         {
-//             if (b)
-//             {
-//                 _status = B_TRIGGERED;
-//                 _lastEventMs = millis();
-//                 Serial.println("[IR] IR_B chắn — xe đang lọt qua");
-//                 return false;
-//             }
-//             if (millis() - _lastEventMs > IR_SEQUENCE_TIMEOUT_MS)
-//             {
-//                 Serial.println("[IR] Timeout chờ IR_B — hủy theo dõi lượt này");
-//                 _status = IDLE_STATE;
-//             }
-//             return false;
-//         }
+        if (targetBlocked && !_targetTriggered)
+        {
+            _targetTriggered = true;
+            Serial.println("[IR] Cảm biến đích đã chắn — xe đang đi qua");
+        }
 
-//         if (_status == B_TRIGGERED)
-//         {
-//             if (!a && !b)
-//             {
-//                 Serial.println("[IR] Xe đã đi qua hoàn toàn!");
-//                 _status = IDLE_STATE;
-//                 return true;
-//             }
-//             if (millis() - _lastEventMs > IR_SEQUENCE_TIMEOUT_MS)
-//             {
-//                 Serial.println("[IR] Cảnh báo: vẫn còn vật sau timeout — vẫn xác nhận qua");
-//                 _status = IDLE_STATE;
-//                 return true;
-//             }
-//             return false;
-//         }
+        // Đã chắn rồi giờ thả ra → xe đã đi qua hoàn toàn — XÁC NHẬN THẬT
+        if (_targetTriggered && !targetBlocked)
+        {
+            Serial.println("[IR] Xe đã đi qua cảm biến đích — XÁC NHẬN THẬT");
+            _watching = false;
+            return CONFIRMED;
+        }
 
-//         return false;
-//     }
+        // An toàn: quá lâu không thấy gì hoặc xe đứng kẹt mãi trên cảm biến
+        // → đóng Barie cho an toàn nhưng KHÔNG coi là giao dịch hợp lệ
+        if (millis() - _startMs > IR_WAIT_TIMEOUT_MS)
+        {
+            Serial.println("[IR] TIMEOUT — không xác nhận được xe đi qua. KHÔNG ghi Firestore.");
+            _watching = false;
+            return TIMED_OUT;
+        }
 
-// private:
-//     Status _status = IDLE_STATE;
-//     unsigned long _lastEventMs = 0;
+        return NONE;
+    }
 
-//     bool readA() { return digitalRead(PIN_IR_A) == LOW; } // LOW = có vật
-//     bool readB() { return digitalRead(PIN_IR_B) == LOW; }
-// };
+private:
+    bool _watching = false;
+    bool _targetTriggered = false;
+    Direction _direction = DIR_IN;
+    unsigned long _startMs = 0;
+
+    // Cảm biến "đích" tùy theo hướng: IN theo dõi IR_B, OUT theo dõi IR_A
+    bool readTarget()
+    {
+        if (_direction == DIR_IN)
+            return digitalRead(PIN_IR_B) == LOW; // LOW = có vật
+        else
+            return digitalRead(PIN_IR_A) == LOW;
+    }
+};

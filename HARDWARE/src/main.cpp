@@ -1,17 +1,3 @@
-// ============================================================
-//  main.cpp — Smart Parking Node (PHIÊN BẢN ĐƠN GIẢN — KHÔNG IR)
-//
-//  Luồng:
-//    Quẹt thẻ → check Firestore (isActive)
-//      → true  : mở Barie, ghi gate_control=open, ghi log
-//      → false : phát cảnh báo công nợ
-//      → unknown: phát cảnh báo + đẩy pending_cards
-//    Sau GATE_OPEN_DURATION_MS (cố định) → tự đóng Barie
-//
-//  Không dùng cảm biến IR — không có khái niệm "xe đi qua".
-//  Việc xác định hướng IN/OUT có thể đơn giản hoá theo trạng
-//  thái nợ hoặc do App quyết định (xem TODO dưới).
-// ============================================================
 
 #include <Arduino.h>
 #include <WiFi.h>
@@ -19,28 +5,38 @@
 #include "config.h"
 #include "secrets.h"
 #include "rfid_reader.h"
+#include "speed_sensor.h"
 #include "servo_controller.h"
 #include "firebase_manager.h"
 
 ServoController barrier;
 FirebaseManager firebase;
-RFIDReader      rfid;
+RFIDReader rfid;
+SpeedSensor irSensor;
 
-enum GateState { IDLE, GATE_OPEN };
-GateState     gateState  = IDLE;
-String        pendingUID = "";
-unsigned long openedAtMs = 0;
+enum GateState
+{
+    IDLE,
+    WAITING_IR,
+    CLOSING_DELAY
+};
+GateState gateState = IDLE;
+String pendingUID = "";
+String pendingAction = ""; // "IN" hoặc "OUT"
+unsigned long delayStartMs = 0;
 
 unsigned long lastTelemetryMs = 0;
 unsigned long lastWifiRetryMs = 0;
 
 // ── WiFi ─────────────────────────────────────────────────────
-void connectWiFi(const String &ssid, const String &pass) {
+void connectWiFi(const String &ssid, const String &pass)
+{
     Serial.printf("[WIFI] Connecting to %s ...\n", ssid.c_str());
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid.c_str(), pass.c_str());
     unsigned long t = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - t < 15000) {
+    while (WiFi.status() != WL_CONNECTED && millis() - t < 15000)
+    {
         delay(500);
         Serial.print(".");
     }
@@ -51,58 +47,103 @@ void connectWiFi(const String &ssid, const String &pass) {
         Serial.println("[WIFI] Failed");
 }
 
-// ── Mở Barie ─────────────────────────────────────────────────
-void openGate(const String &uid) {
+// ── Mở Barie + bắt đầu theo dõi IR theo hướng ────────────────
+void openGate(const String &uid, const String &action)
+{
     pendingUID = uid;
+    pendingAction = action; // "IN" hoặc "OUT"
 
     // PHẦN CỨNG TRƯỚC
     barrier.open();
-    gateState  = GATE_OPEN;
-    openedAtMs = millis();
+    SpeedSensor::Direction dir = (action == "OUT") ? SpeedSensor::DIR_OUT
+                                                   : SpeedSensor::DIR_IN;
+    irSensor.startWatch(dir);
+    gateState = WAITING_IR;
 
-    // Firebase SAU — lỗi mạng không ảnh hưởng Barie
+    // Firebase SAU
     firebase.setGateStatus("open");
 
-    Serial.printf("[GATE] Mở Barie cho UID: %s — sẽ tự đóng sau %d ms\n",
-                  uid.c_str(), GATE_OPEN_DURATION_MS);
+    Serial.printf("[GATE] Mở Barie — UID: %s, hướng: %s\n", uid.c_str(), action.c_str());
 }
 
-// ── Đóng Barie (do hết giờ hoặc lệnh CLOSE) ──────────────────
-void closeGate() {
+
+void onVehiclePassed(bool confirmed)
+{
+    // PHẦN CỨNG TRƯỚC — luôn đóng Barie dù confirmed hay không
+    if (confirmed)
+    {
+        if (pendingAction == "IN")
+            barrier.playAudio(AUDIO_WELCOME);
+        else
+            barrier.playAudio(AUDIO_GOODBYE);
+    }
+    else
+    {
+        barrier.playAudio(AUDIO_ERROR); // báo hiệu giao dịch bị hủy do timeout
+    }
+
+    gateState = CLOSING_DELAY;
+    delayStartMs = millis();
+
+    if (confirmed)
+    {
+        Serial.printf("[CONFIRM] Xe đã qua THẬT — %s UID: %s. Đóng sau %d ms\n",
+                      pendingAction.c_str(), pendingUID.c_str(), GATE_CLOSE_DELAY_MS);
+        // Firebase SAU — đây là nơi DUY NHẤT ghi isParking + parking_history
+        firebase.commitParkingTransaction();
+    }
+    else
+    {
+        Serial.printf("[TIMEOUT] Không xác nhận được xe qua — UID: %s. HỦY giao dịch, không ghi Firestore.\n",
+                      pendingUID.c_str());
+        firebase.abortParkingTransaction();
+    }
+}
+
+// ── Thực sự đóng Barie (sau độ trễ 0.5s) ─────────────────────
+void closeGateNow()
+{
     // PHẦN CỨNG TRƯỚC
-    barrier.playAudio(AUDIO_GOODBYE);
     barrier.close();
     gateState = IDLE;
 
-    Serial.printf("[GATE] Đóng Barie — UID vừa xử lý: %s\n", pendingUID.c_str());
+    Serial.println("[GATE] Đóng Barie — IDLE, sẵn sàng thẻ tiếp theo");
 
     // Firebase SAU
-    firebase.confirmIR();           // dùng lại field này để báo "đã xử lý xong"
     firebase.setGateStatus("auto");
 
     pendingUID = "";
+    pendingAction = "";
 }
 
 // ── Lệnh từ Cloud/App ────────────────────────────────────────
-void onCloudCommand(String cmd, String uid, String action) {
-    if (cmd == "OPEN") {
-        openGate(uid);
-
-    } else if (cmd == "CLOSE") {
-        if (gateState == GATE_OPEN) closeGate();
-
-    } else if (cmd == "BUZZER_ALERT") {
+void onCloudCommand(String cmd, String uid, String action)
+{
+    if (cmd == "OPEN")
+    {
+        openGate(uid, action.length() ? action : "IN");
+    }
+    else if (cmd == "CLOSE")
+    {
+        irSensor.stopWatch();
+        closeGateNow();
+    }
+    else if (cmd == "BUZZER_ALERT")
+    {
         barrier.playAudio(AUDIO_DEBT_EXCEED);
-
-    } else if (cmd == "CARD_UNKNOWN") {
+    }
+    else if (cmd == "CARD_UNKNOWN")
+    {
         barrier.playAudio(AUDIO_CARD_UNKNOWN);
     }
 }
 
 // ── Đổi WiFi từ xa ───────────────────────────────────────────
-void handleRemoteWiFiChange() {
+void handleRemoteWiFiChange()
+{
     String newSSID, newPass;
-    if (!firebase.checkRemoteWiFiChange(newSSID, newPass)) return;
+    if (!firebase.checkRemoteWiFiChange(newSSID, newPass))
+        return;
 
     Serial.printf("[WIFI] Remote switch -> %s\n", newSSID.c_str());
     WiFi.disconnect();
@@ -111,20 +152,24 @@ void handleRemoteWiFiChange() {
 
     bool ok = (WiFi.status() == WL_CONNECTED);
     firebase.reportWiFiSwitchResult(ok);
-    if (!ok) connectWiFi(WIFI_SSID, WIFI_PASSWORD);
+    if (!ok)
+        connectWiFi(WIFI_SSID, WIFI_PASSWORD);
 }
 
 // ═══════════════════════════════════════════════════════════════
-void setup() {
+void setup()
+{
     Serial.begin(115200);
-    Serial.println("\n[BOOT] Smart Parking Node (NO-IR mode) starting...");
+    Serial.println("\n[BOOT] Smart Parking Node starting...");
 
     rfid.begin();
+    irSensor.begin();
     barrier.begin();
 
     connectWiFi(WIFI_SSID, WIFI_PASSWORD);
 
-    if (WiFi.status() == WL_CONNECTED) {
+    if (WiFi.status() == WL_CONNECTED)
+    {
         firebase.begin();
         firebase.scanAndUploadNetworks();
     }
@@ -133,43 +178,66 @@ void setup() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-void loop() {
+void loop()
+{
 
     // ── 1. Lệnh từ Cloud (polling) ───────────────────────────
     firebase.loop();
 
-    // ── 2. RFID — chỉ đọc khi Barie đang đóng ─────────────────
-    if (gateState == IDLE) {
+    // ── 2. RFID — chỉ đọc khi đang IDLE ───────────────────────
+    if (gateState == IDLE)
+    {
         String uid = rfid.readUID();
-        if (!uid.isEmpty()) {
+        if (!uid.isEmpty())
+        {
             Serial.printf("[RFID] Card: %s\n", uid.c_str());
-            // Hàm này tự gọi onCloudCommand("OPEN"/"BUZZER_ALERT"/"CARD_UNKNOWN")
+            // Hàm này tự gọi onCloudCommand("OPEN", uid, "IN"/"OUT" ...)
             firebase.processSwipeOnHardware(uid);
         }
     }
 
-    // ── 3. Tự đóng Barie sau thời gian cố định ───────────────
-    if (gateState == GATE_OPEN) {
-        if (millis() - openedAtMs > GATE_OPEN_DURATION_MS) {
-            closeGate();
+    // ── 3. Theo dõi IR đích duy nhất theo hướng ──────────────
+    if (gateState == WAITING_IR)
+    {
+        SpeedSensor::Result r = irSensor.update();
+
+        if (r == SpeedSensor::CONFIRMED)
+        {
+            onVehiclePassed(true); // xác nhận THẬT — sẽ commit Firestore
+        }
+        else if (r == SpeedSensor::TIMED_OUT)
+        {
+            onVehiclePassed(false); // timeout — đóng Barie nhưng KHÔNG commit
         }
     }
 
-    // ── 4. Telemetry + check WiFi đổi từ xa ──────────────────
-    if (millis() - lastTelemetryMs > TELEMETRY_INTERVAL_MS) {
+    // ── 4. Đóng Barie sau độ trễ 0.5s ─────────────────────────
+    if (gateState == CLOSING_DELAY)
+    {
+        if (millis() - delayStartMs > GATE_CLOSE_DELAY_MS)
+        {
+            closeGateNow();
+        }
+    }
+
+    // ── 5. Telemetry + check WiFi đổi từ xa ──────────────────
+    if (millis() - lastTelemetryMs > TELEMETRY_INTERVAL_MS)
+    {
         lastTelemetryMs = millis();
-        // Không còn IR nên báo cứng "N/A" cho 2 trường này
-        firebase.sendTelemetry(false, false);
+        firebase.sendTelemetry(true, true); // IR đang hoạt động bình thường
         handleRemoteWiFiChange();
     }
 
-    // ── 5. WiFi watchdog ──────────────────────────────────────
-    if (WiFi.status() != WL_CONNECTED) {
-        if (millis() - lastWifiRetryMs > WIFI_RETRY_INTERVAL_MS) {
+    // ── 6. WiFi watchdog ──────────────────────────────────────
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        if (millis() - lastWifiRetryMs > WIFI_RETRY_INTERVAL_MS)
+        {
             lastWifiRetryMs = millis();
             Serial.println("[WIFI] Lost - retrying...");
             connectWiFi(WIFI_SSID, WIFI_PASSWORD);
-            if (WiFi.status() == WL_CONNECTED) {
+            if (WiFi.status() == WL_CONNECTED)
+            {
                 firebase.begin();
                 firebase.scanAndUploadNetworks();
             }
