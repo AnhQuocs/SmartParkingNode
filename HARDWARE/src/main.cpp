@@ -1,3 +1,16 @@
+// ============================================================
+//  main.cpp — Smart Parking Node
+//
+//  Luồng:
+//    Quẹt thẻ → check Firestore → biết hướng IN/OUT
+//      → mở Barie → startWatch(hướng tương ứng)
+//      → IN  : chỉ chờ IR_B chắn rồi thả ra
+//      → OUT : chỉ chờ IR_A chắn rồi thả ra
+//    → Sau khi xác nhận, đóng Barie sau GATE_CLOSE_DELAY_MS (0.5s)
+//
+//  Không có chuỗi A→B phức tạp. Chỉ theo dõi đúng 1 cảm biến
+//  "đích" tùy theo hướng xe đã biết trước.
+// ============================================================
 
 #include <Arduino.h>
 #include <WiFi.h>
@@ -66,20 +79,22 @@ void openGate(const String &uid, const String &action)
     Serial.printf("[GATE] Mở Barie — UID: %s, hướng: %s\n", uid.c_str(), action.c_str());
 }
 
-
 void onVehiclePassed(bool confirmed)
 {
     // PHẦN CỨNG TRƯỚC — luôn đóng Barie dù confirmed hay không
     if (confirmed)
     {
         if (pendingAction == "IN")
-            barrier.playAudio(AUDIO_WELCOME);
+            // barrier.playAudio(AUDIO_WELCOME); // <--- TẠM TẮT DÒNG NÀY
+            Serial.println("[AUDIO-DEBUG] Bỏ qua âm thanh IN");
         else
-            barrier.playAudio(AUDIO_GOODBYE);
+            // barrier.playAudio(AUDIO_GOODBYE); // <--- TẠM TẮT DÒNG NÀY
+            Serial.println("[AUDIO-DEBUG] Bỏ qua âm thanh OUT");
     }
     else
     {
-        barrier.playAudio(AUDIO_ERROR); // báo hiệu giao dịch bị hủy do timeout
+        // barrier.playAudio(AUDIO_ERROR);       // <--- TẠM TẮT DÒNG NÀY
+        Serial.println("[AUDIO-DEBUG] Bỏ qua âm thanh lỗi timeout");
     }
 
     gateState = CLOSING_DELAY;

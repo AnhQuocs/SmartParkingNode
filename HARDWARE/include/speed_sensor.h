@@ -1,5 +1,17 @@
 #pragma once
 
+// ============================================================
+//  speed_sensor.h — PHIÊN BẢN ĐƠN GIẢN
+//
+//  Yêu cầu: Xe đi VÀO → chỉ cần chờ IR_B (cảm biến phía trong)
+//                        chắn rồi thả ra → xe đã qua.
+//           Xe đi RA  → chỉ cần chờ IR_A (cảm biến phía ngoài)
+//                        chắn rồi thả ra → xe đã qua.
+//  Không theo dõi chuỗi 2 cảm biến, không có state phức tạp.
+//  Chỉ 1 cảm biến "đích" cần theo dõi tùy theo hướng đã biết
+//  trước (do hệ thống xác định IN/OUT lúc quẹt thẻ).
+// ============================================================
+
 #include <Arduino.h>
 #include "config.h"
 
@@ -46,12 +58,27 @@ public:
 
     bool isWatching() { return _watching; }
 
+    // Gọi liên tục trong loop().
+    // Trả về CONFIRMED khi cảm biến đích đã chắn rồi thả ra (xe THỰC SỰ đi qua).
+    // Trả về TIMED_OUT khi quá IR_WAIT_TIMEOUT_MS mà KHÔNG xác nhận được —
+    //   trường hợp này Barie vẫn đóng để an toàn nhưng KHÔNG được ghi Firestore.
+    // Trả về NONE nếu chưa có gì xảy ra.
     Result update()
     {
         if (!_watching)
             return NONE;
 
         bool targetBlocked = readTarget();
+
+        // DEBUG: in giá trị thô 2 chân mỗi 500ms để xác định cảm biến nào đang chắn thật
+        if (millis() - _lastDebugMs > 500)
+        {
+            _lastDebugMs = millis();
+            Serial.printf("[IR-DEBUG] IR_A(raw)=%d IR_B(raw)=%d | đang theo dõi: %s | target=%s\n",
+                          digitalRead(PIN_IR_A), digitalRead(PIN_IR_B),
+                          (_direction == DIR_IN) ? "IR_B" : "IR_A",
+                          targetBlocked ? "CHẮN" : "trống");
+        }
 
         if (targetBlocked && !_targetTriggered)
         {
@@ -84,6 +111,7 @@ private:
     bool _targetTriggered = false;
     Direction _direction = DIR_IN;
     unsigned long _startMs = 0;
+    unsigned long _lastDebugMs = 0;
 
     // Cảm biến "đích" tùy theo hướng: IN theo dõi IR_B, OUT theo dõi IR_A
     bool readTarget()
