@@ -46,17 +46,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.smarttrafficradar.BaseComponentActivity
 import com.example.smarttrafficradar.R
-import com.example.smarttrafficradar.features.main.ui.MainActivity
 import com.example.smarttrafficradar.features.app_system.language.domain.model.AppLanguage
 import com.example.smarttrafficradar.features.app_system.language.presentation.viewmodel.LanguageViewModel
+import com.example.smarttrafficradar.features.main.ui.MainActivity
 import com.example.smarttrafficradar.ui.dimens.AppShape
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
-import com.example.smarttrafficradar.ui.theme.CyanBackground
-import com.example.smarttrafficradar.ui.theme.DarkBackground
-import com.example.smarttrafficradar.ui.theme.DarkOnPrimary
-import com.example.smarttrafficradar.ui.theme.DeepBlack
-import com.example.smarttrafficradar.ui.theme.SlateMist
+import com.example.smarttrafficradar.ui.theme.LightPrimary
 import com.example.smarttrafficradar.utils.LangUtils
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -93,7 +89,7 @@ fun ChangeLanguageScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkBackground)
+            .background(Color.White)
             .padding(horizontal = Dimen.PaddingM, vertical = Dimen.PaddingXL),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
@@ -104,7 +100,7 @@ fun ChangeLanguageScreen(
             Image(
                 painter = painterResource(id = R.drawable.ic_back),
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(Color.White),
+                colorFilter = ColorFilter.tint(LightPrimary),
                 modifier = Modifier
                     .align(Alignment.CenterStart)
                     .padding(top = Dimen.PaddingL, start = Dimen.PaddingSM)
@@ -114,7 +110,7 @@ fun ChangeLanguageScreen(
 
             Text(
                 stringResource(id = R.string.select_language),
-                color = Color.White,
+                color = LightPrimary,
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Medium,
                     fontSize = 20.sp
@@ -130,7 +126,7 @@ fun ChangeLanguageScreen(
         Column(
             modifier = Modifier
                 .clip(RoundedCornerShape(AppShape.ShapeL))
-                .background(DeepBlack)
+                .background(LightPrimary.copy(alpha = 0.1f))
                 .fillMaxWidth()
                 .padding(Dimen.PaddingM)
         ) {
@@ -161,10 +157,12 @@ fun ChangeLanguageScreen(
                 activity?.overridePendingTransition(0, 0)
             },
             shape = RoundedCornerShape(AppShape.ShapeL),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = LightPrimary.copy(alpha = 0.8f)
+            ),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(Dimen.HeightDefault),
-            colors = ButtonDefaults.buttonColors(containerColor = DarkOnPrimary)
+                .height(Dimen.HeightDefault)
         ) {
             Text(stringResource(id = R.string.apply), style = MaterialTheme.typography.titleMedium)
         }
@@ -183,7 +181,7 @@ fun LanguageOption(
             .clip(RoundedCornerShape(12.dp))
             .clickable { onClick() }
             .background(
-                if (isSelected) CyanBackground
+                if (isSelected) LightPrimary.copy(alpha = 0.1f)
                 else Color.Transparent
             )
             .padding(horizontal = 16.dp, vertical = 12.dp),
@@ -194,9 +192,9 @@ fun LanguageOption(
             text = title,
             style = MaterialTheme.typography.bodyLarge.copy(
                 color = if (isSelected)
-                    Color.White
+                    LightPrimary
                 else
-                    SlateMist
+                    MaterialTheme.colorScheme.onBackground
             )
         )
 
@@ -204,7 +202,7 @@ fun LanguageOption(
             selected = isSelected,
             onClick = { onClick() },
             colors = RadioButtonDefaults.colors(
-                selectedColor = MaterialTheme.colorScheme.primary
+                selectedColor = LightPrimary
             )
         )
     }

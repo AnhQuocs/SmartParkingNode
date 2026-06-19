@@ -1,11 +1,17 @@
 <resources>
-    <string name="app_name">Smart Traffic Radar</string>
+    <string name="app_name">Smart Parking</string>
 
-    <!-- BOTTOM BAR -->
-    <string name="dashboard">Tổng quan</string>
-    <string name="violations">Vi phạm</string>
-    <string name="control">Điều khiển</string>
-    <string name="status">Trạng thái</string>
+    <!-- USER BOTTOM BAR -->
+    <string name="dashboard">Trang chủ</string>
+    <string name="history">Lịch sử</string>
+    <string name="payment">Thanh toán</string>
+    <string name="profile">Cá nhân</string>
+
+    <!-- ADMIN BOTTOM BAR -->
+    <string name="monitor">Giám sát</string>
+    <string name="management">Quản lý</string>
+    <string name="hardware">Hệ thống</string>
+    <string name="analytics">Thống kê</string>
 
     <!-- SETTING-LANGUAGE -->
     <string name="language">Ngôn ngữ</string>
@@ -110,10 +116,9 @@
     <string name="available_networks">Các mạng khả dụng</string>
     <string name="current_connection">Kết nối hiện tại</string>
     <string name="enter_password_for">Nhập mật khẩu cho %1$s</string>
-    <string name="password">Mật khẩu</string>
     <string name="connect">Kết nối</string>
     <string name="cancel">Hủy</string>
-    <string name="scanning">Đang dò tìm...</string>
+    <string name="scanning">Đang dò tìm…</string>
     <string name="connection_timeout">Hết thời gian kết nối. Thiết bị không phản hồi.</string>
     <string name="current_task_format">Tác vụ hiện tại: %1$s</string>
     <string name="status_format">Trạng thái: %1$s</string>
@@ -127,5 +132,120 @@
     <string name="wifi_status_success">THÀNH CÔNG</string>
     <string name="wifi_status_failed">THẤT BẠI</string>
     <string name="wifi_status_switching">ĐANG CHUYỂN MẠNG</string>
+
+    <!-- AUTH ERRORS -->
+    <string name="error_empty_username">Tên người dùng không được để trống</string>
+    <string name="error_invalid_email">Địa chỉ email không hợp lệ</string>
+    <string name="error_empty_password">Mật khẩu không được để trống</string>
+    <string name="error_password_too_short">Mật khẩu phải có ít nhất 6 ký tự</string>
+    <string name="error_empty_admin_code">Mã admin là bắt buộc</string>
+    <string name="error_user_not_found">Không tìm thấy người dùng</string>
+    <string name="error_wrong_password">Mật khẩu không chính xác</string>
+    <string name="error_email_already_in_use">Email này đã được sử dụng</string>
+    <string name="error_invalid_admin_code">Mã admin không hợp lệ hoặc đã được dùng</string>
+    <string name="error_auth_failed">Xác thực thất bại</string>
+    <string name="error_username_too_short">Tên người dùng phải có ít nhất 8 ký tự</string>
+    <string name="sign_in_failed">Đăng nhập thất bại. Vui lòng thử lại!</string>
+    <string name="sign_up_failed">Đăng ký thất bại. Vui lòng thử lại!</string>
+
+    <!-- PROFILE ERRORS -->
+    <string name="error_identifier_exists">Mã định danh này đã được đăng ký</string>
+    <string name="error_identifier_not_found">Mã định danh không tồn tại trong tổ chức</string>
+    <string name="error_profile_not_found">Không tìm thấy thông tin cá nhân</string>
+    <string name="error_debt_limit">Vượt quá hạn mức nợ (Tối đa 100k)</string>
+    <string name="error_invalid_fullname">Định dạng họ tên không hợp lệ</string>
+
+    <!-- AUTH -->
+    <string name="welcome_back">Chào mừng trở lại!</string>
+    <string name="sign_in_hint">Đăng nhập để tiếp tục sử dụng dịch vụ</string>
+    <string name="create_account">Tạo tài khoản mới</string>
+    <string name="create_account_hint">Đăng ký để trải nghiệm hệ thống bãi đỗ xe thông minh</string>
+
+    <string name="username">Tên người dùng</string>
+    <string name="email_address">Email</string>
+    <string name="password">Mật khẩu</string>
+    <string name="email_placeholder">Nhập địa chỉ email</string>
+    <string name="password_placeholder">Nhập mật khẩu</string>
+    <string name="forgot_password">Quên mật khẩu</string>
+    <string name="continue_google">Tiếp tục với Google</string>
+
+    <string name="sign_in">Đăng nhập</string>
+    <string name="dont_have_account">Chưa có tài khoản?</string>
+    <string name="or">Hoặc</string>
+
+    <string name="username_placeholder">Nhập tên người dùng</string>
+    <string name="already_account">Đã có tài khoản?</string>
+    <string name="sign_up">Đăng ký</string>
+
+    <string name="sign_up_admin">Đăng ký (Quản trị viên)</string>
+    <string name="register_admin">Đăng ký quản trị viên</string>
+    <string name="admin_code">Mã quản trị</string>
+    <string name="admin_code_placeholder">Nhập mã quản trị viên</string>
+    <string name="code_is_required">Mã không được để trống</string>
+
+    <!-- ONBOARDING -->
+    <string name="onboarding_title_1">Chào mừng đến với Smart Parking</string>
+    <string name="onboarding_desc_1">Giải pháp bãi đỗ xe thông minh giúp việc gửi xe trong khuôn viên trường trở nên thuận tiện và nhanh chóng hơn.</string>
+    <string name="onboarding_title_2">Ra vào phương tiện an toàn</string>
+    <string name="onboarding_desc_2">Xác thực bằng thẻ RFID và nhận diện phương tiện giúp kiểm soát ra vào chính xác, an toàn và đáng tin cậy.</string>
+    <string name="onboarding_title_3">Thông tin gửi xe trong tầm tay</string>
+    <string name="onboarding_desc_3">Theo dõi lịch sử gửi xe, quản lý tài khoản và cập nhật thông tin phương tiện mọi lúc ngay trên điện thoại.</string>
+    <string name="onboarding_skip">Bỏ qua</string>
+    <string name="onboarding_next">Tiếp theo</string>
+    <string name="onboarding_get_started">Bắt đầu</string>
+
+    <!-- COMPLETE PROFILE -->
+    <string name="are_you_a">Bạn là…</string>
+    <string name="student">Sinh viên</string>
+    <string name="student_desc">Tôi đang học tập tại trường</string>
+    <string name="employee">Nhân viên</string>
+    <string name="employee_desc">Tôi đang làm việc tại tổ chức</string>
+    <string name="complete_your_profile">Hoàn thiện hồ sơ</string>
+    <string name="student_account">Tài khoản sinh viên</string>
+    <string name="employee_account">Tài khoản nhân viên</string>
+    <string name="email_address_label">Địa chỉ Email</string>
+    <string name="student_id_label">Mã số sinh viên</string>
+    <string name="employee_id_label">Mã số nhân viên</string>
+    <string name="full_name_label">Họ và tên</string>
+    <string name="validated_from_organization">Đã xác thực từ tổ chức</string>
+    <string name="department_faculty_label">Khoa / Phòng ban</string>
+    <string name="phone_number_label">Số điện thoại</string>
+    <string name="confirm_finish">Xác nhận &amp; Hoàn tất</string>
+    <string name="error_enter_valid_id">Vui lòng nhập mã định danh hợp lệ</string>
+    <string name="switch_to_employee">Bạn là Nhân viên? Chuyển tại đây</string>
+    <string name="switch_to_student">Bạn là Sinh viên? Chuyển tại đây</string>
+    <string name="phone_required">Vui lòng nhập số điện thoại</string>
+    <string name="phone_invalid">Số điện thoại không hợp lệ</string>
+
+    <!-- DASHBOARD -->
+    <string name="parking_card">Thẻ gửi xe</string>
+    <string name="activated">Đã kích hoạt</string>
+    <string name="not_activated">Chưa kích hoạt</string>
+    <string name="rfid_card_code">Mã thẻ RFID</string>
+    <string name="vehicle_type">Loại xe</string>
+    <string name="car">Ô tô</string>
+    <string name="motorcycle">Xe máy</string>
+    <string name="amount_due">Số tiền cần thanh toán</string>
+    <string name="pay_now">Thanh toán ngay</string>
+
+    <string name="quick_actions">Thao tác nhanh</string>
+    <string name="register_card">Đăng ký thẻ</string>
+    <string name="view_history">Xem lịch sử</string>
+    <string name="support">Hỗ trợ</string>
+    <string name="recent_activities">Hoạt động gần đây</string>
+    <string name="view_all">Xem tất cả</string>
+    <string name="entry_gate">Vào bãi</string>
+    <string name="exit_gate">Ra bãi</string>
+
+    <!-- PROFILE -->
+    <string name="setting">Cài đặt</string>
+    <string name="security">Bảo mật</string>
+    <string name="notification">Thông báo</string>
+    <string name="turn_on">Bật</string>
+    <string name="turn_off">Tắt</string>
+    <string name="logout_title">Đăng xuất</string>
+    <string name="logout_message">Bạn có chắc chắn muốn đăng xuất không?</string>
+    <string name="logout_success">Đăng xuất thành công</string>
+    <string name="logout_confirm">Đăng xuất</string>
 
 </resources>
