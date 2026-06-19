@@ -6,10 +6,7 @@
 //      → mở Barie → startWatch(hướng tương ứng)
 //      → IN  : chỉ chờ IR_B chắn rồi thả ra
 //      → OUT : chỉ chờ IR_A chắn rồi thả ra
-//    → Sau khi xác nhận, đóng Barie sau GATE_CLOSE_DELAY_MS (0.5s)
-//
-//  Không có chuỗi A→B phức tạp. Chỉ theo dõi đúng 1 cảm biến
-//  "đích" tùy theo hướng xe đã biết trước.
+//    → Sau khi xác nhận, đóng Barie sau GATE_CLOSE_DELAY_MS
 // ============================================================
 
 #include <Arduino.h>
@@ -66,7 +63,7 @@ void openGate(const String &uid, const String &action)
     pendingUID = uid;
     pendingAction = action; // "IN" hoặc "OUT"
 
-    // PHẦN CỨNG TRƯỚC
+    // PHẦN CỨNG TRƯỚC (Hàm mở này đã tự động kích hoạt Audio)
     barrier.open();
     SpeedSensor::Direction dir = (action == "OUT") ? SpeedSensor::DIR_OUT
                                                    : SpeedSensor::DIR_IN;
@@ -81,22 +78,6 @@ void openGate(const String &uid, const String &action)
 
 void onVehiclePassed(bool confirmed)
 {
-    // PHẦN CỨNG TRƯỚC — luôn đóng Barie dù confirmed hay không
-    if (confirmed)
-    {
-        if (pendingAction == "IN")
-            // barrier.playAudio(AUDIO_WELCOME); // <--- TẠM TẮT DÒNG NÀY
-            Serial.println("[AUDIO-DEBUG] Bỏ qua âm thanh IN");
-        else
-            // barrier.playAudio(AUDIO_GOODBYE); // <--- TẠM TẮT DÒNG NÀY
-            Serial.println("[AUDIO-DEBUG] Bỏ qua âm thanh OUT");
-    }
-    else
-    {
-        // barrier.playAudio(AUDIO_ERROR);       // <--- TẠM TẮT DÒNG NÀY
-        Serial.println("[AUDIO-DEBUG] Bỏ qua âm thanh lỗi timeout");
-    }
-
     gateState = CLOSING_DELAY;
     delayStartMs = millis();
 
@@ -104,7 +85,7 @@ void onVehiclePassed(bool confirmed)
     {
         Serial.printf("[CONFIRM] Xe đã qua THẬT — %s UID: %s. Đóng sau %d ms\n",
                       pendingAction.c_str(), pendingUID.c_str(), GATE_CLOSE_DELAY_MS);
-        // Firebase SAU — đây là nơi DUY NHẤT ghi isParking + parking_history
+        // Ghi Firebase
         firebase.commitParkingTransaction();
     }
     else
@@ -115,10 +96,10 @@ void onVehiclePassed(bool confirmed)
     }
 }
 
-// ── Thực sự đóng Barie (sau độ trễ 0.5s) ─────────────────────
+// ── Thực sự đóng Barie ─────────────────────
 void closeGateNow()
 {
-    // PHẦN CỨNG TRƯỚC
+    // PHẦN CỨNG TRƯỚC (Hàm close này đã tự động kích hoạt Audio)
     barrier.close();
     gateState = IDLE;
 
@@ -145,13 +126,13 @@ void onCloudCommand(String cmd, String uid, String action)
     }
     else if (cmd == "BUZZER_ALERT")
     {
-        // barrier.playAudio(AUDIO_DEBT_EXCEED);
-        Serial.println("[AUDIO-DEBUG] Bỏ qua âm thanh cảnh báo nợ vượt hạn mức");
+        // Thẻ nợ quá hạn (Track 2)
+        barrier.playAudio(AUDIO_DEBT_EXCEED);
     }
     else if (cmd == "CARD_UNKNOWN")
     {
-        // barrier.playAudio(AUDIO_CARD_UNKNOWN);
-        Serial.println("[AUDIO-DEBUG] Bỏ qua âm thanh thẻ chưa đăng ký");
+        // Thẻ chưa đăng ký (Track 3)
+        barrier.playAudio(AUDIO_CARD_UNKNOWN);
     }
 }
 
@@ -181,7 +162,7 @@ void setup()
 
     rfid.begin();
     irSensor.begin();
-    barrier.begin();
+    barrier.begin(); // Gọi khởi tạo Cả Servo lẫn Audio
 
     connectWiFi(WIFI_SSID, WIFI_PASSWORD);
 
@@ -197,7 +178,6 @@ void setup()
 // ═══════════════════════════════════════════════════════════════
 void loop()
 {
-
     // ── 1. Lệnh từ Cloud (polling) ───────────────────────────
     firebase.loop();
 
@@ -208,7 +188,6 @@ void loop()
         if (!uid.isEmpty())
         {
             Serial.printf("[RFID] Card: %s\n", uid.c_str());
-            // Hàm này tự gọi onCloudCommand("OPEN", uid, "IN"/"OUT" ...)
             firebase.processSwipeOnHardware(uid);
         }
     }
@@ -220,15 +199,15 @@ void loop()
 
         if (r == SpeedSensor::CONFIRMED)
         {
-            onVehiclePassed(true); // xác nhận THẬT — sẽ commit Firestore
+            onVehiclePassed(true);
         }
         else if (r == SpeedSensor::TIMED_OUT)
         {
-            onVehiclePassed(false); // timeout — đóng Barie nhưng KHÔNG commit
+            onVehiclePassed(false);
         }
     }
 
-    // ── 4. Đóng Barie sau độ trễ 0.5s ─────────────────────────
+    // ── 4. Đóng Barie sau độ trễ ─────────────────────────
     if (gateState == CLOSING_DELAY)
     {
         if (millis() - delayStartMs > GATE_CLOSE_DELAY_MS)
