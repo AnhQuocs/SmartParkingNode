@@ -17,6 +17,7 @@ fun UserProfileDto.toDomain(): UserProfile {
         rfidUid = rfidUid,
         currentDebt = currentDebt,
         isActive = isActive,
+        isParking = isParking,
         vehicleType = vehicleType?.let { try { VehicleType.valueOf(it) } catch (e: Exception) { null } },
         createdAt = createdAt,
         updatedAt = updatedAt
@@ -35,6 +36,7 @@ fun UserProfile.toDto(): UserProfileDto {
         rfidUid = rfidUid,
         currentDebt = currentDebt,
         isActive = isActive,
+        isParking = isParking,
         vehicleType = vehicleType?.name,
         createdAt = createdAt,
         updatedAt = updatedAt

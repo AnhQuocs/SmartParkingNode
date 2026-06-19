@@ -69,7 +69,7 @@
     <string name="connection_status">Connection Status</string>
     <string name="online">ONLINE</string>
     <string name="offline">OFFLINE</string>
-    
+
     <string name="device_information">Device Information</string>
     <string name="hardware_details">Hardware details</string>
     <string name="device_id">Device ID</string>
@@ -77,18 +77,18 @@
     <string name="firmware">Firmware</string>
     <string name="uptime">Uptime</string>
     <string name="connected_to">Connected to</string>
-    
+
     <string name="signal_strength">Signal Strength</string>
     <string name="excellent_connection">Excellent connection</string>
     <string name="good_connection">Good connection</string>
     <string name="fair_connection">Fair connection</string>
     <string name="weak_connection">Weak connection</string>
-    
+
     <string name="data_synchronization">Data synchronization</string>
-    
+
     <string name="database_status">Database Status</string>
     <string name="firebase_connection">Firebase connection</string>
-    
+
     <string name="hardware_health">Hardware Health</string>
     <string name="system_performance">System performance</string>
     <string name="cpu_usage">CPU Usage</string>
@@ -97,11 +97,11 @@
     <string name="ram_free">RAM Free</string>
     <string name="cycle_time">Cycle Time</string>
     <string name="fps">FPS</string>
-    
+
     <string name="network_performance">Network Performance</string>
     <string name="firebase_ping">Firebase Ping</string>
     <string name="reconnect_count">Reconnect Count</string>
-    
+
     <string name="sensor_status">Sensor Status</string>
     <string name="peripheral_check">Peripheral check</string>
     <string name="ir_sensor_1">IR Sensor 1</string>
@@ -129,7 +129,7 @@
     <string name="forget_network">Forget Network</string>
     <string name="forget_confirm">Are you sure you want to forget this network?</string>
     <string name="forget">Forget</string>
-    
+
     <string name="wifi_status_idle">IDLE</string>
     <string name="wifi_status_pending">PENDING</string>
     <string name="wifi_status_success">SUCCESS</string>
@@ -250,5 +250,15 @@
     <string name="logout_message">Are you sure you want to log out?</string>
     <string name="logout_success">Logged out successfully</string>
     <string name="logout_confirm">Logout</string>
+
+    <!-- HISTORY -->
+    <string name="error_history_not_found">Parking history not found</string>
+    <string name="error_invalid_history_data">Invalid parking history data</string>
+    <string name="error_invalid_history_id">Invalid history ID</string>
+    <string name="error_invalid_user_id">Invalid user ID</string>
+    <string name="error_permission_denied">You do not have permission to access this data</string>
+    <string name="empty_parking_history">No recent activity</string>
+    <string name="parking">Parking</string>
+    <string name="overnight">Overnight</string>
 
 </resources>
