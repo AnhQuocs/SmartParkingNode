@@ -478,26 +478,29 @@ private:
 
     double _calcFee(time_t checkInTs, time_t checkOutTs, int64_t durationMin, const String &vehicleType)
     {
+        // Miễn phí nếu thời gian đỗ dưới 30 phút
         if (durationMin <= 30)
             return 0.0;
 
         time_t inLocal = checkInTs + 7 * 3600;
         time_t outLocal = checkOutTs + 7 * 3600;
 
-        struct tm tmIn, tmOut;
-        gmtime_r(&inLocal, &tmIn);
-        gmtime_r(&outLocal, &tmOut);
+        long inDay = inLocal / 86400;
+        long outDay = outLocal / 86400;
 
-        bool isOvernight = (tmIn.tm_yday != tmOut.tm_yday) || (tmIn.tm_year != tmOut.tm_year);
+        // Số đêm = Ngày ra - Ngày vào
+        long overnightCount = outDay - inDay;
 
-        if (isOvernight)
+        if (overnightCount > 0)
         {
+            // Xe để qua đêm nhiều ngày -> Nhân phí với số đêm
             if (vehicleType == "CAR")
-                return 50000.0;
-            return 15000.0;
+                return 50000.0 * overnightCount;
+            return 15000.0 * overnightCount;
         }
         else
         {
+            // Xe ra vào trong cùng 1 ngày
             if (vehicleType == "CAR")
                 return 20000.0;
             return 5000.0;

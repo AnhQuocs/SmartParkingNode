@@ -38,6 +38,9 @@ unsigned long delayStartMs = 0;
 unsigned long lastTelemetryMs = 0;
 unsigned long lastWifiRetryMs = 0;
 
+String lastReadUID = "";
+unsigned long lastReadTime = 0;
+
 // ── WiFi ─────────────────────────────────────────────────────
 void connectWiFi(const String &ssid, const String &pass)
 {
@@ -187,8 +190,14 @@ void loop()
         String uid = rfid.readUID();
         if (!uid.isEmpty())
         {
-            Serial.printf("[RFID] Card: %s\n", uid.c_str());
-            firebase.processSwipeOnHardware(uid);
+            if (uid != lastReadUID || (millis() - lastReadTime > 3000))
+            {
+                lastReadUID = uid;
+                lastReadTime = millis();
+
+                Serial.printf("[RFID] Card: %s\n", uid.c_str());
+                firebase.processSwipeOnHardware(uid);
+            }
         }
     }
 
