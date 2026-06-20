@@ -6,7 +6,7 @@ services:
     networks:
       - app-network
     environment:
-      - SERVER_IPN_URL=https://wkmkq-118-70-181-155.free.pinggy.net/api/payment/momo-ipn
+      - SERVER_IPN_URL=https://nhuxk-174-138-23-196.free.pinggy.net/api/payment/momo-ipn
     restart: unless-stopped
 
   caddy:
