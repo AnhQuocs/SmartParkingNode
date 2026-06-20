@@ -62,6 +62,7 @@ public class MoMoService {
 
         try {
             System.out.println(">>> IPN URL: " + ipnUrl);
+            System.out.println("Order ID: " + orderId);
 
             Map<String, Object> response = restTemplate.postForObject(endpoint, payload, Map.class);
 
