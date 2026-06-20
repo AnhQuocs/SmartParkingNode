@@ -4,6 +4,7 @@ import com.trung.payment_backend.dto.PaymentRequest;
 import com.trung.payment_backend.dto.PaymentResponse;
 import com.trung.payment_backend.service.FirebaseService;
 import com.trung.payment_backend.service.MoMoService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +25,14 @@ public class PaymentController {
         return ResponseEntity.internalServerError().body("Không thể khởi tạo đường dẫn MoMo");
     }
 
-    @PostMapping("/momo-ipn")
-    public ResponseEntity<Void> handleMoMoIpn(@RequestBody MoMoIpnRequest ipnRequest) {
+    @RequestMapping(value = "/momo-ipn", method = {RequestMethod.POST, RequestMethod.GET})
+    public ResponseEntity<Void> handleMoMoIpn(
+            @RequestBody(required = false) MoMoIpnRequest ipnRequest,
+            HttpServletRequest request) {
+
+        if ("GET".equalsIgnoreCase(request.getMethod())) {
+            return ResponseEntity.noContent().build();
+        }
         System.out.println("=========================================");
         System.out.println(">>> ĐÃ CÓ REQUEST GỌI VÀO CỔNG IPN!");
         System.out.println(">>> Dữ liệu nhận được: " + ipnRequest);
