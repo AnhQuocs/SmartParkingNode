@@ -6,7 +6,7 @@ services:
     networks:
       - app-network
     environment:
-      - SERVER_IPN_URL=https://174.138.23.196.sslip.io/api/payment/momo-ipn
+      - SERVER_IPN_URL=https://174.138.23.196.traefik.me/api/payment/momo-ipn
     restart: unless-stopped
 
   caddy:

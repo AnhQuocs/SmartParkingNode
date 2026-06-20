@@ -1,4 +1,4 @@
-174.138.23.196.sslip.io {
+174.138.23.196.traefik.me {
     reverse_proxy backend:8080
     log {
         output stdout
