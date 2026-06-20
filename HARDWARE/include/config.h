@@ -31,6 +31,8 @@
 // ── DEVICE ID ────────────────────────────────────────────────
 #define DEVICE_ID "parking_node_01"
 
+#define HARDWARE_EVENT_PATH   "/api/hardware/event"
+
 // ── TIMING (ms) ──────────────────────────────────────────────
 #define IR_WAIT_TIMEOUT_MS 8000
 #define GATE_CLOSE_DELAY_MS 1000     // Barie mở cố định 5s rồi tự đóng (KHÔNG dùng IR)

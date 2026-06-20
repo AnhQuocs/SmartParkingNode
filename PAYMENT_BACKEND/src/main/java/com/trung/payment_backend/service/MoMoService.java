@@ -27,7 +27,7 @@ public class MoMoService {
     private String ipnUrl;
 
     public String createPaymentUrl(String uid, long amount) {
-        String orderId = uid + "_" + System.currentTimeMillis();
+        String orderId = uid + "_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8);
         String requestId = UUID.randomUUID().toString();
         String orderInfo = "Thanh toan du no bai do xe";
         String requestType = "captureWallet";
@@ -61,7 +61,11 @@ public class MoMoService {
         payload.put("lang", "vi");
 
         try {
+            System.out.println(">>> IPN URL: " + ipnUrl);
+            System.out.println("Order ID: " + orderId);
+
             Map<String, Object> response = restTemplate.postForObject(endpoint, payload, Map.class);
+
             if (response != null && response.containsKey("payUrl")) {
                 return (String) response.get("payUrl");
             }

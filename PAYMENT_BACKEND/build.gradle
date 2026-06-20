@@ -27,6 +27,8 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testAnnotationProcessor 'org.projectlombok:lombok'
     implementation 'com.google.firebase:firebase-admin:9.2.0'
+    // Source: https://mvnrepository.com/artifact/com.google.cloud/google-cloud-firestore
+    implementation("com.google.cloud:google-cloud-firestore:3.43.1")
 
     // Commons Codec (Thuật toán mã hóa HMAC-SHA256 cho MoMo)
     implementation 'commons-codec:commons-codec:1.16.1'
