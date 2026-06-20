@@ -26,3 +26,7 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
