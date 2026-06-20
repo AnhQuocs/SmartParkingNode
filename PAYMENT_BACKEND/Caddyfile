@@ -1,6 +1,3 @@
-174.138.23.196.traefik.me {
+:80 {
     reverse_proxy backend:8080
-    log {
-        output stdout
-    }
 }
