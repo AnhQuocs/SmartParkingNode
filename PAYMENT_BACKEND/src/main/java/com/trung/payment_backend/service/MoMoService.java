@@ -65,6 +65,8 @@ public class MoMoService {
             if (response != null && response.containsKey("payUrl")) {
                 return (String) response.get("payUrl");
             }
+
+            System.out.println(">>> KIỂM TRA IPN URL: " + ipnUrl);
         } catch (Exception e) {
             System.err.println("[MOMO] Lỗi kết nối cổng thanh toán: " + e.getMessage());
         }
