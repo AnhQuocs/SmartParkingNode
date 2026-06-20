@@ -34,7 +34,7 @@ public class NotificationScheduler {
                 String title = "Cảnh báo gửi xe quá giờ";
                 String body  = "Xe thẻ " + v.getRfidUid() + " đã gửi quá 30 phút trong bãi.";
                 String uid = (v.getUserId() != null) ? v.getUserId() : "UNKNOWN_USER";
-                firebaseService.sendNotification(v.getFcmToken(), title, body, uid);
+                firebaseService.pushAndSaveNotification(uid, title, body);
                 firebaseService.markNotified(v.getDocumentId());
 
                 System.out.printf("[SCHEDULER] Đã cảnh báo quá giờ cho rfidUid=%s (doc=%s)\n",

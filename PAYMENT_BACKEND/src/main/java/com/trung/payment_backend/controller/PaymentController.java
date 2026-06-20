@@ -1,4 +1,5 @@
 package com.trung.payment_backend.controller;
+
 import com.trung.payment_backend.dto.MoMoIpnRequest;
 import com.trung.payment_backend.dto.PaymentRequest;
 import com.trung.payment_backend.dto.PaymentResponse;
@@ -13,8 +14,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/payment")
 public class PaymentController {
 
-    @Autowired private MoMoService moMoService;
-    @Autowired private FirebaseService firebaseService;
+    @Autowired
+    private MoMoService moMoService;
+    @Autowired
+    private FirebaseService firebaseService;
 
     @PostMapping("/create-momo-url")
     public ResponseEntity<?> createMomoUrl(@RequestBody PaymentRequest request) {
@@ -48,6 +51,9 @@ public class PaymentController {
             firebaseService.clearUserDebtAndLogHistory(
                     ipnRequest.getExtraData(), ipnRequest.getAmount(), ipnRequest.getTransId()
             );
+            String title = "Thanh toán thành công";
+            String body = "Bạn đã thanh toán " + ipnRequest.getAmount() + "đ cho dịch vụ gửi xe.";
+            firebaseService.pushAndSaveNotification(ipnRequest.getExtraData(), title, body);
         } else {
             System.err.println("[DEBUG] isAuthentic: " + isAuthentic);
             System.err.println("[DEBUG] resultCode: " + ipnRequest.getResultCode());
