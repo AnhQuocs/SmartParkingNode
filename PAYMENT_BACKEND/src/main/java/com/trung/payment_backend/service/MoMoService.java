@@ -61,12 +61,13 @@ public class MoMoService {
         payload.put("lang", "vi");
 
         try {
+            System.out.println(">>> IPN URL: " + ipnUrl);
+
             Map<String, Object> response = restTemplate.postForObject(endpoint, payload, Map.class);
+
             if (response != null && response.containsKey("payUrl")) {
                 return (String) response.get("payUrl");
             }
-
-            System.out.println(">>> KIỂM TRA IPN URL: " + ipnUrl);
         } catch (Exception e) {
             System.err.println("[MOMO] Lỗi kết nối cổng thanh toán: " + e.getMessage());
         }
