@@ -27,7 +27,7 @@ public class MoMoService {
     private String ipnUrl;
 
     public String createPaymentUrl(String uid, long amount) {
-        String orderId = uid + "_" + System.currentTimeMillis();
+        String orderId = uid + "_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8);
         String requestId = UUID.randomUUID().toString();
         String orderInfo = "Thanh toan du no bai do xe";
         String requestType = "captureWallet";
