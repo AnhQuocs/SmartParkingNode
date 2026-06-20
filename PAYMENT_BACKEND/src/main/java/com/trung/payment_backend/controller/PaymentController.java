@@ -33,9 +33,7 @@ public class PaymentController {
         if ("GET".equalsIgnoreCase(request.getMethod())) {
             return ResponseEntity.noContent().build();
         }
-        System.out.println("=========================================");
-        System.out.println(">>> ĐÃ CÓ REQUEST GỌI VÀO CỔNG IPN!");
-        System.out.println(">>> Dữ liệu nhận được: " + ipnRequest);
+        System.out.println(">>> Dữ liệu MoMo gửi: " + ipnRequest.toString());
         boolean isAuthentic = moMoService.verifyIpnSignature(
                 ipnRequest.getOrderId(), ipnRequest.getRequestId(), ipnRequest.getAmount(),
                 ipnRequest.getOrderInfo(), ipnRequest.getOrderType(), ipnRequest.getTransId(),
@@ -51,7 +49,8 @@ public class PaymentController {
                     ipnRequest.getExtraData(), ipnRequest.getAmount(), ipnRequest.getTransId()
             );
         } else {
-            System.err.println("[MOMO-IPN] Giao dịch thất bại hoặc chuỗi Signature không trùng khớp!");
+            System.err.println("[DEBUG] isAuthentic: " + isAuthentic);
+            System.err.println("[DEBUG] resultCode: " + ipnRequest.getResultCode());
         }
 
         return ResponseEntity.noContent().build();
