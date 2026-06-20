@@ -1,9 +1,5 @@
 #pragma once
 
-// ============================================================
-//  firebase_manager.h — Giao tiếp Firebase RTDB + Firestore REST
-// ============================================================
-
 #include <Arduino.h>
 #include <WiFi.h>
 #include <FirebaseESP32.h>
@@ -307,6 +303,8 @@ public:
         Serial.printf("[COMMIT-FIRESTORE] Hoàn tất ghi nhận %s cho UID %s\n",
                       _pending.direction.c_str(), _pending.uid.c_str());
 
+        _notifyBackendEvent(_pending.direction, _pending.uid, _pending.userId);
+
         _pending = PendingTx();
     }
 
@@ -505,6 +503,34 @@ private:
                 return 20000.0;
             return 5000.0;
         }
+    }
+
+    void _notifyBackendEvent(const String &direction, const String &uid, const String &userId)
+    {
+        HTTPClient http;
+        http.setReuse(false);
+        http.setTimeout(3000); // không để 1 lần lỗi mạng làm chậm vòng loop
+        String url = String(BACKEND_BASE_URL) + HARDWARE_EVENT_PATH;
+
+        http.begin(url);
+        http.addHeader("Content-Type", "application/json");
+
+        String body =
+            "{\"type\":\"" + direction + "\","
+            "\"rfidUid\":\"" + uid + "\","
+            "\"userId\":\"" + userId + "\","
+            "\"deviceId\":\"" + String(DEVICE_ID) + "\"}";
+
+        int code = http.POST(body);
+        if (code == 200 || code == 201)
+        {
+            Serial.printf("[BACKEND] Đã báo sự kiện %s thành công\n", direction.c_str());
+        }
+        else
+        {
+            Serial.printf("[BACKEND] Báo sự kiện lỗi HTTP %d — bỏ qua, không retry\n", code);
+        }
+        http.end();
     }
 
 public:

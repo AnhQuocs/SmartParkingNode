@@ -5,9 +5,16 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
+import com.trung.payment_backend.model.VehicleRecord;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -56,6 +63,166 @@ public class FirebaseService {
         } catch (Exception e) {
             System.err.println("[FIRESTORE] Lỗi thao tác trừ dữ liệu nợ: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    public boolean saveFcmToken(String uid, String fcmToken) {
+        Firestore db = FirestoreClient.getFirestore();
+        try {
+            ApiFuture<QuerySnapshot> query = db.collection("profiles").whereEqualTo("uid", uid).get();
+            QuerySnapshot snapshot = query.get();
+
+            if (snapshot.isEmpty()) {
+                System.err.printf("[FCM] Không tìm thấy profile uid=%s để lưu token\n", uid);
+                return false;
+            }
+
+            String documentId = snapshot.getDocuments().get(0).getId();
+            db.collection("profiles").document(documentId).update("fcmToken", fcmToken).get();
+            System.out.printf("[FCM] Đã lưu fcmToken cho uid=%s\n", uid);
+            return true;
+
+        } catch (Exception e) {
+            System.err.println("[FCM] Lỗi lưu fcmToken: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    public void sendNotification(String fcmToken, String title, String body, String uid) {
+        if (fcmToken == null || fcmToken.isEmpty()) {
+            System.out.println("[FCM] Bỏ qua gửi noti — fcmToken rỗng");
+            return;
+        }
+
+        Message message = Message.builder()
+                .setToken(fcmToken)
+                .setNotification(Notification.builder()
+                        .setTitle(title)
+                        .setBody(body)
+                        .build())
+                .build();
+
+        try {
+            String response = FirebaseMessaging.getInstance().send(message);
+            System.out.println("[FCM] Đã gửi thành công: " + response);
+
+            Firestore db = FirestoreClient.getFirestore();
+            Map<String, Object> notiData = new HashMap<>();
+            notiData.put("userId", uid);
+            notiData.put("title", title);
+            notiData.put("body", body);
+            notiData.put("createdAt", com.google.cloud.Timestamp.now());
+            notiData.put("read", false);
+
+            db.collection("notifications").add(notiData);
+        } catch (FirebaseMessagingException e) {
+            System.err.println("[FCM] Lỗi gửi notification: " + e.getMessage());
+        }
+    }
+
+    public String getFcmTokenByUid(String uid) {
+        Firestore db = FirestoreClient.getFirestore();
+        try {
+            ApiFuture<QuerySnapshot> query = db.collection("profiles").whereEqualTo("uid", uid).get();
+            QuerySnapshot snapshot = query.get();
+            if (snapshot.isEmpty()) return null;
+            return snapshot.getDocuments().get(0).getString("fcmToken");
+        } catch (Exception e) {
+            System.err.println("[FCM] Lỗi lấy fcmToken: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public String getFullNameByUid(String uid) {
+        Firestore db = FirestoreClient.getFirestore();
+        try {
+            ApiFuture<QuerySnapshot> query = db.collection("profiles").whereEqualTo("uid", uid).get();
+            QuerySnapshot snapshot = query.get();
+            if (snapshot.isEmpty()) return null;
+            return snapshot.getDocuments().get(0).getString("fullName");
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
+    public List<VehicleRecord> getParkedVehicles() {
+        Firestore db = FirestoreClient.getFirestore();
+        List<VehicleRecord> result = new ArrayList<>();
+
+        try {
+            ApiFuture<QuerySnapshot> query = db.collection("parking_histories")
+                    .whereEqualTo("status", "CHECK_IN")
+                    .get();
+            QuerySnapshot snapshot = query.get();
+
+            for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                String rfidUid = doc.getString("rfidUid");
+                String userId  = doc.getString("userId");
+
+                // checkInTime trong Firestore là Timestamp (theo mẫu JSON bạn gửi)
+                com.google.cloud.Timestamp checkInTs = doc.getTimestamp("checkInTime");
+                long checkInMs = (checkInTs != null) ? checkInTs.toDate().getTime() : 0L;
+
+                Boolean notifiedFlag = doc.getBoolean("notified30Min");
+                boolean notified = (notifiedFlag != null) && notifiedFlag;
+
+                String fcmToken = (userId != null) ? getFcmTokenByUid(userId) : null;
+
+                result.add(new VehicleRecord(doc.getId(), rfidUid, userId, checkInMs, notified, fcmToken));
+            }
+
+        } catch (Exception e) {
+            System.err.println("[SCHEDULER] Lỗi lấy danh sách xe trong bãi: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    public void markNotified(String documentId) {
+        Firestore db = FirestoreClient.getFirestore();
+        try {
+            db.collection("parking_histories").document(documentId)
+                    .update("notified30Min", true).get();
+            System.out.printf("[SCHEDULER] Đã đánh dấu notified30Min cho document %s\n", documentId);
+        } catch (Exception e) {
+            System.err.println("[SCHEDULER] Lỗi markNotified: " + e.getMessage());
+        }
+    }
+
+    public void handleHardwareEvent(String type, String rfidUid, String userId) {
+        String fcmToken = getFcmTokenByUid(userId);
+        String fullName = getFullNameByUid(userId);
+        String displayName = (fullName != null && !fullName.isEmpty()) ? fullName : "Bạn";
+
+        String title;
+        String body;
+
+        if ("IN".equalsIgnoreCase(type)) {
+            title = "Xe đã vào bãi";
+            body  = displayName + " ơi, xe của bạn (thẻ " + rfidUid + ") vừa vào bãi đỗ.";
+        } else {
+            title = "Xe đã ra khỏi bãi";
+            body  = displayName + " ơi, xe của bạn (thẻ " + rfidUid + ") vừa rời bãi đỗ. Cảm ơn bạn!";
+        }
+        Firestore db = FirestoreClient.getFirestore();
+        Map<String, Object> notiData = new HashMap<>();
+        notiData.put("userId", userId);
+        notiData.put("title", title);
+        notiData.put("body", body);
+        notiData.put("createdAt", com.google.cloud.Timestamp.now());
+        notiData.put("read", false);
+        db.collection("notifications").add(notiData);
+        System.out.println("[FIRESTORE] Đã tạo bản ghi trong notifications");
+
+        // 2. CHỈ GỬI FCM NẾU CÓ TOKEN
+        if (fcmToken != null && !fcmToken.isEmpty()) {
+            sendNotification(fcmToken, title, body, userId);
+        } else {
+            System.out.println("[FCM] Không có token, chỉ lưu lịch sử, không đẩy thông báo.");
         }
     }
 }
