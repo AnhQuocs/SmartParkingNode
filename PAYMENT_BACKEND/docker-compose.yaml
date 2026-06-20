@@ -3,8 +3,11 @@ services:
   backend:
     build: .
     container_name: payment_backend
-    expose:
-      - "8080"
+    networks:
+      - app-network
+    environment:
+      - SERVER_IPN_URL=https://174.138.23.196.nip.io/api/payment/momo-ipn
+    restart: unless-stopped
 
   caddy:
     image: caddy:latest
@@ -17,7 +20,9 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+    networks:
+      - app-network
 
-volumes:
-  caddy_data:
-  caddy_config:
+networks:
+  app-network:
+    driver: bridge
