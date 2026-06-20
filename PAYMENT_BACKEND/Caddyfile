@@ -1,4 +1,4 @@
-:80, :443 {
+174.138.23.196.nip.io {
     reverse_proxy backend:8080
     log {
        output stdout
