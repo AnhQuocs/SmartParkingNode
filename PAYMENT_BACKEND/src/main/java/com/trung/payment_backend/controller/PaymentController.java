@@ -26,7 +26,9 @@ public class PaymentController {
 
     @PostMapping("/momo-ipn")
     public ResponseEntity<Void> handleMoMoIpn(@RequestBody MoMoIpnRequest ipnRequest) {
-
+        System.out.println("=========================================");
+        System.out.println(">>> ĐÃ CÓ REQUEST GỌI VÀO CỔNG IPN!");
+        System.out.println(">>> Dữ liệu nhận được: " + ipnRequest);
         boolean isAuthentic = moMoService.verifyIpnSignature(
                 ipnRequest.getOrderId(), ipnRequest.getRequestId(), ipnRequest.getAmount(),
                 ipnRequest.getOrderInfo(), ipnRequest.getOrderType(), ipnRequest.getTransId(),
