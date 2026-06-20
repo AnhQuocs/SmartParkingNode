@@ -69,7 +69,8 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Background)
-                .padding(Dimen.PaddingM)
+                .padding(horizontal = Dimen.PaddingM)
+                .padding(top = Dimen.PaddingL)
         ) {
             SettingCard(
                 languageText = languageText,

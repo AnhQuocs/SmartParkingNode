@@ -15,6 +15,9 @@ data class UserProfileDto(
     @get:PropertyName("isActive")
     @set:PropertyName("isActive")
     var isActive: Boolean = false,
+    @get:PropertyName("isParking")
+    @set:PropertyName("isParking")
+    var isParking: Boolean = false,
     var vehicleType: String? = null,
     var createdAt: Long = 0,
     var updatedAt: Long = 0

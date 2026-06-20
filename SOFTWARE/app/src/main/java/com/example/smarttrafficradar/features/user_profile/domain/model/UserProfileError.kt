@@ -7,6 +7,6 @@ sealed class UserProfileError(message: String? = null) : Exception(message) {
     object DebtLimitExceeded : UserProfileError("Debt limit exceeded")
     object InvalidFullName : UserProfileError("Full name is invalid")
     object NetworkError : UserProfileError("Network connection error")
-    
+
     data class UnknownError(val msg: String) : UserProfileError(msg)
 }

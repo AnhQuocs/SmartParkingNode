@@ -251,4 +251,14 @@
     <string name="logout_success">Logged out successfully</string>
     <string name="logout_confirm">Logout</string>
 
+    <!-- HISTORY -->
+    <string name="error_history_not_found">Parking history not found</string>
+    <string name="error_invalid_history_data">Invalid parking history data</string>
+    <string name="error_invalid_history_id">Invalid history ID</string>
+    <string name="error_invalid_user_id">Invalid user ID</string>
+    <string name="error_permission_denied">You do not have permission to access this data</string>
+    <string name="empty_parking_history">No recent activity</string>
+    <string name="parking">Parking</string>
+    <string name="overnight">Overnight</string>
+
 </resources>

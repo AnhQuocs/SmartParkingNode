@@ -10,7 +10,7 @@ data class ParkingHistory(
     val rfidUid: String = "",
     val checkInTime: Long = 0L,
     val checkOutTime: Long? = null,
-    val durationMinutes: Long = 0L,
+    val durationMinutes: Int = 0,
     val fee: Int = 0,
     val status: ParkingStatus = ParkingStatus.CHECK_IN,
     val createdAt: Long = 0L,

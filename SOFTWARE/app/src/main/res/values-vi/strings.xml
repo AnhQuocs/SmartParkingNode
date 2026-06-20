@@ -248,4 +248,14 @@
     <string name="logout_success">Đăng xuất thành công</string>
     <string name="logout_confirm">Đăng xuất</string>
 
+    <!-- HISTORY -->
+    <string name="error_history_not_found">Không tìm thấy lịch sử gửi xe</string>
+    <string name="error_invalid_history_data">Dữ liệu lịch sử gửi xe không hợp lệ</string>
+    <string name="error_invalid_history_id">Mã lịch sử không hợp lệ</string>
+    <string name="error_invalid_user_id">Mã người dùng không hợp lệ</string>
+    <string name="error_permission_denied">Bạn không có quyền truy cập dữ liệu này</string>
+    <string name="empty_parking_history">Chưa có hoạt động nào gần đây</string>
+    <string name="parking">Đang gửi xe</string>
+    <string name="overnight">Qua đêm</string>
+
 </resources>

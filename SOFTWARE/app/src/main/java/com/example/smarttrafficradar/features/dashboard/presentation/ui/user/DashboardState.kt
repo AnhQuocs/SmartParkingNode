@@ -18,8 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.smarttrafficradar.features.history.domain.model.ParkingHistory
-import com.example.smarttrafficradar.features.history.domain.model.ParkingStatus
+import com.example.smarttrafficradar.features.history.presentation.viewmodel.ParkingHistoryState
 import com.example.smarttrafficradar.features.user_profile.presentation.viewmodel.UserProfileState
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
@@ -27,23 +26,27 @@ import com.example.smarttrafficradar.ui.theme.Background
 import com.example.smarttrafficradar.utils.s15
 
 @Composable
-fun DashboardState(state: UserProfileState) {
+fun DashboardState(
+    profileState: UserProfileState,
+    historyState: ParkingHistoryState,
+    onDetail: (String) -> Unit
+) {
     val scrollState = rememberScrollState()
 
-    when (state) {
+    when (profileState) {
         is UserProfileState.Idle, is UserProfileState.Loading -> {
             CircularProgressIndicator()
         }
 
         is UserProfileState.Success -> {
-            val profile = state.profile
+            val profile = profileState.profile
 
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(color = Background)
-                    .padding(bottom = Dimen.PaddingM)
                     .verticalScroll(scrollState)
+                    .padding(bottom = Dimen.PaddingM)
             ) {
                 DashboardTopBar(
                     fullName = profile.fullName,
@@ -61,54 +64,13 @@ fun DashboardState(state: UserProfileState) {
                 )
 
                 DebtCard(
-                    currentDebt = profile.currentDebt.toString(),
+                    currentDebt = profile.currentDebt,
                     onPayClick = {
 
                     }
                 )
 
                 Spacer(modifier = Modifier.height(AppSpacing.L))
-
-                /** BEGIN MOCK DATA */
-
-                val parkingHistories = listOf(
-                    ParkingHistory(
-                        id = "history_001",
-                        userId = "uid_001",
-                        rfidUid = "A1B2C3D4",
-                        checkInTime = 1750148130L,
-                        checkOutTime = null,
-                        durationMinutes = 0,
-                        fee = 0,
-                        status = ParkingStatus.CHECK_IN,
-                        createdAt = 1750148130L,
-                        updatedAt = 1750148130L
-                    ),
-                    ParkingHistory(
-                        id = "history_002",
-                        userId = "uid_001",
-                        rfidUid = "A1B2C3D4",
-                        checkInTime = 1750234530L,
-                        checkOutTime = 1750243530L,
-                        durationMinutes = 150,
-                        fee = 5000,
-                        status = ParkingStatus.CHECK_OUT,
-                        createdAt = 1750234530L,
-                        updatedAt = 1750243530L
-                    ),
-                    ParkingHistory(
-                        id = "history_003",
-                        userId = "uid_001",
-                        rfidUid = "A1B2C3D4",
-                        checkInTime = 1750320930L,
-                        checkOutTime = null,
-                        durationMinutes = 0,
-                        fee = 0,
-                        status = ParkingStatus.CHECK_IN,
-                        createdAt = 1750320930L,
-                        updatedAt = 1750320930L
-                    )
-                )
 
                 QuickActionsSection(
                     onPayment = {},
@@ -119,17 +81,11 @@ fun DashboardState(state: UserProfileState) {
 
                 Spacer(modifier = Modifier.height(AppSpacing.L))
 
-                RecentActivitiesSection(
-                    histories = parkingHistories,
-                    onDetail = { historyId ->
-
-                    },
-                    onSeeAll = {
-
-                    }
+                RecentActivitiesState(
+                    state = historyState,
+                    onDetail = onDetail,
+                    onSeeAll = {}
                 )
-
-                /** END MOCK DATA */
             }
         }
 
@@ -139,7 +95,7 @@ fun DashboardState(state: UserProfileState) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = state.uiText.asString(),
+                    text = profileState.uiText.asString(),
                     color = Color.Red,
                     style = MaterialTheme.typography.s15
                 )

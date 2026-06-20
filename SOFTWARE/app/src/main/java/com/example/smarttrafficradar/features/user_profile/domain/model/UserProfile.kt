@@ -12,6 +12,7 @@ data class UserProfile(
     val rfidUid: String? = null,
     val currentDebt: Int = 0,
     val isActive: Boolean = false,
+    val isParking: Boolean = false,
     val vehicleType: VehicleType? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()

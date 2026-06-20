@@ -115,7 +115,11 @@ fun UserMainScreen(
                 }
 
                 2 -> {
-                    PaymentScreen()
+                    val uid = currentUser?.uid ?: ""
+                    PaymentScreen(
+                        uid = uid,
+                        amount = 20000
+                    )
                 }
 
                 3 -> {
