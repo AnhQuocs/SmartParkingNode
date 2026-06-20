@@ -118,7 +118,7 @@ fun UserMainScreen(
                     val uid = currentUser?.uid ?: ""
                     PaymentScreen(
                         uid = uid,
-                        amount = 20000
+                        amount = 40000
                     )
                 }
 

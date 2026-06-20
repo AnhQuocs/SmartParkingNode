@@ -2,7 +2,9 @@ package com.example.smarttrafficradar.features.main.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -42,6 +44,7 @@ import com.example.smarttrafficradar.features.main.viewmodel.MainViewModel
 import com.example.smarttrafficradar.features.main.viewmodel.SplashViewModel
 import com.example.smarttrafficradar.features.onboarding.presentation.ui.OnboardingScreen
 import com.example.smarttrafficradar.features.user_profile.presentation.ui.CompleteProfileScreen
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -51,6 +54,10 @@ class MainActivity : BaseComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Gọi hàm lấy FCM Token và in ra Logcat ngay khi mở app
+        getFcmTokenAndLog()
+
         enableEdgeToEdge()
         setContent {
             val context = LocalContext.current
@@ -66,10 +73,14 @@ class MainActivity : BaseComponentActivity() {
             val goToAuth = intent.getBooleanExtra("GO_TO_AUTH", false)
 
             LaunchedEffect(Unit) {
-                val permissionsToRequest = arrayOf(
+                // Chuyển sang dùng MutableList để dễ dàng thêm quyền theo điều kiện phiên bản Android
+                val permissionsToRequest = mutableListOf(
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 )
+
+                // Chỉ xin quyền thông báo nếu máy đang chạy Android 13 (TIRAMISU) trở lên
+                permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
 
                 val allGranted = permissionsToRequest.all {
                     ContextCompat.checkSelfPermission(
@@ -78,13 +89,29 @@ class MainActivity : BaseComponentActivity() {
                 }
 
                 if (!allGranted) {
-                    permissionLauncher.launch(permissionsToRequest)
+                    // Chuyển list thành array để truyền vào launcher
+                    permissionLauncher.launch(permissionsToRequest.toTypedArray())
                 }
             }
 
             AppAppearance(themeConfig = themeState) {
                 MainApp(gotoAuth = goToAuth)
             }
+        }
+    }
+
+    // Hàm lấy token và in ra logcat
+    private fun getFcmTokenAndLog() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w("FCM_TEST", "Lấy FCM token thất bại!", task.exception)
+                return@addOnCompleteListener
+            }
+
+            val token = task.result
+            Log.d("FCM_TEST", "========================================")
+            Log.d("FCM_TEST", "Token của máy này là: $token")
+            Log.d("FCM_TEST", "========================================")
         }
     }
 }
