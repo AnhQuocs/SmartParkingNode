@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +41,7 @@ import com.example.smarttrafficradar.R
 import com.example.smarttrafficradar.components.AppAppearance
 import com.example.smarttrafficradar.features.auth.presentation.ui.SignInScreen
 import com.example.smarttrafficradar.features.auth.presentation.ui.SignUpScreen
+import com.example.smarttrafficradar.features.auth.presentation.viewmodel.AuthViewModel
 import com.example.smarttrafficradar.features.main.viewmodel.MainViewModel
 import com.example.smarttrafficradar.features.main.viewmodel.SplashViewModel
 import com.example.smarttrafficradar.features.onboarding.presentation.ui.OnboardingScreen
@@ -51,18 +53,24 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : BaseComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Gọi hàm lấy FCM Token và in ra Logcat ngay khi mở app
-        getFcmTokenAndLog()
 
         enableEdgeToEdge()
         setContent {
             val context = LocalContext.current
             val themeState by viewModel.themeConfig.collectAsStateWithLifecycle()
             val isReady by viewModel.isReady.collectAsStateWithLifecycle()
+
+            val currentUser by authViewModel.currentUser.collectAsState()
+
+            LaunchedEffect(currentUser) {
+                currentUser?.uid?.let { uid ->
+                    getAndSyncFcmToken(uid)
+                }
+            }
 
             val permissionLauncher = rememberLauncherForActivityResult(
                 ActivityResultContracts.RequestMultiplePermissions()
@@ -73,14 +81,14 @@ class MainActivity : BaseComponentActivity() {
             val goToAuth = intent.getBooleanExtra("GO_TO_AUTH", false)
 
             LaunchedEffect(Unit) {
-                // Chuyển sang dùng MutableList để dễ dàng thêm quyền theo điều kiện phiên bản Android
                 val permissionsToRequest = mutableListOf(
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 )
 
-                // Chỉ xin quyền thông báo nếu máy đang chạy Android 13 (TIRAMISU) trở lên
-                permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+                }
 
                 val allGranted = permissionsToRequest.all {
                     ContextCompat.checkSelfPermission(
@@ -89,7 +97,6 @@ class MainActivity : BaseComponentActivity() {
                 }
 
                 if (!allGranted) {
-                    // Chuyển list thành array để truyền vào launcher
                     permissionLauncher.launch(permissionsToRequest.toTypedArray())
                 }
             }
@@ -100,18 +107,17 @@ class MainActivity : BaseComponentActivity() {
         }
     }
 
-    // Hàm lấy token và in ra logcat
-    private fun getFcmTokenAndLog() {
+    private fun getAndSyncFcmToken(uid: String) {
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
-                Log.w("FCM_TEST", "Lấy FCM token thất bại!", task.exception)
+                Log.w("FCM_SYNC", "Lấy FCM token thất bại!", task.exception)
                 return@addOnCompleteListener
             }
 
             val token = task.result
-            Log.d("FCM_TEST", "========================================")
-            Log.d("FCM_TEST", "Token của máy này là: $token")
-            Log.d("FCM_TEST", "========================================")
+            Log.d("FCM_SYNC", "Token của máy: $token")
+
+            viewModel.sendFcmTokenToServer(uid, token)
         }
     }
 }

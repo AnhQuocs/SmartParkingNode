@@ -260,5 +260,7 @@
     <string name="empty_parking_history">No recent activity</string>
     <string name="parking">Parking</string>
     <string name="overnight">Overnight</string>
+    <string name="session_details">Session details</string>
+    <string name="completed">Completed</string>
 
 </resources>

@@ -257,5 +257,7 @@
     <string name="empty_parking_history">Chưa có hoạt động nào gần đây</string>
     <string name="parking">Đang gửi xe</string>
     <string name="overnight">Qua đêm</string>
+    <string name="session_details">Chi tiết phiên</string>
+    <string name="completed">Đã hoàn thành</string>
 
 </resources>

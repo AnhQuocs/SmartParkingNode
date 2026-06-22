@@ -42,30 +42,23 @@ fun UserMainScreen(
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var previousTabIndex by remember { mutableIntStateOf(0) }
 
-    Scaffold(
-        topBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(color = Color.White)
-            )
-        },
-        bottomBar = {
-            UserBottomBar(
-                currentIndex = selectedTabIndex,
-                onTabSelected = { newIndex ->
-                    previousTabIndex = selectedTabIndex
-                    selectedTabIndex = newIndex
-                }
-            )
-        }
-    ) { paddingValues ->
+    Scaffold(topBar = {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(color = Color.White)
+        )
+    }, bottomBar = {
+        UserBottomBar(
+            currentIndex = selectedTabIndex, onTabSelected = { newIndex ->
+                previousTabIndex = selectedTabIndex
+                selectedTabIndex = newIndex
+            })
+    }) { paddingValues ->
         val isForward = selectedTabIndex > previousTabIndex
 
         AnimatedContent(
-            targetState = selectedTabIndex,
-            label = "AdminTabTransition",
-            transitionSpec = {
+            targetState = selectedTabIndex, label = "AdminTabTransition", transitionSpec = {
                 if (isForward) {
                     (slideInHorizontally(
                         initialOffsetX = { width -> width },
@@ -93,8 +86,7 @@ fun UserMainScreen(
                 }.using(
                     SizeTransform(clip = false)
                 )
-            },
-            modifier = Modifier
+            }, modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
         ) { tab ->
@@ -117,8 +109,7 @@ fun UserMainScreen(
                 2 -> {
                     val uid = currentUser?.uid ?: ""
                     PaymentScreen(
-                        uid = uid,
-                        amount = 40000
+                        uid = uid, amount = 40000
                     )
                 }
 
