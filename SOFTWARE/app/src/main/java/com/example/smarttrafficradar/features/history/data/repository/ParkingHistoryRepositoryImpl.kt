@@ -45,12 +45,11 @@ class ParkingHistoryRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getHistoryDetail(historyId: String): ParkingHistory {
-        return try {
-            val document = collection.document(historyId).get().await()
-            document.toObject(ParkingHistory::class.java)?.copy(id = document.id)
-                ?: throw Exception("History not found!")
-        } catch (e: Exception) {
-            throw e
-        }
+        val document = collection.document(historyId).get().await()
+
+        return document.toObject(ParkingHistoryDto::class.java)
+            ?.copy(id = document.id)
+            ?.toDomain()
+            ?: throw Exception("History not found!")
     }
 }

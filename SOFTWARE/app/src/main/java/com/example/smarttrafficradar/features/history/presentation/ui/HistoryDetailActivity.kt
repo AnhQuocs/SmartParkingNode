@@ -5,7 +5,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.smarttrafficradar.BaseComponentActivity
 import com.example.smarttrafficradar.features.history.presentation.viewmodel.ParkingHistoryViewModel
@@ -34,9 +35,14 @@ fun HistoryDetailScreen(
     onBackClick: () -> Unit,
     parkingHistoryViewModel: ParkingHistoryViewModel = hiltViewModel()
 ) {
+    val state by parkingHistoryViewModel.detailState.collectAsState()
+
     LaunchedEffect(historyId) {
         parkingHistoryViewModel.getHistoryDetail(historyId)
     }
 
-
+    HistoryDetailState(
+        state = state,
+        onBack = onBackClick
+    )
 }

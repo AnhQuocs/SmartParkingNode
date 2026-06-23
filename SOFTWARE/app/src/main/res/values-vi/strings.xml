@@ -259,5 +259,7 @@
     <string name="overnight">Qua đêm</string>
     <string name="session_details">Chi tiết phiên</string>
     <string name="completed">Đã hoàn thành</string>
+    <string name="parking_session_id">Mã phiên gửi xe</string>
+    <string name="total_fee">Tổng phí</string>
 
 </resources>

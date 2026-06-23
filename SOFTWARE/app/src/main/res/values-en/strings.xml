@@ -262,5 +262,7 @@
     <string name="overnight">Overnight</string>
     <string name="session_details">Session details</string>
     <string name="completed">Completed</string>
+    <string name="parking_session_id">Parking Session ID</string>
+    <string name="total_fee">Total Fee</string>
 
 </resources>

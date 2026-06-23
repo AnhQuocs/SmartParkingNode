@@ -87,19 +87,20 @@ class ParkingHistoryViewModel @Inject constructor(
     fun getHistoryDetail(historyId: String) {
         viewModelScope.launch {
             _detailState.value = HistoryDetailState.Loading
+            Log.d(TAG, "Loading history detail: historyId = $historyId")
 
             try {
-                val history =
-                    historyUseCases.getHistoryDetailUseCase(historyId)
+                val history = historyUseCases.getHistoryDetailUseCase(historyId)
 
-                _detailState.value =
-                    HistoryDetailState.Success(history)
+                Log.d(TAG, "History loaded successfully: $history")
 
+                _detailState.value = HistoryDetailState.Success(history)
             } catch (exception: Exception) {
-                _detailState.value =
-                    HistoryDetailState.Error(
-                        mapErrorToUiText(exception)
-                    )
+                Log.e(TAG, "Failed to load history detail", exception)
+
+                _detailState.value = HistoryDetailState.Error(
+                    mapErrorToUiText(exception)
+                )
             }
         }
     }
