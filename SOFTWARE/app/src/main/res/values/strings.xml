@@ -265,4 +265,16 @@
     <string name="parking_session_id">Parking Session ID</string>
     <string name="total_fee">Total Fee</string>
 
+    <!-- PARKING INFORMATION CARD -->
+    <string name="parking_info_title">Parking Information</string>
+    <string name="vehicle_type_label">Vehicle Type</string>
+    <string name="rfid_card_label">RFID Card</string>
+    <string name="parking_duration_label">Parking Duration</string>
+    <string name="duration_hours_minutes">%1$d hours %2$d minutes</string>
+    <string name="duration_minutes_only">%1$d minutes</string>
+
+    <!-- TIME DETAILS CARD -->
+    <string name="time_details_title">Time Details</string>
+    <string name="date_time_format">%1$s - %2$s</string>
+
 </resources>

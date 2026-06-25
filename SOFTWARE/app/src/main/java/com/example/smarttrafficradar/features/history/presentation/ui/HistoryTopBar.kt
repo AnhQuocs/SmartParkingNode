@@ -130,7 +130,7 @@ fun HistoryTopBar(
                     .fillMaxWidth()
                     .height(320.dp)
                     .padding(Dimen.PaddingS)
-                    .clip(RoundedCornerShape(AppShape.ShapeXL))
+                    .clip(RoundedCornerShape(AppShape.ShapeXL2))
                     .background(color = Color.White),
                 contentAlignment = Alignment.Center
             ) {
@@ -209,7 +209,7 @@ fun HistoryTopBar(
                             text = if (isParking)
                                 stringResource(id = R.string.parking)
                             else
-                                (historyInfo.fee?.toCurrencyFormat() + "₫"),
+                                (historyInfo.fee?.toCurrencyFormat() + " ₫"),
                             style = MaterialTheme.typography.s18,
                             fontWeight = if (isParking) FontWeight.Medium else FontWeight.Bold,
                             color = if (isParking) SlateGray else GreenBright

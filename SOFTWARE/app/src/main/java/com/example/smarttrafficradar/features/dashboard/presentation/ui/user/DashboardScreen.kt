@@ -18,6 +18,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.smarttrafficradar.features.history.presentation.ui.HistoryDetailActivity
 import com.example.smarttrafficradar.features.history.presentation.viewmodel.ParkingHistoryViewModel
+import com.example.smarttrafficradar.features.user_profile.domain.model.VehicleType
+import com.example.smarttrafficradar.features.user_profile.presentation.viewmodel.UserProfileState
 import com.example.smarttrafficradar.features.user_profile.presentation.viewmodel.UserProfileViewModel
 
 @Composable
@@ -45,8 +47,13 @@ fun DashboardScreen(
             profileState = profileState,
             historyState = historyState,
             onDetail = { historyId ->
+                val profile = (profileState as? UserProfileState.Success)?.profile
+                val vehicleType = profile?.vehicleType ?: VehicleType.MOTORBIKE
+
                 val intent = Intent(context, HistoryDetailActivity::class.java)
                     .putExtra("historyId", historyId)
+                    .putExtra("vehicleType", vehicleType)
+
                 context.startActivity(intent)
             }
         )

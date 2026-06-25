@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.smarttrafficradar.BaseComponentActivity
 import com.example.smarttrafficradar.features.history.presentation.viewmodel.ParkingHistoryViewModel
+import com.example.smarttrafficradar.features.user_profile.domain.model.VehicleType
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -19,10 +20,15 @@ class HistoryDetailActivity : BaseComponentActivity() {
         enableEdgeToEdge()
 
         val historyId = intent.getStringExtra("historyId") ?: ""
+        val vehicleType = intent.getSerializableExtra(
+            "vehicleType",
+            VehicleType::class.java
+        ) ?: VehicleType.MOTORBIKE
 
         setContent {
             HistoryDetailScreen(
                 historyId = historyId,
+                vehicleType = vehicleType,
                 onBackClick = { finish() }
             )
         }
@@ -33,6 +39,7 @@ class HistoryDetailActivity : BaseComponentActivity() {
 fun HistoryDetailScreen(
     historyId: String,
     onBackClick: () -> Unit,
+    vehicleType: VehicleType,
     parkingHistoryViewModel: ParkingHistoryViewModel = hiltViewModel()
 ) {
     val state by parkingHistoryViewModel.detailState.collectAsState()
@@ -42,6 +49,7 @@ fun HistoryDetailScreen(
     }
 
     HistoryDetailState(
+        vehicleType = vehicleType,
         state = state,
         onBack = onBackClick
     )
