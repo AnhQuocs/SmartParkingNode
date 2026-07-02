@@ -47,7 +47,6 @@ object Dimen {
     val HeightXL3 = 150.dp
     val HeightXL4 = 250.dp
     val HeightXXL = 300.dp
-    val HeightShimmer = 400.dp
 
     // Width
     val WidthM = 80.dp

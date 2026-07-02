@@ -40,13 +40,14 @@ fun SettingCard(
     languageText: String,
     onLanguageClick: () -> Unit,
     onNotificationClick: () -> Unit,
-    onSecurityClick: () -> Unit
+    onSecurityClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(AppShape.ShapeL),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier

@@ -10,15 +10,26 @@ fun UserProfileDto.toDomain(): UserProfile {
         uid = uid,
         identifier = identifier,
         fullName = fullName,
+        email = email,
         phoneNumber = phoneNumber,
-        memberType = try { MemberType.valueOf(memberType) } catch (e: Exception) { MemberType.STUDENT },
+        memberType = try {
+            MemberType.valueOf(memberType)
+        } catch (e: Exception) {
+            MemberType.STUDENT
+        },
         department = department,
         avatarUrl = avatarUrl,
         rfidUid = rfidUid,
         currentDebt = currentDebt,
         isActive = isActive,
         isParking = isParking,
-        vehicleType = vehicleType?.let { try { VehicleType.valueOf(it) } catch (e: Exception) { null } },
+        vehicleType = vehicleType?.let {
+            try {
+                VehicleType.valueOf(it)
+            } catch (e: Exception) {
+                null
+            }
+        },
         createdAt = createdAt,
         updatedAt = updatedAt
     )
@@ -29,6 +40,7 @@ fun UserProfile.toDto(): UserProfileDto {
         uid = uid,
         identifier = identifier,
         fullName = fullName,
+        email = email,
         phoneNumber = phoneNumber,
         memberType = memberType.name,
         department = department,

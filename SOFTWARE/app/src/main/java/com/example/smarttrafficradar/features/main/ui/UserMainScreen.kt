@@ -114,7 +114,8 @@ fun UserMainScreen(
                 }
 
                 3 -> {
-                    ProfileScreen(navController = navController)
+                    val uid = currentUser?.uid ?: ""
+                    ProfileScreen(navController = navController, uid = uid)
                 }
             }
         }

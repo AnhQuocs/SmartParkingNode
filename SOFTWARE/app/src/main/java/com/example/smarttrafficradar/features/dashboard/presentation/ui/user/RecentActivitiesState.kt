@@ -212,7 +212,7 @@ fun RecentActivitiesItem(
                 )
             }
 
-            Spacer(modifier = Modifier.height(AppSpacing.S))
+            Spacer(modifier = Modifier.height(AppSpacing.M))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),

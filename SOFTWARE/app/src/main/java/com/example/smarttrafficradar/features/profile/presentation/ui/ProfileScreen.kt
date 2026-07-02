@@ -10,8 +10,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -19,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +41,8 @@ import com.example.smarttrafficradar.features.app_system.language.domain.model.A
 import com.example.smarttrafficradar.features.app_system.language.presentation.ui.ChangeLanguageActivity
 import com.example.smarttrafficradar.features.app_system.language.presentation.viewmodel.LanguageViewModel
 import com.example.smarttrafficradar.features.auth.presentation.viewmodel.AuthViewModel
+import com.example.smarttrafficradar.features.user_profile.presentation.viewmodel.UserProfileState
+import com.example.smarttrafficradar.features.user_profile.presentation.viewmodel.UserProfileViewModel
 import com.example.smarttrafficradar.ui.dimens.AppShape
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
@@ -48,11 +54,14 @@ import com.example.smarttrafficradar.utils.withColor
 
 @Composable
 fun ProfileScreen(
+    uid: String,
     navController: NavController,
     authViewModel: AuthViewModel = hiltViewModel(),
+    profileViewModel: UserProfileViewModel = hiltViewModel(),
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
 
     val currentLang by languageViewModel.currentLanguage.collectAsState()
     val languageText = when (currentLang) {
@@ -62,16 +71,41 @@ fun ProfileScreen(
 
     var isShowDialog by remember { mutableStateOf(false) }
 
+    LaunchedEffect(uid) {
+        profileViewModel.loadUserProfile(uid)
+    }
+
+    val profileState by profileViewModel.profileState.collectAsState()
+    val profile = (profileState as? UserProfileState.Success)?.profile
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(scrollState)
                 .background(Background)
-                .padding(horizontal = Dimen.PaddingM)
-                .padding(top = Dimen.PaddingL)
         ) {
+            profile?.let {
+                ProfileTopBar(
+                    fullName = it.fullName,
+                    memberType = it.memberType,
+                    identifier = it.identifier
+                )
+            }
+
+            profile?.let {
+                PersonalInformationCard(
+                    email = profile.email,
+                    phoneNumber = profile.phoneNumber,
+                    department = profile.department,
+                    rfidUid = profile.rfidUid ?: "",
+                    modifier = Modifier
+                        .offset(y = (-32).dp)
+                )
+            }
+
             SettingCard(
                 languageText = languageText,
                 onLanguageClick = {
@@ -82,7 +116,10 @@ fun ProfileScreen(
                     )
                 },
                 onNotificationClick = {},
-                onSecurityClick = {}
+                onSecurityClick = {},
+                modifier = Modifier
+                    .offset(y = (-16).dp)
+                    .padding(horizontal = Dimen.PaddingM)
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -93,11 +130,11 @@ fun ProfileScreen(
                 onClick = { isShowDialog = true },
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = Dimen.PaddingM)
                     .border(0.5.dp, Color.LightGray, RoundedCornerShape(AppShape.ShapeS)),
                 content = {
                     Text(
-                        text = stringResource(id = R.string.logout_title),
-                        color = Color.Red
+                        text = stringResource(id = R.string.logout_title), color = Color.Red
                     )
                 }
             )
