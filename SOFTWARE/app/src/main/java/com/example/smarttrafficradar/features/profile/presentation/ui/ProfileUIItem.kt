@@ -1,6 +1,7 @@
 package com.example.smarttrafficradar.features.profile.presentation.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -24,14 +26,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.smarttrafficradar.R
+import com.example.smarttrafficradar.features.user_profile.domain.model.MemberType
 import com.example.smarttrafficradar.ui.dimens.AppShape
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
+import com.example.smarttrafficradar.ui.theme.ActionDanger
 import com.example.smarttrafficradar.ui.theme.RoyalBlue
 import com.example.smarttrafficradar.ui.theme.RoyalBlueLight
 import com.example.smarttrafficradar.ui.theme.RoyalPurple
@@ -47,12 +52,16 @@ import com.example.smarttrafficradar.utils.semiBold
 
 @Composable
 fun PersonalInformationCard(
+    memberType: MemberType,
     email: String,
     phoneNumber: String,
     department: String,
     rfidUid: String,
     modifier: Modifier = Modifier
 ) {
+    val departmentText =
+        if (memberType == MemberType.STUDENT) stringResource(id = R.string.faculty) + " $department" else department
+
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(AppShape.ShapeXL),
@@ -97,7 +106,7 @@ fun PersonalInformationCard(
             InfoItem(
                 iconRes = R.drawable.ic_management,
                 label = stringResource(id = R.string.department),
-                value = department,
+                value = departmentText,
                 iconColor = RoyalPurple,
                 bgColor = RoyalPurpleLight
             )
@@ -166,5 +175,112 @@ private fun InfoItem(
                 color = Color.Black
             )
         }
+    }
+}
+
+@Composable
+fun AccountCard(
+    modifier: Modifier = Modifier,
+    onEditProfile: () -> Unit,
+    onChangePassword: () -> Unit,
+    onSupportCenter: () -> Unit,
+    onLogout: () -> Unit
+) {
+    Card(
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(AppShape.ShapeXL),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Dimen.PaddingL)
+        ) {
+            Text(
+                text = stringResource(id = R.string.account),
+                style = MaterialTheme.typography.s18.bold(),
+                color = Color.Black
+            )
+
+            Spacer(modifier = Modifier.height(AppSpacing.L))
+
+            AccountItem(
+                iconRes = R.drawable.ic_profile,
+                text = stringResource(id = R.string.edit_profile),
+                onClick = onEditProfile
+            )
+
+            Spacer(modifier = Modifier.height(AppSpacing.MediumLarge))
+
+            AccountItem(
+                iconRes = R.drawable.ic_key,
+                text = stringResource(id = R.string.change_password),
+                onClick = onChangePassword
+            )
+
+            Spacer(modifier = Modifier.height(AppSpacing.MediumLarge))
+
+            AccountItem(
+                iconRes = R.drawable.ic_support,
+                text = stringResource(id = R.string.support_center),
+                onClick = onSupportCenter
+            )
+
+            Spacer(modifier = Modifier.height(AppSpacing.MediumLarge))
+
+            AccountItem(
+                iconRes = R.drawable.ic_logout,
+                text = stringResource(id = R.string.logout_title),
+                isLogout = true,
+                onClick = onLogout
+            )
+        }
+    }
+}
+
+@Composable
+fun AccountItem(
+    iconRes: Int,
+    text: String,
+    isLogout: Boolean = false,
+    onClick: () -> Unit
+) {
+    val contentColor = if (isLogout) ActionDanger else Color.Black
+    val arrowColor = if (isLogout) ActionDanger else SlateGray
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(Dimen.PaddingS)
+            .clip(RoundedCornerShape(AppShape.ShapeS))
+            .clickable { if (isLogout) onClick() },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = null,
+            tint = contentColor,
+            modifier = Modifier.size(Dimen.SizeM)
+        )
+
+        Spacer(modifier = Modifier.width(AppSpacing.M))
+
+        Text(
+            text = text,
+            style = MaterialTheme.typography.s16.semiBold(),
+            color = contentColor
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Icon(
+            imageVector = Icons.Default.ArrowForwardIos,
+            contentDescription = null,
+            tint = arrowColor,
+            modifier = Modifier
+                .size(Dimen.SizeS)
+                .clickable { onClick() }
+        )
     }
 }

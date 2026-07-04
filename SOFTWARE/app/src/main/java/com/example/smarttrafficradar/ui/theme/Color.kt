@@ -112,3 +112,6 @@ val OceanBlue = Color(0xFF0088CC)
 
 val Background = Color(0xFFF8FAFC)
 val GreenBright = Color(0xFF22C55E)
+
+val AppTitleText = Color(0xFF6D728A)
+val AppVersionText = Color(0xFF9DA4BB)

@@ -250,6 +250,12 @@
     <string name="profile_topbar">Hồ sơ</string>
     <string name="personal_info">Thông tin cá nhân</string>
     <string name="department">Đơn vị</string>
+    <string name="faculty">Khoa</string>
+    <string name="account">Tài khoản</string>
+    <string name="edit_profile">Chỉnh sửa hồ sơ</string>
+    <string name="change_password">Đổi mật khẩu</string>
+    <string name="support_center">Trung tâm hỗ trợ</string>
+    <string name="app_version">Phiên bản %1$s</string>
 
     <!-- HISTORY -->
     <string name="error_history_not_found">Không tìm thấy lịch sử gửi xe</string>

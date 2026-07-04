@@ -111,7 +111,7 @@ fun SettingItem(
                 modifier = Modifier.size(Dimen.SizeM)
             )
 
-            Spacer(modifier = Modifier.width(AppSpacing.S))
+            Spacer(modifier = Modifier.width(AppSpacing.M))
 
             Text(
                 text = text,
