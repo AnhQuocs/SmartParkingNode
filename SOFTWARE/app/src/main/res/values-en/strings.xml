@@ -282,4 +282,11 @@
     <string name="time_details_title">Time Details</string>
     <string name="date_time_format">%1$s - %2$s</string>
 
+    <!-- NOTIFICATION -->
+    <string name="notifications_title">Notifications</string>
+    <string name="no_notifications">No notifications yet</string>
+    <string name="notification_detail_title">Notification Detail</string>
+    <string name="system_notification">System Notification</string>
+    <string name="mark_all_as_read">Mark all as read</string>
+
 </resources>

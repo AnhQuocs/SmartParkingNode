@@ -6,10 +6,16 @@ import com.example.smarttrafficradar.features.user_profile.data.mapper.toDto
 import com.example.smarttrafficradar.features.user_profile.domain.model.UserProfile
 import com.example.smarttrafficradar.features.user_profile.domain.repository.UserProfileRepository
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.tasks.await
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
 class UserProfileRepositoryImpl @Inject constructor(
@@ -20,25 +26,35 @@ class UserProfileRepositoryImpl @Inject constructor(
     private val authUsersCollection = firestore.collection("users")
     private val orgUsersCollection = firestore.collection("organization_members")
 
-    override fun getUserProfile(uid: String): Flow<UserProfile?> = callbackFlow {
+    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val profileFlowCache = ConcurrentHashMap<String, Flow<UserProfile?>>()
+
+    override fun getUserProfile(uid: String): Flow<UserProfile?> {
         if (uid.isBlank()) {
-            close(IllegalArgumentException("UID is blank"))
-            return@callbackFlow
+            return kotlinx.coroutines.flow.flowOf(null)
         }
 
-        val subscription = profilesCollection
-            .document(uid)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    close(error)
-                    return@addSnapshotListener
-                }
+        return profileFlowCache.getOrPut(uid) {
+            callbackFlow {
+                val subscription = profilesCollection
+                    .document(uid)
+                    .addSnapshotListener { snapshot, error ->
+                        if (error != null) {
+                            close(error)
+                            return@addSnapshotListener
+                        }
 
-                val profile = snapshot?.toObject(UserProfileDto::class.java)?.toDomain()
-                trySend(profile)
-            }
+                        val profile = snapshot?.toObject(UserProfileDto::class.java)?.toDomain()
+                        trySend(profile)
+                    }
 
-        awaitClose { subscription.remove() }
+                awaitClose { subscription.remove() }
+            }.shareIn(
+                scope = repositoryScope,
+                started = SharingStarted.WhileSubscribed(5000L),
+                replay = 1
+            )
+        }
     }
 
     override suspend fun saveUserProfile(userProfile: UserProfile) {

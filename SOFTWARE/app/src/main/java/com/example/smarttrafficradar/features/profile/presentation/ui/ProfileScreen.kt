@@ -21,7 +21,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,8 +39,7 @@ import com.example.smarttrafficradar.features.app_system.language.domain.model.A
 import com.example.smarttrafficradar.features.app_system.language.presentation.ui.ChangeLanguageActivity
 import com.example.smarttrafficradar.features.app_system.language.presentation.viewmodel.LanguageViewModel
 import com.example.smarttrafficradar.features.auth.presentation.viewmodel.AuthViewModel
-import com.example.smarttrafficradar.features.user_profile.presentation.viewmodel.UserProfileState
-import com.example.smarttrafficradar.features.user_profile.presentation.viewmodel.UserProfileViewModel
+import com.example.smarttrafficradar.features.user_profile.domain.model.UserProfile
 import com.example.smarttrafficradar.ui.dimens.AppShape
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
@@ -57,10 +55,9 @@ import com.example.smarttrafficradar.utils.withColor
 
 @Composable
 fun ProfileScreen(
-    uid: String,
+    profile: UserProfile,
     navController: NavController,
     authViewModel: AuthViewModel = hiltViewModel(),
-    profileViewModel: UserProfileViewModel = hiltViewModel(),
     languageViewModel: LanguageViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -74,13 +71,6 @@ fun ProfileScreen(
 
     var isShowDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(uid) {
-        profileViewModel.loadUserProfile(uid)
-    }
-
-    val profileState by profileViewModel.profileState.collectAsState()
-    val profile = (profileState as? UserProfileState.Success)?.profile
-
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -90,25 +80,20 @@ fun ProfileScreen(
                 .verticalScroll(scrollState)
                 .background(Background)
         ) {
-            profile?.let {
-                ProfileTopBar(
-                    fullName = it.fullName,
-                    memberType = it.memberType,
-                    identifier = it.identifier
-                )
-            }
+            ProfileTopBar(
+                fullName = profile.fullName,
+                memberType = profile.memberType,
+                identifier = profile.identifier
+            )
 
-            profile?.let {
-                PersonalInformationCard(
-                    memberType = profile.memberType,
-                    email = profile.email,
-                    phoneNumber = profile.phoneNumber,
-                    department = profile.department,
-                    rfidUid = profile.rfidUid ?: "",
-                    modifier = Modifier
-                        .offset(y = (-32).dp)
-                )
-            }
+            PersonalInformationCard(
+                memberType = profile.memberType,
+                email = profile.email,
+                phoneNumber = profile.phoneNumber,
+                department = profile.department,
+                rfidUid = profile.rfidUid ?: "",
+                modifier = Modifier.offset(y = (-32).dp)
+            )
 
             SettingCard(
                 languageText = languageText,
@@ -129,7 +114,7 @@ fun ProfileScreen(
             AccountCard(
                 onEditProfile = {
 
-                },
+            },
                 onSupportCenter = {
 
                 },
@@ -137,8 +122,7 @@ fun ProfileScreen(
 
                 },
                 onLogout = { isShowDialog = true },
-                modifier = Modifier
-                    .padding(horizontal = Dimen.PaddingM)
+                modifier = Modifier.padding(horizontal = Dimen.PaddingM)
             )
 
             Spacer(modifier = Modifier.height(AppSpacing.L))
@@ -166,17 +150,14 @@ fun ProfileScreen(
         }
 
         if (isShowDialog) {
-            LogoutDialog(
-                onDismiss = { isShowDialog = false },
-                onConfirm = {
-                    authViewModel.signOut()
-                    authViewModel.clearError()
-                    isShowDialog = false
-                    navController.navigate("auth") {
-                        popUpTo(0) { inclusive = true }
-                    }
+            LogoutDialog(onDismiss = { isShowDialog = false }, onConfirm = {
+                authViewModel.signOut()
+                authViewModel.clearError()
+                isShowDialog = false
+                navController.navigate("auth") {
+                    popUpTo(0) { inclusive = true }
                 }
-            )
+            })
         }
     }
 }
@@ -188,51 +169,45 @@ fun LogoutDialog(
     val context = LocalContext.current
 
     AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor = Color.White,
-        title = {
+        onDismissRequest = onDismiss, containerColor = Color.White, title = {
+        Text(
+            text = stringResource(R.string.logout_title),
+            style = MaterialTheme.typography.s20.withColor(Color.Black)
+        )
+    }, text = {
+        Text(
+            text = stringResource(R.string.logout_message),
+            style = MaterialTheme.typography.s18,
+            color = Color.Black
+        )
+    }, confirmButton = {
+        Button(
+            onClick = {
+                onConfirm()
+                Toast.makeText(
+                    context, context.getString(R.string.logout_success), Toast.LENGTH_SHORT
+                ).show()
+            },
+            modifier = Modifier
+                .padding(horizontal = Dimen.PaddingS)
+                .height(40.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = RoyalBlue
+            ),
+            shape = RoundedCornerShape(AppShape.ShapeM)
+        ) {
             Text(
-                text = stringResource(R.string.logout_title),
-                style = MaterialTheme.typography.s20.withColor(Color.Black)
+                text = stringResource(R.string.logout_confirm), color = Color.White
             )
-        },
-        text = {
+        }
+    }, dismissButton = {
+        TextButton(
+            onClick = onDismiss, modifier = Modifier.padding(horizontal = Dimen.PaddingS)
+        ) {
             Text(
-                text = stringResource(R.string.logout_message),
-                style = MaterialTheme.typography.s18,
-                color = Color.Black
+                text = stringResource(R.string.cancel), color = RoyalBlue
             )
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    onConfirm()
-                    Toast.makeText(
-                        context, context.getString(R.string.logout_success), Toast.LENGTH_SHORT
-                    ).show()
-                },
-                modifier = Modifier
-                    .padding(horizontal = Dimen.PaddingS)
-                    .height(40.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = RoyalBlue
-                ),
-                shape = RoundedCornerShape(AppShape.ShapeM)
-            ) {
-                Text(
-                    text = stringResource(R.string.logout_confirm), color = Color.White
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss, modifier = Modifier.padding(horizontal = Dimen.PaddingS)
-            ) {
-                Text(
-                    text = stringResource(R.string.cancel), color = RoyalBlue
-                )
-            }
-        },
-        shape = RoundedCornerShape(AppShape.ShapeXL)
+        }
+    }, shape = RoundedCornerShape(AppShape.ShapeXL)
     )
 }

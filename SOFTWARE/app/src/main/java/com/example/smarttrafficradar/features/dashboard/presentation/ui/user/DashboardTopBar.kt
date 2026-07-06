@@ -2,6 +2,7 @@ package com.example.smarttrafficradar.features.dashboard.presentation.ui.user
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.smarttrafficradar.R
+import com.example.smarttrafficradar.features.notification.domain.model.Notification
 import com.example.smarttrafficradar.features.user_profile.domain.model.MemberType
 import com.example.smarttrafficradar.ui.dimens.AppShape
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
@@ -42,7 +44,9 @@ import com.example.smarttrafficradar.utils.semiBold
 fun DashboardTopBar(
     fullName: String,
     type: MemberType,
-    identifier: String
+    identifier: String,
+    onNotificationClick: () -> Unit,
+    notifications: List<Notification>
 ) {
     val initials = getInitials(fullName)
     val role = if (type == MemberType.STUDENT) R.string.student else R.string.employee
@@ -123,10 +127,12 @@ fun DashboardTopBar(
             Spacer(modifier = Modifier.weight(1f))
 
             Icon(
-                painter = painterResource(id = R.drawable.ic_notification2),
+                painter = painterResource(id = if (notifications.isEmpty()) R.drawable.ic_notification2 else R.drawable.ic_notification),
                 contentDescription = "Notification",
                 tint = Color.White,
-                modifier = Modifier.size(Dimen.SizeML)
+                modifier = Modifier
+                    .size(Dimen.SizeML)
+                    .clickable { onNotificationClick() }
             )
         }
     }

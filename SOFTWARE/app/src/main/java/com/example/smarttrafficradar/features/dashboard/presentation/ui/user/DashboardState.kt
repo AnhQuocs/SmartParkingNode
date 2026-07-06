@@ -19,23 +19,36 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.smarttrafficradar.features.history.presentation.viewmodel.ParkingHistoryState
+import com.example.smarttrafficradar.features.notification.domain.model.Notification
 import com.example.smarttrafficradar.features.user_profile.presentation.viewmodel.UserProfileState
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
 import com.example.smarttrafficradar.ui.theme.Background
+import com.example.smarttrafficradar.ui.theme.LightPrimary
 import com.example.smarttrafficradar.utils.s15
 
 @Composable
 fun DashboardState(
     profileState: UserProfileState,
     historyState: ParkingHistoryState,
-    onDetail: (String) -> Unit
+    onRegisterCard: () -> Unit,
+    onViewHistory: () -> Unit,
+    onPayment: () -> Unit,
+    onSupport: () -> Unit,
+    onDetail: (String) -> Unit,
+    onNotificationClick: () -> Unit,
+    notifications: List<Notification>
 ) {
     val scrollState = rememberScrollState()
 
     when (profileState) {
         is UserProfileState.Idle, is UserProfileState.Loading -> {
-            CircularProgressIndicator()
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = LightPrimary)
+            }
         }
 
         is UserProfileState.Success -> {
@@ -51,7 +64,9 @@ fun DashboardState(
                 DashboardTopBar(
                     fullName = profile.fullName,
                     type = profile.memberType,
-                    identifier = profile.identifier
+                    identifier = profile.identifier,
+                    onNotificationClick = onNotificationClick,
+                    notifications = notifications
                 )
 
                 ParkingCard(
@@ -73,10 +88,10 @@ fun DashboardState(
                 Spacer(modifier = Modifier.height(AppSpacing.L))
 
                 QuickActionsSection(
-                    onPayment = {},
-                    onRegisterCard = {},
-                    onSupport = {},
-                    onViewHistory = {}
+                    onPayment = onPayment,
+                    onRegisterCard = onRegisterCard,
+                    onSupport = onSupport,
+                    onViewHistory = onViewHistory
                 )
 
                 Spacer(modifier = Modifier.height(AppSpacing.L))

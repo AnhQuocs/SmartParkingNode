@@ -279,4 +279,11 @@
     <string name="time_details_title">Chi tiết thời gian</string>
     <string name="date_time_format">%1$s - %2$s</string>
 
+    <!-- NOTIFICATION -->
+    <string name="notifications_title">Thông báo</string>
+    <string name="no_notifications">Chưa có thông báo nào</string>
+    <string name="notification_detail_title">Chi tiết thông báo</string>
+    <string name="system_notification">Thông báo hệ thống</string>
+    <string name="mark_all_as_read">Đánh dấu tất cả là đã đọc</string>
+
 </resources>

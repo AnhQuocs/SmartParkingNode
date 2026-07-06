@@ -86,9 +86,7 @@ class MainActivity : BaseComponentActivity() {
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 )
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
-                }
+                permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
 
                 val allGranted = permissionsToRequest.all {
                     ContextCompat.checkSelfPermission(

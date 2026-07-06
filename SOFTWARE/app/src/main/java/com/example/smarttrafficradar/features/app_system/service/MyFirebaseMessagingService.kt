@@ -8,6 +8,13 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.example.smarttrafficradar.R
+import com.example.smarttrafficradar.features.auth.domain.usecase.UpdateFcmTokenUseCase
+import com.example.smarttrafficradar.features.main.ui.MainActivity
+import com.example.smarttrafficradar.features.notification.domain.model.Notification
+import com.example.smarttrafficradar.features.notification.domain.usecase.DeleteOldNotificationsUseCase
+import com.example.smarttrafficradar.features.notification.domain.usecase.SaveNotificationUseCase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,29 +24,27 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// Import UseCase của bro từ thư mục auth
-import com.example.smarttrafficradar.features.auth.domain.usecase.UpdateFcmTokenUseCase
-import com.example.smarttrafficradar.R
-import com.example.smarttrafficradar.features.main.ui.MainActivity
-
 @AndroidEntryPoint
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     @Inject
     lateinit var updateFcmTokenUseCase: UpdateFcmTokenUseCase
 
-    // Tạo một scope riêng cho Service để chạy Coroutine an toàn
+    @Inject
+    lateinit var saveNotificationUseCase: SaveNotificationUseCase
+
+    @Inject
+    lateinit var deleteOldNotificationsUseCase: DeleteOldNotificationsUseCase
+
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d("FCM_SERVICE", "Firebase cấp Token mới ngầm: $token")
 
-        // TODO: Lấy userId đang đăng nhập từ local (DataStore / SharedPreferences / Room)
-        // Nếu bro có inject AuthRepository vào đây thì gọi ra lấy là đẹp nhất
-        val currentUserId = "Fff4xFI4dUXTkEbTHctA4FtZewh2"
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
-        if (currentUserId.isNotEmpty()) {
+        if (!currentUserId.isNullOrEmpty()) {
             serviceScope.launch {
                 try {
                     updateFcmTokenUseCase(currentUserId, token)
@@ -55,10 +60,32 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         super.onMessageReceived(message)
         Log.d("FCM_SERVICE", "Nhận được thông báo mới từ server!")
 
-        // Lấy nội dung từ Payload. Firebase hỗ trợ 2 loại: Notification payload và Data payload.
-        // Mình check cả 2 cho chắc ăn, ưu tiên Notification payload trước.
         val title = message.notification?.title ?: message.data["title"] ?: "Thông báo hệ thống"
         val body = message.notification?.body ?: message.data["body"] ?: "Bạn có một thông báo mới."
+        val type = message.data["type"] ?: "SYSTEM"
+        
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+
+        if (!currentUserId.isNullOrEmpty()) {
+            serviceScope.launch {
+                try {
+                    // Lưu thông báo vào Firestore
+                    saveNotificationUseCase(
+                        Notification(
+                            userId = currentUserId,
+                            title = title,
+                            body = body,
+                            type = type,
+                            timestamp = System.currentTimeMillis()
+                        )
+                    )
+                    // Dọn dẹp thông báo cũ hơn 3 tháng
+                    deleteOldNotificationsUseCase()
+                } catch (e: Exception) {
+                    Log.e("FCM_SERVICE", "Lỗi lưu thông báo: ${e.message}")
+                }
+            }
+        }
 
         showNotification(title, body)
     }
@@ -67,15 +94,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val channelId = "smart_traffic_notification_channel"
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // 1. Tạo Intent định nghĩa hành động mở MainActivity khi người dùng click
         val intent = Intent(this, MainActivity::class.java).apply {
-            // Clear các activity cũ để đưa MainActivity lên vị trí cao nhất
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            // Có thể đính kèm thêm dữ liệu bổ sung để điều hướng sâu vào màn hình lịch sử
             putExtra("GO_TO_HISTORY", true)
         }
 
-        // 2. Bọc Intent vào PendingIntent để hệ thống Android quản lý và thực thi từ bên ngoài app
         val pendingIntent = PendingIntent.getActivity(
             this,
             0,
@@ -92,7 +115,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             .setContentTitle(title)
             .setContentText(message)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentIntent(pendingIntent) // <--- THÊM DÒNG NÀY ĐỂ LIÊN KẾT HÀNH ĐỘNG CLICK
+            .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .build()
