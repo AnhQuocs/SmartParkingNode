@@ -274,10 +274,16 @@
     <string name="vehicle_type_label">Loại phương tiện</string>
     <string name="rfid_card_label">Thẻ RFID</string>
     <string name="parking_duration_label">Thời lượng gửi xe</string>
-    <string name="duration_hours_minutes">%1$d giờ %2$d phút</string>
     <string name="duration_minutes_only">%1$d phút</string>
     <string name="time_details_title">Chi tiết thời gian</string>
     <string name="date_time_format">%1$s - %2$s</string>
+    <string name="history_title">Lịch sử gửi xe</string>
+    <string name="search_by_session_id">Tìm kiếm theo mã phiên…</string>
+    <string name="check_in_time_label">Thời gian vào</string>
+    <string name="check_out_time_label">Thời gian ra</string>
+    <string name="parking_duration">Thời gian gửi</string>
+    <string name="duration_hours_minutes">%1$dh %2$dp</string>
+    <string name="duration_minutes_value">%1$dp</string>
 
     <!-- NOTIFICATION -->
     <string name="notifications_title">Thông báo</string>

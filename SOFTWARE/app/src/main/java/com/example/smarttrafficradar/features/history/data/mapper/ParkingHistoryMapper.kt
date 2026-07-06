@@ -3,6 +3,7 @@ package com.example.smarttrafficradar.features.history.data.mapper
 import com.example.smarttrafficradar.features.history.data.dto.ParkingHistoryDto
 import com.example.smarttrafficradar.features.history.domain.model.ParkingHistory
 import com.example.smarttrafficradar.features.history.domain.model.ParkingStatus
+import com.example.smarttrafficradar.features.user_profile.domain.model.VehicleType
 import com.google.firebase.Timestamp
 
 fun ParkingHistoryDto.toDomain() = ParkingHistory(
@@ -12,6 +13,13 @@ fun ParkingHistoryDto.toDomain() = ParkingHistory(
     checkInTime = checkInTime.toMillis(),
     checkOutTime = checkOutTime?.toDate()?.time,
     durationMinutes = durationMinutes,
+    vehicleType = vehicleType?.let {
+        try {
+            VehicleType.valueOf(it)
+        } catch (e: Exception) {
+            null
+        }
+    },
     fee = fee,
     status = runCatching {
         ParkingStatus.valueOf(status)
@@ -20,23 +28,6 @@ fun ParkingHistoryDto.toDomain() = ParkingHistory(
     updatedAt = updatedAt.toMillis()
 )
 
-fun ParkingHistory.toDto() = ParkingHistoryDto(
-    id = id,
-    userId = userId,
-    rfidUid = rfidUid,
-    checkInTime = checkInTime.toTimestamp(),
-    checkOutTime = checkOutTime?.toTimestamp(),
-    durationMinutes = durationMinutes,
-    fee = fee,
-    status = status.name,
-    createdAt = createdAt.toTimestamp(),
-    updatedAt = updatedAt.toTimestamp()
-)
-
 fun Timestamp?.toMillis(): Long {
     return this?.toDate()?.time ?: 0L
-}
-
-fun Long.toTimestamp(): Timestamp {
-    return Timestamp(java.util.Date(this))
 }
