@@ -282,7 +282,7 @@ public:
         if (_pending.direction == "IN")
         {
             _patchProfile(_pending.profileDocPath, true, false, 0);
-            _createCheckInHistory(_pending.userId, _pending.uid, nowTs);
+            _createCheckInHistory(_pending.userId, _pending.uid, _pending.vehicleType, nowTs);
         }
         else
         {
@@ -382,7 +382,7 @@ private:
         http.end();
     }
 
-    void _createCheckInHistory(const String &userId, const String &uid, time_t nowTs)
+    void _createCheckInHistory(const String &userId, const String &uid, const String &vehicleType, time_t nowTs)
     {
         HTTPClient http;
         http.setReuse(false);
@@ -402,7 +402,9 @@ private:
             userId + "\"},"
                      "\"rfidUid\":{\"stringValue\":\"" +
             uid + "\"},"
-                  "\"checkInTime\":{\"timestampValue\":\"" +
+                  "\"vehicleType\":{\"stringValue\":\"" +
+            vehicleType + "\"},"
+                          "\"checkInTime\":{\"timestampValue\":\"" +
             isoNow + "\"},"
                      "\"checkOutTime\":{\"nullValue\":null},"
                      "\"durationMinutes\":{\"integerValue\":0},"
@@ -419,7 +421,7 @@ private:
         {
             http.getString();
             if (code == 200)
-                Serial.println("[FIRESTORE] Đã tạo parking_histories (CHECK_IN)");
+                Serial.println("[FIRESTORE] Đã tạo parking_histories (CHECK_IN) kèm vehicleType");
         }
         http.end();
     }
@@ -517,9 +519,12 @@ private:
 
         String body =
             "{\"type\":\"" + direction + "\","
-            "\"rfidUid\":\"" + uid + "\","
-            "\"userId\":\"" + userId + "\","
-            "\"deviceId\":\"" + String(DEVICE_ID) + "\"}";
+                                         "\"rfidUid\":\"" +
+            uid + "\","
+                  "\"userId\":\"" +
+            userId + "\","
+                     "\"deviceId\":\"" +
+            String(DEVICE_ID) + "\"}";
 
         int code = http.POST(body);
         if (code == 200 || code == 201)
