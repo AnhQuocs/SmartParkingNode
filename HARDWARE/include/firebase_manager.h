@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <FirebaseESP32.h>
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
@@ -21,6 +22,8 @@ private:
 
     unsigned long lastPollMs = 0;
     const unsigned long POLL_INTERVAL_MS = 800;
+
+    WiFiClientSecure secureClient;
 
 public:
     void begin()
@@ -56,6 +59,9 @@ public:
 
         fbData.setBSSLBufferSize(2048, 1024);
         fbData.setResponseSize(2048);
+
+        secureClient.setInsecure();
+        secureClient.setHandshakeTimeout(10);
 
         initialized = true;
 
@@ -115,8 +121,8 @@ public:
         String url = "https://firestore.googleapis.com/v1/projects/smarttrafficradar"
                      "/databases/(default)/documents:runQuery?key=" +
                      String(FIREBASE_WEB_API_KEY);
-
-        http.begin(url);
+        secureClient.stop();
+        http.begin(secureClient, url);
         http.addHeader("Content-Type", "application/json");
 
         String queryPayload =
@@ -136,7 +142,7 @@ public:
             String payload = http.getString();
             if (httpCode == 200)
             {
-                DynamicJsonDocument doc(2048);
+                StaticJsonDocument<1024> doc;
                 DeserializationError err = deserializeJson(doc, payload);
 
                 if (!err && doc[0].containsKey("document"))
@@ -235,7 +241,9 @@ public:
         String url = "https://firestore.googleapis.com/v1/projects/smarttrafficradar"
                      "/databases/(default)/documents:runQuery?key=" +
                      String(FIREBASE_WEB_API_KEY);
-        http.begin(url);
+
+        secureClient.stop();
+        http.begin(secureClient, url);
         http.addHeader("Content-Type", "application/json");
 
         String payload =
@@ -257,7 +265,7 @@ public:
             String resp = http.getString();
             if (code == 200)
             {
-                DynamicJsonDocument doc(2048);
+                StaticJsonDocument<1024> doc;
                 if (!deserializeJson(doc, resp) && doc[0].containsKey("document"))
                 {
                     String fullPath = doc[0]["document"]["name"] | "";
@@ -358,7 +366,8 @@ private:
         }
         url += "&key=" + String(FIREBASE_WEB_API_KEY);
 
-        http.begin(url);
+        secureClient.stop();
+        http.begin(secureClient, url);
         http.addHeader("Content-Type", "application/json");
 
         String body = "{\"fields\":{\"isParking\":{\"booleanValue\":";
@@ -391,7 +400,9 @@ private:
         String url = "https://firestore.googleapis.com/v1/projects/smarttrafficradar"
                      "/databases/(default)/documents/parking_histories?key=" +
                      String(FIREBASE_WEB_API_KEY);
-        http.begin(url);
+
+        secureClient.stop();
+        http.begin(secureClient, url);
         http.addHeader("Content-Type", "application/json");
 
         String isoNow = getIso8601Time(nowTs);
@@ -446,7 +457,8 @@ private:
                      "&key=" +
                      String(FIREBASE_WEB_API_KEY);
 
-        http.begin(url);
+        secureClient.stop();
+        http.begin(secureClient, url);
         http.addHeader("Content-Type", "application/json");
 
         String isoNow = getIso8601Time(nowTs);
@@ -478,8 +490,8 @@ private:
 
     double _calcFee(time_t checkInTs, time_t checkOutTs, int64_t durationMin, const String &vehicleType)
     {
-        // Miễn phí nếu thời gian đỗ dưới 30 phút
-        if (durationMin <= 30)
+        // Miễn phí nếu thời gian đỗ dưới 1 phút
+        if (durationMin < 30)
             return 0.0;
 
         time_t inLocal = checkInTs + 7 * 3600;
@@ -509,13 +521,20 @@ private:
 
     void _notifyBackendEvent(const String &direction, const String &uid, const String &userId)
     {
-        HTTPClient http;
-        http.setReuse(false);
-        http.setTimeout(3000); // không để 1 lần lỗi mạng làm chậm vòng loop
-        String url = String(BACKEND_BASE_URL) + HARDWARE_EVENT_PATH;
+        Serial.printf("[HEAP] Free heap trước khi gọi API: %u bytes\n", ESP.getFreeHeap());
 
-        http.begin(url);
+        // CHỈ DÙNG WIFICLIENT THƯỜNG - RẤT NHẸ VÀ NHANH
+        WiFiClient client;
+        HTTPClient http;
+
+        http.setReuse(false);
+        http.setTimeout(10000);
+
+        String url = String(BACKEND_BASE_URL) + HARDWARE_EVENT_PATH;
+        http.begin(client, url);
+
         http.addHeader("Content-Type", "application/json");
+        http.addHeader("Connection", "close");
 
         String body =
             "{\"type\":\"" + direction + "\","
@@ -527,14 +546,16 @@ private:
             String(DEVICE_ID) + "\"}";
 
         int code = http.POST(body);
+
         if (code == 200 || code == 201)
         {
-            Serial.printf("[BACKEND] Đã báo sự kiện %s thành công\n", direction.c_str());
+            Serial.printf("[BACKEND] Đã báo sự kiện %s thành công!\n", direction.c_str());
         }
         else
         {
-            Serial.printf("[BACKEND] Báo sự kiện lỗi HTTP %d — bỏ qua, không retry\n", code);
+            Serial.printf("[BACKEND] Lỗi HTTP %d (%s)\n", code, http.errorToString(code).c_str());
         }
+
         http.end();
     }
 

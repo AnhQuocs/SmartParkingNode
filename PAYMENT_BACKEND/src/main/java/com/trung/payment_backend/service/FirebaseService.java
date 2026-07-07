@@ -130,7 +130,11 @@ public class FirebaseService {
                 String rfidUid = doc.getString("rfidUid");
                 String userId = doc.getString("userId");
 
-                // checkInTime trong Firestore là Timestamp (theo mẫu JSON bạn gửi)
+                // LẤY THÊM LOẠI XE TỪ FIRESTORE
+                String vehicleType = doc.getString("vehicleType");
+                if (vehicleType == null) vehicleType = "MOTORBIKE"; // Fallback an toàn
+                Long nightsObj = doc.getLong("notifiedNights");
+                long notifiedNights = (nightsObj != null) ? nightsObj : 0L;
                 com.google.cloud.Timestamp checkInTs = doc.getTimestamp("checkInTime");
                 long checkInMs = (checkInTs != null) ? checkInTs.toDate().getTime() : 0L;
 
@@ -139,7 +143,8 @@ public class FirebaseService {
 
                 String fcmToken = (userId != null) ? getFcmTokenByUid(userId) : null;
 
-                result.add(new VehicleRecord(doc.getId(), rfidUid, userId, checkInMs, notified, fcmToken));
+                // THÊM vehicleType VÀO CONSTRUCTOR
+                result.add(new VehicleRecord(doc.getId(), rfidUid, userId, checkInMs, notified, fcmToken, vehicleType, notifiedNights));
             }
 
         } catch (Exception e) {
@@ -158,6 +163,17 @@ public class FirebaseService {
             System.out.printf("[SCHEDULER] Đã đánh dấu notified30Min cho document %s\n", documentId);
         } catch (Exception e) {
             System.err.println("[SCHEDULER] Lỗi markNotified: " + e.getMessage());
+        }
+    }
+
+    public void markNotifiedNights(String documentId, long nights) {
+        Firestore db = FirestoreClient.getFirestore();
+        try {
+            db.collection("parking_histories").document(documentId)
+                    .update("notifiedNights", nights).get();
+            System.out.printf("[SCHEDULER] Đã cập nhật notifiedNights = %d cho document %s\n", nights, documentId);
+        } catch (Exception e) {
+            System.err.println("[SCHEDULER] Lỗi markNotifiedNights: " + e.getMessage());
         }
     }
 
