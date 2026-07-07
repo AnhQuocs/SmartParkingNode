@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <FirebaseESP32.h>
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
@@ -509,13 +510,20 @@ private:
 
     void _notifyBackendEvent(const String &direction, const String &uid, const String &userId)
     {
-        HTTPClient http;
-        http.setReuse(false);
-        http.setTimeout(3000); // không để 1 lần lỗi mạng làm chậm vòng loop
-        String url = String(BACKEND_BASE_URL) + HARDWARE_EVENT_PATH;
+        Serial.printf("[HEAP] Free heap trước khi gọi API: %u bytes\n", ESP.getFreeHeap());
 
-        http.begin(url);
+        // CHỈ DÙNG WIFICLIENT THƯỜNG - RẤT NHẸ VÀ NHANH
+        WiFiClient client;
+        HTTPClient http;
+
+        http.setReuse(false);
+        http.setTimeout(10000);
+
+        String url = String(BACKEND_BASE_URL) + HARDWARE_EVENT_PATH;
+        http.begin(client, url);
+
         http.addHeader("Content-Type", "application/json");
+        http.addHeader("Connection", "close");
 
         String body =
             "{\"type\":\"" + direction + "\","
@@ -527,14 +535,16 @@ private:
             String(DEVICE_ID) + "\"}";
 
         int code = http.POST(body);
+
         if (code == 200 || code == 201)
         {
-            Serial.printf("[BACKEND] Đã báo sự kiện %s thành công\n", direction.c_str());
+            Serial.printf("[BACKEND] Đã báo sự kiện %s thành công!\n", direction.c_str());
         }
         else
         {
-            Serial.printf("[BACKEND] Báo sự kiện lỗi HTTP %d — bỏ qua, không retry\n", code);
+            Serial.printf("[BACKEND] Lỗi HTTP %d (%s)\n", code, http.errorToString(code).c_str());
         }
+
         http.end();
     }
 
