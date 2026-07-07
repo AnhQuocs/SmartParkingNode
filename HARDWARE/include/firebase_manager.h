@@ -23,6 +23,8 @@ private:
     unsigned long lastPollMs = 0;
     const unsigned long POLL_INTERVAL_MS = 800;
 
+    WiFiClientSecure secureClient;
+
 public:
     void begin()
     {
@@ -57,6 +59,9 @@ public:
 
         fbData.setBSSLBufferSize(2048, 1024);
         fbData.setResponseSize(2048);
+
+        secureClient.setInsecure();
+        secureClient.setHandshakeTimeout(10);
 
         initialized = true;
 
@@ -116,8 +121,8 @@ public:
         String url = "https://firestore.googleapis.com/v1/projects/smarttrafficradar"
                      "/databases/(default)/documents:runQuery?key=" +
                      String(FIREBASE_WEB_API_KEY);
-
-        http.begin(url);
+        secureClient.stop();
+        http.begin(secureClient, url);
         http.addHeader("Content-Type", "application/json");
 
         String queryPayload =
@@ -137,7 +142,7 @@ public:
             String payload = http.getString();
             if (httpCode == 200)
             {
-                DynamicJsonDocument doc(2048);
+                StaticJsonDocument<1024> doc;
                 DeserializationError err = deserializeJson(doc, payload);
 
                 if (!err && doc[0].containsKey("document"))
@@ -236,7 +241,9 @@ public:
         String url = "https://firestore.googleapis.com/v1/projects/smarttrafficradar"
                      "/databases/(default)/documents:runQuery?key=" +
                      String(FIREBASE_WEB_API_KEY);
-        http.begin(url);
+
+        secureClient.stop();
+        http.begin(secureClient, url);
         http.addHeader("Content-Type", "application/json");
 
         String payload =
@@ -258,7 +265,7 @@ public:
             String resp = http.getString();
             if (code == 200)
             {
-                DynamicJsonDocument doc(2048);
+                StaticJsonDocument<1024> doc;
                 if (!deserializeJson(doc, resp) && doc[0].containsKey("document"))
                 {
                     String fullPath = doc[0]["document"]["name"] | "";
@@ -359,7 +366,8 @@ private:
         }
         url += "&key=" + String(FIREBASE_WEB_API_KEY);
 
-        http.begin(url);
+        secureClient.stop();
+        http.begin(secureClient, url);
         http.addHeader("Content-Type", "application/json");
 
         String body = "{\"fields\":{\"isParking\":{\"booleanValue\":";
@@ -392,7 +400,9 @@ private:
         String url = "https://firestore.googleapis.com/v1/projects/smarttrafficradar"
                      "/databases/(default)/documents/parking_histories?key=" +
                      String(FIREBASE_WEB_API_KEY);
-        http.begin(url);
+
+        secureClient.stop();
+        http.begin(secureClient, url);
         http.addHeader("Content-Type", "application/json");
 
         String isoNow = getIso8601Time(nowTs);
@@ -447,7 +457,8 @@ private:
                      "&key=" +
                      String(FIREBASE_WEB_API_KEY);
 
-        http.begin(url);
+        secureClient.stop();
+        http.begin(secureClient, url);
         http.addHeader("Content-Type", "application/json");
 
         String isoNow = getIso8601Time(nowTs);
@@ -479,8 +490,8 @@ private:
 
     double _calcFee(time_t checkInTs, time_t checkOutTs, int64_t durationMin, const String &vehicleType)
     {
-        // Miễn phí nếu thời gian đỗ dưới 30 phút
-        if (durationMin <= 30)
+        // Miễn phí nếu thời gian đỗ dưới 1 phút
+        if (durationMin < 30)
             return 0.0;
 
         time_t inLocal = checkInTs + 7 * 3600;

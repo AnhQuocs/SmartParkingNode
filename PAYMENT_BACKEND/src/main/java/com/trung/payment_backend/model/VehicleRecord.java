@@ -11,8 +11,9 @@ public class VehicleRecord {
     private String documentId;
     private String rfidUid;
     private String userId;
-    private long checkInTimeMs;
+    private long checkInTime;
     private boolean notified30Min;
     private String fcmToken;
-
+    private String vehicleType;
+    private long notifiedNights;
 }
