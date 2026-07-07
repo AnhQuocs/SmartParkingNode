@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.smarttrafficradar.R
@@ -91,6 +92,7 @@ fun HistoryHeader(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
+                textStyle = TextStyle(color = Color.Black),
                 placeholder = {
                     Text(
                         text = stringResource(id = R.string.search_by_session_id),

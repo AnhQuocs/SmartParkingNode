@@ -57,7 +57,7 @@ data class HistoryInfo(
 )
 
 @Composable
-fun HistoryTopBar(
+fun HistoryDetailTopBar(
     history: ParkingHistory,
     onBack: () -> Unit = {}
 ) {

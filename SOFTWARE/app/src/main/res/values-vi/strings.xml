@@ -292,4 +292,16 @@
     <string name="system_notification">Thông báo hệ thống</string>
     <string name="mark_all_as_read">Đánh dấu tất cả là đã đọc</string>
 
+    <!-- PAYMENT -->
+    <string name="payment_topbar_title">Thanh toán</string>
+    <string name="payment_amount_due">Cần thanh toán</string>
+    <string name="payment_total_paid">Đã thanh toán</string>
+    <string name="payment_last_paid">Lần cuối</string>
+    <string name="debt_payment">Thanh toán công nợ</string>
+    <string name="paid_transactions">GD đã thanh toán</string>
+    <string name="debt_history">Lịch sử phát sinh dư nợ</string>
+    <string name="parking_internal_motorbike_day">Nội bộ gửi xe máy ngày</string>
+    <string name="parking_internal_motorbike_overnight">Nội bộ gửi xe máy qua đêm</string>
+    <string name="debt_increased">Dư nợ tăng</string>
+
 </resources>

@@ -295,4 +295,16 @@
     <string name="system_notification">System Notification</string>
     <string name="mark_all_as_read">Mark all as read</string>
 
+    <!-- PAYMENT -->
+    <string name="payment_topbar_title">Payment</string>
+    <string name="payment_amount_due">Amount Due</string>
+    <string name="payment_total_paid">Total Paid</string>
+    <string name="payment_last_paid">Last Payment</string>
+    <string name="debt_payment">Debt Payment</string>
+    <string name="paid_transactions">Paid Transactions</string>
+    <string name="debt_history">Outstanding Balance History</string>
+    <string name="parking_internal_motorbike_day">Internal motorcycle parking (day)</string>
+    <string name="parking_internal_motorbike_overnight">Internal motorcycle parking (overnight)</string>
+    <string name="debt_increased">Debt increased</string>
+
 </resources>

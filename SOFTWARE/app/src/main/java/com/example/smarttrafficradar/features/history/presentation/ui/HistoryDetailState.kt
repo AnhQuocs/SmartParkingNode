@@ -25,7 +25,6 @@ import com.example.smarttrafficradar.utils.s15
 
 @Composable
 fun HistoryDetailState(
-    vehicleType: VehicleType,
     state: HistoryDetailState,
     onBack: () -> Unit
 ) {
@@ -53,13 +52,13 @@ fun HistoryDetailState(
                     .verticalScroll(scrollState)
                     .padding(bottom = Dimen.PaddingM)
             ) {
-                HistoryTopBar(
+                HistoryDetailTopBar(
                     history = history,
                     onBack = onBack
                 )
 
                 ParkingInformationCard(
-                    vehicleType = vehicleType,
+                    vehicleType = history.vehicleType ?: VehicleType.MOTORBIKE,
                     parkingHistory = history,
                     modifier = Modifier
                         .offset(y = (-32).dp)

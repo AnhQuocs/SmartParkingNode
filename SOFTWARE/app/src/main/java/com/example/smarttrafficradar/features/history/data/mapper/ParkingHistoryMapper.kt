@@ -20,6 +20,8 @@ fun ParkingHistoryDto.toDomain() = ParkingHistory(
             null
         }
     },
+    notified30Min = notified30Min,
+    notifiedNights = notifiedNights,
     fee = fee,
     status = runCatching {
         ParkingStatus.valueOf(status)
