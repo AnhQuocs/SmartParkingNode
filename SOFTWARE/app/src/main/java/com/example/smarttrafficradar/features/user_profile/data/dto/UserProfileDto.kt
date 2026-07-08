@@ -20,6 +20,7 @@ data class UserProfileDto(
     @set:PropertyName("isParking")
     var isParking: Boolean = false,
     var vehicleType: String? = null,
+    var language: String? = "VI",
     var createdAt: Long = 0,
     var updatedAt: Long = 0
 )

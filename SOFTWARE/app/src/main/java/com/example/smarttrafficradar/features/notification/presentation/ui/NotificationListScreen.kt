@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.smarttrafficradar.R
 import com.example.smarttrafficradar.features.notification.domain.model.Notification
 import com.example.smarttrafficradar.features.notification.presentation.viewmodel.NotificationViewModel

@@ -3,6 +3,7 @@ package com.example.smarttrafficradar.features.payment.di
 import com.example.smarttrafficradar.features.payment.data.remote.PaymentApi
 import com.example.smarttrafficradar.features.payment.data.repository.PaymentRepositoryImpl
 import com.example.smarttrafficradar.features.payment.domain.repository.PaymentRepository
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -16,7 +17,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object PaymentModule {
 
-    private const val BASE_URL = "https://latrine-dotted-repugnant.ngrok-free.dev/"
+    private const val BASE_URL = "https://34b8-2402-800-7f78-2e95-982b-5f97-a20f-d442.ngrok-free.app/"
 //    private const val BASE_URL = "http://192.168.0.103:8080"
 
     @Provides
@@ -36,7 +37,10 @@ object PaymentModule {
 
     @Provides
     @Singleton
-    fun providePaymentRepository(api: PaymentApi): PaymentRepository {
-        return PaymentRepositoryImpl(api)
+    fun providePaymentRepository(
+        api: PaymentApi,
+        firestore: FirebaseFirestore
+    ): PaymentRepository {
+        return PaymentRepositoryImpl(api, firestore)
     }
 }

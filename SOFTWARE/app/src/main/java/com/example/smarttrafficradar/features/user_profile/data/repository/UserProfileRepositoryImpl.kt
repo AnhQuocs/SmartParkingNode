@@ -1,8 +1,11 @@
 package com.example.smarttrafficradar.features.user_profile.data.repository
 
+import com.example.smarttrafficradar.features.app_system.language.data.preference.LanguagePreferenceManager
+import com.example.smarttrafficradar.features.app_system.language.domain.model.AppLanguage
 import com.example.smarttrafficradar.features.user_profile.data.dto.UserProfileDto
 import com.example.smarttrafficradar.features.user_profile.data.mapper.toDomain
 import com.example.smarttrafficradar.features.user_profile.data.mapper.toDto
+import com.example.smarttrafficradar.features.user_profile.domain.model.UserLang
 import com.example.smarttrafficradar.features.user_profile.domain.model.UserProfile
 import com.example.smarttrafficradar.features.user_profile.domain.repository.UserProfileRepository
 import com.google.firebase.firestore.FirebaseFirestore
@@ -13,13 +16,15 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
 class UserProfileRepositoryImpl @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val languagePreferenceManager: LanguagePreferenceManager
 ) : UserProfileRepository {
 
     private val profilesCollection = firestore.collection("profiles")
@@ -58,26 +63,36 @@ class UserProfileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveUserProfile(userProfile: UserProfile) {
+        // Read current app language from DataStore
+        val currentAppLang = languagePreferenceManager.languageFlow.first()
+        val userLang = when (currentAppLang) {
+            AppLanguage.ENGLISH -> UserLang.EN
+            AppLanguage.VIETNAMESE -> UserLang.VI
+        }
+
+        // Attach current language to the profile
+        val profileToSave = userProfile.copy(language = userLang)
+
         // Find the organization member document first to update linkedUid
         val orgQuery = orgUsersCollection
-            .whereEqualTo("identifier", userProfile.identifier)
-            .whereEqualTo("email", userProfile.email)
+            .whereEqualTo("identifier", profileToSave.identifier)
+            .whereEqualTo("email", profileToSave.email)
             .limit(1)
             .get()
             .await()
 
         firestore.runBatch { batch ->
             // 1. Save profile data to 'profiles' collection
-            val profileRef = profilesCollection.document(userProfile.uid)
-            batch.set(profileRef, userProfile.toDto())
+            val profileRef = profilesCollection.document(profileToSave.uid)
+            batch.set(profileRef, profileToSave.toDto())
             
             // 2. Update status to ACTIVE in 'users' collection (AuthUser)
-            val authUserRef = authUsersCollection.document(userProfile.uid)
+            val authUserRef = authUsersCollection.document(profileToSave.uid)
             batch.update(authUserRef, "status", "ACTIVE")
 
             // 3. Update linkedUid in 'organization_members'
             if (!orgQuery.isEmpty) {
-                batch.update(orgQuery.documents.first().reference, "linkedUid", userProfile.uid)
+                batch.update(orgQuery.documents.first().reference, "linkedUid", profileToSave.uid)
             }
         }.await()
     }
@@ -90,6 +105,13 @@ class UserProfileRepositoryImpl @Inject constructor(
             transaction.update(profileRef, "currentDebt", currentDebt + amount)
             transaction.update(profileRef, "updatedAt", System.currentTimeMillis())
         }.await()
+    }
+
+    override suspend fun updateLanguage(uid: String, language: UserLang) {
+        profilesCollection.document(uid).update(
+            "language", language.name,
+            "updatedAt", System.currentTimeMillis()
+        ).await()
     }
 
     override suspend fun checkIdentifierInOrganization(identifier: String, email: String): Boolean {

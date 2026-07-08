@@ -75,7 +75,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                             userId = currentUserId,
                             title = title,
                             body = body,
-                            type = type,
                             timestamp = System.currentTimeMillis()
                         )
                     )

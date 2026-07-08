@@ -102,8 +102,8 @@ fun UserMainScreen(
 
                 2 -> {
                     PaymentScreen(
-                        uid = currentUser?.uid.orEmpty(),
-                        amount = 40000
+                        uid = currentUser?.uid ?: "",
+                        amount = profile?.currentDebt ?: 0
                     )
                 }
 

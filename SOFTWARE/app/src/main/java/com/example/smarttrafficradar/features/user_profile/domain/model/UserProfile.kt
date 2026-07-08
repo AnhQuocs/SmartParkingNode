@@ -1,5 +1,9 @@
 package com.example.smarttrafficradar.features.user_profile.domain.model
 
+enum class UserLang {
+    EN, VI
+}
+
 data class UserProfile(
     val uid: String = "",
     val identifier: String = "",
@@ -14,6 +18,7 @@ data class UserProfile(
     val isActive: Boolean = false,
     val isParking: Boolean = false,
     val vehicleType: VehicleType? = null,
+    val language: UserLang? = UserLang.VI,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )

@@ -1,5 +1,6 @@
 package com.example.smarttrafficradar.features.user_profile.di
 
+import com.example.smarttrafficradar.features.app_system.language.data.preference.LanguagePreferenceManager
 import com.example.smarttrafficradar.features.user_profile.data.repository.UserProfileRepositoryImpl
 import com.example.smarttrafficradar.features.user_profile.domain.repository.UserProfileRepository
 import com.google.firebase.firestore.FirebaseFirestore
@@ -16,6 +17,11 @@ object UserProfileModule {
     @Provides
     @Singleton
     fun provideUserProfileRepository(
-        firestore: FirebaseFirestore
-    ): UserProfileRepository = UserProfileRepositoryImpl(firestore)
+        firestore: FirebaseFirestore,
+        languagePreferenceManager: LanguagePreferenceManager
+    ): UserProfileRepository =
+        UserProfileRepositoryImpl(
+            firestore,
+            languagePreferenceManager
+        )
 }

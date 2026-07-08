@@ -32,7 +32,6 @@ import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
 import com.example.smarttrafficradar.ui.theme.SmartBlue
 import com.example.smarttrafficradar.utils.s12
-import com.example.smarttrafficradar.utils.s14
 import com.example.smarttrafficradar.utils.s16
 import com.example.smarttrafficradar.utils.s18
 import com.example.smarttrafficradar.utils.semiBold
@@ -103,15 +102,6 @@ fun NotificationDetailScreen(
                     style = MaterialTheme.typography.s16,
                     modifier = Modifier.fillMaxWidth(),
                     lineHeight = MaterialTheme.typography.bodyLarge.lineHeight
-                )
-                
-                Spacer(modifier = Modifier.weight(1f))
-                
-                // Optional: Type badge or footer
-                Text(
-                    text = "${stringResource(id = R.string.system_notification)}: ${item.type}",
-                    style = MaterialTheme.typography.s14,
-                    color = SmartBlue.copy(alpha = 0.6f)
                 )
             }
         }

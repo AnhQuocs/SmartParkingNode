@@ -13,6 +13,8 @@ data class ParkingHistory(
     val checkInTime: Long = 0L,
     val checkOutTime: Long? = null,
     val durationMinutes: Int = 0,
+    val notified30Min: Boolean? = false,
+    val notifiedNights: Int? = 0,
     val vehicleType: VehicleType? = null,
     val fee: Int = 0,
     val status: ParkingStatus = ParkingStatus.CHECK_IN,

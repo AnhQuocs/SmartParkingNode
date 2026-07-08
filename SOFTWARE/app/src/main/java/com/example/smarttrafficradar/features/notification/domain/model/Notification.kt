@@ -6,6 +6,5 @@ data class Notification(
     val title: String = "",
     val body: String = "",
     val timestamp: Long = System.currentTimeMillis(),
-    val isRead: Boolean = false,
-    val type: String = "SYSTEM" // E.g., SYSTEM, PARKING, PAYMENT
+    val isRead: Boolean = false
 )
