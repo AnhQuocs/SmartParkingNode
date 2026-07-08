@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.smarttrafficradar.R
 import com.example.smarttrafficradar.features.dashboard.presentation.util.toDateString
@@ -83,8 +84,20 @@ fun DebtHistorySection(
             }
         }
 
-        debtHistories?.take(4)?.forEach { history ->
-            DebtHistoryItem(history = history, onClick = onDetail)
+        Spacer(modifier = Modifier.height(AppSpacing.M))
+
+        if(debtHistories.isNullOrEmpty()) {
+            Text(
+                text = stringResource(id = R.string.no_outstanding_debt_history),
+                style = MaterialTheme.typography.s16.semiBold(),
+                color = SlateGray,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        } else {
+            debtHistories.take(4).forEach { history ->
+                DebtHistoryItem(history = history, onClick = onDetail)
+            }
         }
     }
 }

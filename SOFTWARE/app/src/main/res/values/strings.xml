@@ -306,5 +306,6 @@
     <string name="parking_internal_motorbike_day">Internal motorcycle parking (day)</string>
     <string name="parking_internal_motorbike_overnight">Internal motorcycle parking (overnight)</string>
     <string name="debt_increased">Debt increased</string>
+    <string name="no_outstanding_debt_history">No outstanding debts yet</string>
 
 </resources>

@@ -31,6 +31,7 @@ import com.example.smarttrafficradar.ui.theme.GreenBright
 import com.example.smarttrafficradar.ui.theme.SmartBlue
 import com.example.smarttrafficradar.utils.s13
 import com.example.smarttrafficradar.utils.s14
+import com.example.smarttrafficradar.utils.s16
 import com.example.smarttrafficradar.utils.s18
 import com.example.smarttrafficradar.utils.semiBold
 
@@ -138,7 +139,7 @@ fun PaymentSummaryItem(
         Spacer(modifier = Modifier.height(AppSpacing.XS))
         Text(
             text = value,
-            style = MaterialTheme.typography.s14.semiBold(),
+            style = MaterialTheme.typography.s16.semiBold(),
             color = valueColor,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis

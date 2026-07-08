@@ -2,6 +2,7 @@ package com.example.smarttrafficradar.features.user_profile.data.mapper
 
 import com.example.smarttrafficradar.features.user_profile.data.dto.UserProfileDto
 import com.example.smarttrafficradar.features.user_profile.domain.model.MemberType
+import com.example.smarttrafficradar.features.user_profile.domain.model.UserLang
 import com.example.smarttrafficradar.features.user_profile.domain.model.UserProfile
 import com.example.smarttrafficradar.features.user_profile.domain.model.VehicleType
 
@@ -30,6 +31,13 @@ fun UserProfileDto.toDomain(): UserProfile {
                 null
             }
         },
+        language = language?.let {
+            try {
+                UserLang.valueOf(it)
+            } catch (e: Exception) {
+                null
+            }
+        },
         createdAt = createdAt,
         updatedAt = updatedAt
     )
@@ -50,6 +58,7 @@ fun UserProfile.toDto(): UserProfileDto {
         isActive = isActive,
         isParking = isParking,
         vehicleType = vehicleType?.name,
+        language = language?.name,
         createdAt = createdAt,
         updatedAt = updatedAt
     )

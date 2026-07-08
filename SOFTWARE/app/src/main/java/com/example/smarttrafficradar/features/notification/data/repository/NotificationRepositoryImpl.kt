@@ -1,5 +1,7 @@
 package com.example.smarttrafficradar.features.notification.data.repository
 
+import com.example.smarttrafficradar.features.notification.data.dto.NotificationDto
+import com.example.smarttrafficradar.features.notification.data.mapper.toDomain
 import com.example.smarttrafficradar.features.notification.domain.model.Notification
 import com.example.smarttrafficradar.features.notification.domain.repository.NotificationRepository
 import com.google.firebase.firestore.FirebaseFirestore
@@ -19,15 +21,22 @@ class NotificationRepositoryImpl @Inject constructor(
     override fun getNotifications(userId: String): Flow<List<Notification>> = callbackFlow {
         val subscription = notificationCollection
             .whereEqualTo("userId", userId)
-            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     close(error)
                     return@addSnapshotListener
                 }
-                val notifications = snapshot?.toObjects(Notification::class.java) ?: emptyList()
+
+                val notifications = snapshot?.documents?.mapNotNull { document ->
+                    document.toObject(NotificationDto::class.java)
+                        ?.copy(id = document.id)
+                        ?.toDomain()
+                } ?: emptyList()
+
                 trySend(notifications)
             }
+
         awaitClose { subscription.remove() }
     }
 

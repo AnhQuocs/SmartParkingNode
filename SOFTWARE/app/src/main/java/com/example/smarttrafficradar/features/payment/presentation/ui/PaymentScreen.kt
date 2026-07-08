@@ -8,6 +8,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -59,114 +60,129 @@ fun PaymentScreen(
     val state by paymentViewModel.paymentState.collectAsState()
     val paymentSummary by paymentViewModel.paymentSummary.collectAsState()
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Background)
-            .verticalScroll(scrollState)
     ) {
-        PaymentTopBar(
-            currentDebt = amount,
-            paid = paymentSummary.totalPaid,
-            lastPaidAt = paymentSummary.lastPaidAt
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+        ) {
+            PaymentTopBar(
+                currentDebt = amount,
+                paid = paymentSummary.totalPaid,
+                lastPaidAt = paymentSummary.lastPaidAt
+            )
 
-        Spacer(modifier = Modifier.height(AppSpacing.L))
+            Spacer(modifier = Modifier.height(AppSpacing.L))
 
-        PaymentTabs(
-            onPayment = {
+            PaymentTabs(
+                onPayment = {
 
-            },
-            onViewHistory = {
+                },
+                onViewHistory = {
 
-            }
-        )
-
-        Spacer(modifier = Modifier.height(AppSpacing.L))
-
-        DebtHistorySection(
-            debtHistories = debtHistories,
-            onDetail = { historyId ->
-                val intent = Intent(context, HistoryDetailActivity::class.java)
-                    .putExtra("historyId", historyId)
-
-                context.startActivity(intent)
-            },
-            onSeeAll = {
-
-            }
-        )
-
-        when (val currentState = state) {
-            is PaymentState.Idle -> {
-                Button(
-                    onClick = {
-                        paymentViewModel.createPaymentUrl(uid, amount)
-                    }, modifier = Modifier.padding(16.dp)
-                ) {
-                    Text("Thanh toán 50.000đ qua MoMo")
                 }
-            }
+            )
 
-            is PaymentState.Loading -> {
-                CircularProgressIndicator()
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("Đang khởi tạo thanh toán...")
-            }
+            Spacer(modifier = Modifier.height(AppSpacing.L))
 
-            is PaymentState.Error -> {
-                Text(
-                    text = currentState.message,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(16.dp)
-                )
-                Button(onClick = { paymentViewModel.resetState() }) {
-                    Text("Thử lại")
+            DebtHistorySection(
+                debtHistories = debtHistories,
+                onDetail = { historyId ->
+                    val intent = Intent(context, HistoryDetailActivity::class.java)
+                        .putExtra("historyId", historyId)
+
+                    context.startActivity(intent)
+                },
+                onSeeAll = {
+                    val intent = Intent(context, AllDebtHistoryActivity::class.java)
+                        .putExtra("uid", uid)
+
+                    context.startActivity(intent)
                 }
+            )
+
+            when (val currentState = state) {
+                is PaymentState.Idle -> {
+                    Button(
+                        onClick = {
+                            paymentViewModel.createPaymentUrl(uid, amount)
+                        },
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text("Thanh toán 50.000đ qua MoMo")
+                    }
+                }
+
+                is PaymentState.Loading -> {
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Đang khởi tạo thanh toán...")
+                }
+
+                is PaymentState.Error -> {
+                    Text(
+                        text = currentState.message,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                    Button(onClick = { paymentViewModel.resetState() }) {
+                        Text("Thử lại")
+                    }
+                }
+
+                is PaymentState.Success -> Unit
             }
+        }
 
-            is PaymentState.Success -> {
-                AndroidView(
-                    factory = { ctx ->
-                        WebView(ctx).apply {
-                            settings.javaScriptEnabled = true // Bắt buộc cho MoMo
-                            settings.domStorageEnabled = true
+        if (state is PaymentState.Success) {
+            val currentState = state as PaymentState.Success
 
-                            settings.userAgentString =
-                                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+            AndroidView(
+                factory = { ctx ->
+                    WebView(ctx).apply {
+                        settings.javaScriptEnabled = true // Bắt buộc cho MoMo
+                        settings.domStorageEnabled = true
 
-                            webViewClient = object : WebViewClient() {
-                                override fun shouldOverrideUrlLoading(
-                                    view: WebView?, request: WebResourceRequest?
-                                ): Boolean {
-                                    val url = request?.url?.toString() ?: return false
+                        settings.userAgentString =
+                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
 
-                                    // Xử lý Deep Link để mở app MoMo
-                                    if (url.startsWith("momo://")) {
-                                        return try {
-                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                                            ctx.startActivity(intent)
-                                            true
-                                        } catch (e: Exception) {
-                                            Toast.makeText(
-                                                ctx,
-                                                "Vui lòng cài đặt ứng dụng MoMo",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            true
-                                        }
+                        webViewClient = object : WebViewClient() {
+                            override fun shouldOverrideUrlLoading(
+                                view: WebView?, request: WebResourceRequest?
+                            ): Boolean {
+                                val url = request?.url?.toString() ?: return false
+
+                                // Xử lý Deep Link để mở app MoMo
+                                if (url.startsWith("momo://")) {
+                                    return try {
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                                        ctx.startActivity(intent)
+                                        true
+                                    } catch (e: Exception) {
+                                        Toast.makeText(
+                                            ctx,
+                                            "Vui lòng cài đặt ứng dụng MoMo",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        true
                                     }
-                                    // Tiếp tục load link Web bình thường
-                                    return super.shouldOverrideUrlLoading(view, request)
                                 }
+                                // Tiếp tục load link Web bình thường
+                                return super.shouldOverrideUrlLoading(view, request)
                             }
                         }
-                    }, update = { webView ->
-                        // Load URL khi state thành công
-                        webView.loadUrl(currentState.payUrl)
-                    }, modifier = Modifier.fillMaxSize() // Chiếm toàn bộ màn hình khi thanh toán
-                )
-            }
+                    }
+                },
+                update = { webView ->
+                    // Load URL khi state thành công
+                    webView.loadUrl(currentState.payUrl)
+                },
+                modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }

@@ -21,6 +21,9 @@
         android:theme="@style/Theme.SMART_PARKING"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".features.payment.presentation.ui.AllDebtHistoryActivity"
+            android:exported="false" />
+        <activity
             android:name=".features.notification.presentation.ui.NotificationActivity"
             android:exported="false" />
         <activity
