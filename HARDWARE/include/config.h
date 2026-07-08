@@ -31,7 +31,6 @@
 // ── DEVICE ID ────────────────────────────────────────────────
 #define DEVICE_ID "parking_node_01"
 
-#define BACKEND_HOST "7e58-42-118-50-38.ngrok-free.app"
 #define HARDWARE_EVENT_PATH "/api/hardware/event"
 
 // ── TIMING (ms) ──────────────────────────────────────────────

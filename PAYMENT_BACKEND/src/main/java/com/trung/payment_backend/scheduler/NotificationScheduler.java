@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -31,17 +32,22 @@ public class NotificationScheduler {
                 // 1. Tính toán thời gian và mức phí
                 long durationMinutes = (long) Math.ceil((double) (now - v.getCheckInTime()) / 60000.0);
                 long currentFee = calculateFee(v.getCheckInTime(), now, v.getVehicleType());
-                String typeDisplay = "CAR".equalsIgnoreCase(v.getVehicleType()) ? "Ô tô" : "Xe máy";
-
-                // 2. Tạo nội dung thông báo linh hoạt
-                String title = "Xe gửi quá 30 phút";
-                String body = String.format("%s (Thẻ %s) đã gửi được %d phút. Tạm tính phí: %,d đ.",
-                        typeDisplay, v.getRfidUid(), durationMinutes, currentFee);
 
                 String uid = (v.getUserId() != null) ? v.getUserId() : "UNKNOWN_USER";
+                List<String> args = Arrays.asList(
+                        v.getVehicleType(),
+                        v.getRfidUid(),
+                        String.valueOf(durationMinutes),
+                        String.valueOf(currentFee)
+                );
 
-                // 3. Gửi thông báo
-                firebaseService.pushAndSaveNotification(uid, title, body);
+                firebaseService.pushAndSaveNotification(
+                        uid,
+                        "TITLE_PARKING_OVER_30_MIN",
+                        "BODY_PARKING_OVER_30_MIN",
+                        args
+                );
+
                 firebaseService.markNotified(v.getDocumentId());
 
                 System.out.printf("[SCHEDULER] Đã cảnh báo xe %s quá giờ (doc=%s) - Phí: %d\n",
@@ -87,24 +93,29 @@ public class NotificationScheduler {
             long outDay = outLocal / 86400;
             long overnightCount = outDay - inDay;
 
-            // KIỂM TRA: Chỉ thông báo nếu số đêm thực tế lớn hơn số đêm đã từng báo
             if (overnightCount > v.getNotifiedNights()) {
                 long currentFee = calculateFee(v.getCheckInTime(), now, v.getVehicleType());
-                String typeDisplay = "CAR".equalsIgnoreCase(v.getVehicleType()) ? "Ô tô" : "Xe máy";
 
                 java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
                 sdf.setTimeZone(java.util.TimeZone.getTimeZone("GMT+7"));
                 String checkInStr = sdf.format(new java.util.Date(v.getCheckInTime()));
 
-                String title = "Thông báo: Xe gửi qua đêm";
-                String body = String.format("%s (Thẻ %s) của bạn đã gửi qua đêm (vào lúc %s). Phí tích lũy: %,d đ.",
-                        typeDisplay, v.getRfidUid(), checkInStr, currentFee);
-
                 String uid = (v.getUserId() != null) ? v.getUserId() : "UNKNOWN_USER";
 
-                firebaseService.pushAndSaveNotification(uid, title, body);
+                List<String> args = Arrays.asList(
+                        v.getVehicleType(),
+                        v.getRfidUid(),
+                        checkInStr,
+                        String.valueOf(currentFee)
+                );
 
-                // ĐÁNH DẤU LÀ ĐÃ THÔNG BÁO CHO SỐ ĐÊM NÀY
+                firebaseService.pushAndSaveNotification(
+                        uid,
+                        "TITLE_PARKING_OVERNIGHT",
+                        "BODY_PARKING_OVERNIGHT",
+                        args
+                );
+
                 firebaseService.markNotifiedNights(v.getDocumentId(), overnightCount);
 
                 System.out.printf("[OVERNIGHT-SCHEDULER] Đã gửi thông báo qua đêm cho rfidUid=%s, Số đêm=%d\n",
@@ -112,5 +123,4 @@ public class NotificationScheduler {
             }
         }
     }
-
 }

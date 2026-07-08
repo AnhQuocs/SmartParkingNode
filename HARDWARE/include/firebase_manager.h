@@ -490,7 +490,7 @@ private:
 
     double _calcFee(time_t checkInTs, time_t checkOutTs, int64_t durationMin, const String &vehicleType)
     {
-        // Miễn phí nếu thời gian đỗ dưới 1 phút
+        // Miễn phí nếu thời gian đỗ dưới 30 phút
         if (durationMin < 30)
             return 0.0;
 

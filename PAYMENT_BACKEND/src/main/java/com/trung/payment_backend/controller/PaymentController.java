@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/payment")
 public class PaymentController {
@@ -51,9 +54,13 @@ public class PaymentController {
             firebaseService.clearUserDebtAndLogHistory(
                     ipnRequest.getExtraData(), ipnRequest.getAmount(), ipnRequest.getTransId()
             );
-            String title = "Thanh toán thành công";
-            String body = "Bạn đã thanh toán " + ipnRequest.getAmount() + "đ cho dịch vụ gửi xe.";
-            firebaseService.pushAndSaveNotification(ipnRequest.getExtraData(), title, body);
+            List<String> args = Arrays.asList(String.valueOf(ipnRequest.getAmount()));
+            firebaseService.pushAndSaveNotification(
+                    ipnRequest.getExtraData(),
+                    "TITLE_PAYMENT_SUCCESS",
+                    "BODY_PAYMENT_SUCCESS",
+                    args
+            );
         } else {
             System.err.println("[DEBUG] isAuthentic: " + isAuthentic);
             System.err.println("[DEBUG] resultCode: " + ipnRequest.getResultCode());

@@ -177,33 +177,61 @@ public class FirebaseService {
         }
     }
 
-    public void pushAndSaveNotification(String uid, String title, String body) {
+    public void pushAndSaveNotification(String uid, String titleKey, String bodyKey, List<String> args) {
         if (uid == null || uid.isEmpty()) return;
 
         Firestore db = FirestoreClient.getFirestore();
+        String fcmToken = null;
+        String lang = "vi";
+
+        try {
+            ApiFuture<QuerySnapshot> query = db.collection("profiles").whereEqualTo("uid", uid).get();
+            QuerySnapshot snapshot = query.get();
+            if (!snapshot.isEmpty()) {
+                DocumentSnapshot doc = snapshot.getDocuments().get(0);
+                fcmToken = doc.getString("fcmToken");
+                String userLang = doc.getString("language");
+                if (userLang != null && !userLang.isEmpty()) {
+                    lang = userLang;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[FCM] Lỗi truy vấn profile để lấy ngôn ngữ: " + e.getMessage());
+        }
+
+        // 2. Tự động biên dịch nội dung Default dựa trên cấu hình ngôn ngữ của user
+        String titleDefault = getLocalizedText(titleKey, lang, args);
+        String bodyDefault = getLocalizedText(bodyKey, lang, args);
+
+        // 3. Ghi dữ liệu lịch sử thông báo trực quan vào Firestore
         Map<String, Object> notiData = new HashMap<>();
         notiData.put("userId", uid);
-        notiData.put("title", title);
-        notiData.put("body", body);
+        notiData.put("titleKey", titleKey);
+        notiData.put("bodyKey", bodyKey);
+        notiData.put("args", args);
         notiData.put("createdAt", com.google.cloud.Timestamp.now());
-        notiData.put("read", false);
+        notiData.put("isRead", false);
         db.collection("notifications").add(notiData);
-        System.out.println("[FIRESTORE] Đã lưu lịch sử thông báo cho uid: " + uid);
 
-        String fcmToken = getFcmTokenByUid(uid);
+        // 4. Đóng gói và phát hành gói tin FCM lồng ghép song song
         if (fcmToken != null && !fcmToken.isEmpty()) {
+            String argsString = String.join(",", args);
+
             Message message = Message.builder()
                     .setToken(fcmToken)
                     .setNotification(Notification.builder()
-                            .setTitle(title)
-                            .setBody(body)
+                            .setTitle(titleDefault)
+                            .setBody(bodyDefault)
                             .build())
+                    .putData("title_loc_key", titleKey)
+                    .putData("body_loc_key", bodyKey)
+                    .putData("body_loc_args", argsString)
                     .build();
             try {
                 String response = FirebaseMessaging.getInstance().send(message);
-                System.out.println("[FCM] Đã gửi Push thành công: " + response);
+                System.out.println("[FCM] Đã phát chuỗi thông báo tích hợp thành công: " + response);
             } catch (FirebaseMessagingException e) {
-                System.err.println("[FCM] Lỗi gửi Push notification: " + e.getMessage());
+                System.err.println("[FCM] Lỗi gửi tín hiệu FCM: " + e.getMessage());
             }
         } else {
             System.out.println("[FCM] Bỏ qua gửi Push — fcmToken rỗng.");
@@ -211,20 +239,68 @@ public class FirebaseService {
     }
 
     public void handleHardwareEvent(String type, String rfidUid, String userId) {
-        String fullName = getFullNameByUid(userId);
-        String displayName = (fullName != null && !fullName.isEmpty()) ? fullName : "Bạn";
-
-        String title;
-        String body;
+        List<String> args = java.util.Arrays.asList(rfidUid);
 
         if ("IN".equalsIgnoreCase(type)) {
-            title = "Xe đã vào bãi";
-            body = displayName + " ơi, xe của bạn (thẻ " + rfidUid + ") vừa vào bãi đỗ.";
+            pushAndSaveNotification(userId, "TITLE_GATE_IN", "BODY_GATE_IN", args);
         } else {
-            title = "Xe đã ra khỏi bãi";
-            body = displayName + " ơi, xe của bạn (thẻ " + rfidUid + ") vừa rời bãi đỗ. Cảm ơn bạn!";
+            pushAndSaveNotification(userId, "TITLE_GATE_OUT", "BODY_GATE_OUT", args);
+        }
+    }
+
+    // Hàm dịch tự động trên Backend hỗ trợ khi App bị Kill (Fallback)
+    private String getLocalizedText(String key, String lang, List<String> args) {
+        boolean isEn = "en".equalsIgnoreCase(lang);
+        String text = "";
+
+        switch (key) {
+            case "TITLE_GATE_IN":
+                text = isEn ? "Vehicle entered" : "Xe vào cổng";
+                break;
+            case "BODY_GATE_IN":
+                text = isEn ? "Your vehicle (card {0}) has just entered the parking lot." : "Xe của bạn (thẻ {0}) vừa vào bãi đỗ.";
+                break;
+
+            case "TITLE_GATE_OUT":
+                text = isEn ? "Vehicle exited" : "Xe ra cổng";
+                break;
+            case "BODY_GATE_OUT":
+                text = isEn ? "Your vehicle (card {0}) has just left the parking lot. Thank you!" : "Xe của bạn (thẻ {0}) vừa rời bãi đỗ. Cảm ơn bạn!"; // [cite: 3]
+                break;
+
+            case "TITLE_PARKING_OVER_30_MIN":
+                text = isEn ? "Parked over 30 minutes" : "Xe gửi quá 30 phút";
+                break;
+            case "BODY_PARKING_OVER_30_MIN":
+                text = isEn ? "{0} (Card {1}) has been parked for {2} minutes. Estimated fee: {3} đ." : "{0} (Thẻ {1}) đã gửi được {2} phút. Tạm tính phí: {3} đ."; // [cite: 3]
+                break;
+
+            case "TITLE_PARKING_OVERNIGHT":
+                text = isEn ? "Overnight parking" : "Xe gửi qua đêm";
+                break;
+            case "BODY_PARKING_OVERNIGHT":
+                text = isEn ? "Your {0} (Card {1}) has been parked overnight (since {2}). Accumulated fee: {3} đ." : "{0} (Thẻ {1}) của bạn đã gửi qua đêm (vào lúc {2}). Phí tích lũy: {3} đ."; // [cite: 3]
+                break;
+
+            case "TITLE_PAYMENT_SUCCESS":
+                text = isEn ? "Payment successful" : "Thanh toán thành công";
+                break;
+            case "BODY_PAYMENT_SUCCESS":
+                text = isEn ? "You have successfully paid {0}đ for parking services." : "Bạn đã thanh toán {0}đ cho dịch vụ gửi xe."; // [cite: 3]
+                break;
+
+            default: text = key;
         }
 
-        pushAndSaveNotification(userId, title, body);
+        if (args != null) {
+            for (int i = 0; i < args.size(); i++) {
+                String val = args.get(i);
+                if (i == 0 && (key.contains("OVER_30_MIN") || key.contains("OVERNIGHT"))) {
+                    val = "CAR".equalsIgnoreCase(val) ? (isEn ? "Car" : "Ô tô") : (isEn ? "Motorbike" : "Xe máy");
+                }
+                text = text.replace("{" + i + "}", val);
+            }
+        }
+        return text;
     }
 }
