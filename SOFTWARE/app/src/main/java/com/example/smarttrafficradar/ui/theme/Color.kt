@@ -115,3 +115,6 @@ val GreenBright = Color(0xFF22C55E)
 
 val AppTitleText = Color(0xFF6D728A)
 val AppVersionText = Color(0xFF9DA4BB)
+
+val SuccessGreen = Color(0xFF008A45)
+val SuccessBackground = Color(0xFFF0FDF4)

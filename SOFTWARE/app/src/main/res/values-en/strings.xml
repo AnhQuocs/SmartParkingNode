@@ -307,5 +307,24 @@
     <string name="parking_internal_motorbike_overnight">Internal motorcycle parking (overnight)</string>
     <string name="debt_increased">Debt increased</string>
     <string name="no_outstanding_debt_history">No outstanding debts yet</string>
+    <string name="payment_momo_button">Pay %1$d₫ via MoMo</string>
+    <string name="payment_initializing">Initializing payment...</string>
+    <string name="retry">Retry</string>
+    <string name="please_install_momo">Please install the MoMo app.</string>
+    <string name="select_all">Select all</string>
+    <string name="parking_service">Parking service</string>
+    <string name="outstanding_balance">Outstanding Balance</string>
+    <string name="total_paid">Total Paid</string>
+    <string name="total_transactions">Total Transactions</string>
+    <string name="transactions_count">%1$d Transactions</string>
+
+    <!-- PAYMENT HISTORY ITEM -->
+    <string name="payment_history_item_title">Parking fee date %1$s</string>
+    <string name="payment_history_method_label">Method</string>
+    <string name="payment_history_time_label">Time</string>
+    <string name="payment_history_status_success">Success</string>
+    <string name="payment_history_status_failed">Failed</string>
+    <string name="payment_history_method_momo">E-wallet - MoMo</string>
+    <string name="currency_vnd_suffix">%1$s đ</string>
 
 </resources>

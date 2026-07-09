@@ -304,5 +304,24 @@
     <string name="parking_internal_motorbike_overnight">Nội bộ gửi xe máy qua đêm</string>
     <string name="debt_increased">Dư nợ tăng</string>
     <string name="no_outstanding_debt_history">Chưa có phát sinh dư nợ nào</string>
+    <string name="payment_momo_button">Thanh toán %1$dđ qua MoMo</string>
+    <string name="payment_initializing">Đang khởi tạo thanh toán...</string>
+    <string name="retry">Thử lại</string>
+    <string name="please_install_momo">Vui lòng cài đặt ứng dụng MoMo.</string>
+    <string name="select_all">Chọn tất cả</string>
+    <string name="parking_service">Dịch vụ gửi xe</string>
+    <string name="outstanding_balance">Tổng dư nợ</string>
+    <string name="total_paid">Tổng đã thanh toán</string>
+    <string name="total_transactions">Tổng giao dịch</string>
+    <string name="transactions_count">%1$d giao dịch</string>
+
+    <!-- PAYMENT HISTORY ITEM -->
+    <string name="payment_history_item_title">Phí gửi xe ngày %1$s</string>
+    <string name="payment_history_method_label">Phương thức</string>
+    <string name="payment_history_time_label">Thời gian</string>
+    <string name="payment_history_status_success">Thành công</string>
+    <string name="payment_history_status_failed">Thất bại</string>
+    <string name="payment_history_method_momo">Ví điện tử - MoMo</string>
+    <string name="currency_vnd_suffix">%1$s đ</string>
 
 </resources>

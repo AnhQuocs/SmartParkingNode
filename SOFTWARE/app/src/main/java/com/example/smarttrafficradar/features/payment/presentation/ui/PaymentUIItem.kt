@@ -52,7 +52,9 @@ fun PaymentTabs(
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             shape = RoundedCornerShape(AppShape.ShapeL),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .weight(1f)
+                .clickable { onPayment() }
         ) {
             Column(
                 modifier = Modifier
@@ -64,8 +66,7 @@ fun PaymentTabs(
                     modifier = Modifier
                         .size(70.dp)
                         .clip(RoundedCornerShape(AppShape.ShapeL))
-                        .background(RoyalBlue)
-                        .clickable { onPayment() },
+                        .background(RoyalBlue),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -98,7 +99,9 @@ fun PaymentTabs(
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             shape = RoundedCornerShape(AppShape.ShapeL),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .weight(1f)
+                .clickable { onViewHistory() }
         ) {
             Column(
                 modifier = Modifier
@@ -110,8 +113,7 @@ fun PaymentTabs(
                     modifier = Modifier
                         .size(70.dp)
                         .clip(RoundedCornerShape(AppShape.ShapeL))
-                        .background(TealGreen)
-                        .clickable { onViewHistory() },
+                        .background(TealGreen),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(

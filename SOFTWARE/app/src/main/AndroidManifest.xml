@@ -21,6 +21,16 @@
         android:theme="@style/Theme.SMART_PARKING"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".features.payment.presentation.ui.pay_history.PayHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".features.payment.presentation.ui.pay_debt.PayDebtActivity"
+            android:exported="false" />
+        <activity
+            android:name=".features.payment.presentation.ui.PaymentWebViewActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false" />
+        <activity
             android:name=".features.payment.presentation.ui.AllDebtHistoryActivity"
             android:exported="false" />
         <activity

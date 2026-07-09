@@ -3,7 +3,9 @@ package com.example.smarttrafficradar.features.payment.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.smarttrafficradar.features.auth.domain.repository.AuthRepository
+import com.example.smarttrafficradar.features.payment.domain.model.PaymentHistory
 import com.example.smarttrafficradar.features.payment.domain.usecase.CreateMomoUrlUseCase
+import com.example.smarttrafficradar.features.payment.domain.usecase.GetPaymentHistoriesUseCase
 import com.example.smarttrafficradar.features.payment.domain.usecase.GetPaymentSummaryUseCase
 import com.example.smarttrafficradar.features.payment.domain.usecase.PaymentSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,6 +31,7 @@ sealed class PaymentState {
 class PaymentViewModel @Inject constructor(
     private val createMomoUrlUseCase: CreateMomoUrlUseCase,
     private val getPaymentSummaryUseCase: GetPaymentSummaryUseCase,
+    private val getPaymentHistoriesUseCase: GetPaymentHistoriesUseCase,
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
@@ -48,6 +51,21 @@ class PaymentViewModel @Inject constructor(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = PaymentSummary()
+        )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val paymentHistories: StateFlow<List<PaymentHistory>> = authRepository.getCurrentUser()
+        .flatMapLatest { user ->
+            if (user != null) {
+                getPaymentHistoriesUseCase(user.uid)
+            } else {
+                flowOf(emptyList())
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
         )
 
     fun createPaymentUrl(uid: String, amount: Int) {
