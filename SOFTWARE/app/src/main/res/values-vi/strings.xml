@@ -291,6 +291,18 @@
     <string name="notification_detail_title">Chi tiết thông báo</string>
     <string name="system_notification">Thông báo hệ thống</string>
     <string name="mark_all_as_read">Đánh dấu tất cả là đã đọc</string>
+    
+    <!-- NOTIFICATION KEYS -->
+    <string name="TITLE_GATE_IN">Xe vào bãi</string>
+    <string name="BODY_GATE_IN">Xe của bạn (thẻ %1$s) vừa vào bãi đỗ.</string>
+    <string name="TITLE_GATE_OUT">Xe ra bãi</string>
+    <string name="BODY_GATE_OUT">Xe của bạn (thẻ %1$s) vừa rời bãi đỗ. Cảm ơn bạn!</string>
+    <string name="TITLE_PARKING_OVER_30_MIN">Xe gửi quá 30 phút</string>
+    <string name="BODY_PARKING_OVER_30_MIN">%1$s (Thẻ %2$s) đã gửi được %3$s phút. Tạm tính phí: %4$s đ.</string>
+    <string name="TITLE_PARKING_OVERNIGHT">Xe gửi qua đêm</string>
+    <string name="BODY_PARKING_OVERNIGHT">%1$s (Thẻ %2$s) của bạn đã gửi qua đêm (vào lúc %3$s). Phí tích lũy: %4$s đ.</string>
+    <string name="TITLE_PAYMENT_SUCCESS">Thanh toán thành công</string>
+    <string name="BODY_PAYMENT_SUCCESS">Bạn đã thanh toán %1$s đ cho dịch vụ gửi xe.</string>
 
     <!-- PAYMENT -->
     <string name="payment_topbar_title">Thanh toán</string>

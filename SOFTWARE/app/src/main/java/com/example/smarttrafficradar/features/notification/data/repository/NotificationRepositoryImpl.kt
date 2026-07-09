@@ -2,14 +2,17 @@ package com.example.smarttrafficradar.features.notification.data.repository
 
 import com.example.smarttrafficradar.features.notification.data.dto.NotificationDto
 import com.example.smarttrafficradar.features.notification.data.mapper.toDomain
+import com.example.smarttrafficradar.features.notification.data.mapper.toDto
 import com.example.smarttrafficradar.features.notification.domain.model.Notification
 import com.example.smarttrafficradar.features.notification.domain.repository.NotificationRepository
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import java.util.Date
 import javax.inject.Inject
 
 class NotificationRepositoryImpl @Inject constructor(
@@ -29,9 +32,7 @@ class NotificationRepositoryImpl @Inject constructor(
                 }
 
                 val notifications = snapshot?.documents?.mapNotNull { document ->
-                    document.toObject(NotificationDto::class.java)
-                        ?.copy(id = document.id)
-                        ?.toDomain()
+                    document.toObject(NotificationDto::class.java)?.toDomain()
                 } ?: emptyList()
 
                 trySend(notifications)
@@ -42,8 +43,8 @@ class NotificationRepositoryImpl @Inject constructor(
 
     override suspend fun saveNotification(notification: Notification): Result<Unit> = try {
         val docRef = notificationCollection.document()
-        val notificationWithId = notification.copy(id = docRef.id)
-        docRef.set(notificationWithId).await()
+        val notificationDto = notification.toDto().copy(id = docRef.id)
+        docRef.set(notificationDto).await()
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)
@@ -77,7 +78,7 @@ class NotificationRepositoryImpl @Inject constructor(
 
     override suspend fun deleteOldNotifications(beforeTimestamp: Long): Result<Unit> = try {
         val oldNotifications = notificationCollection
-            .whereLessThan("timestamp", beforeTimestamp)
+            .whereLessThan("createdAt", Timestamp(Date(beforeTimestamp)))
             .get()
             .await()
 

@@ -295,6 +295,18 @@
     <string name="system_notification">System Notification</string>
     <string name="mark_all_as_read">Mark all as read</string>
 
+    <!-- NOTIFICATION KEYS -->
+    <string name="TITLE_GATE_IN">Vehicle Entered</string>
+    <string name="BODY_GATE_IN">Your vehicle (card %1$s) has just entered the parking lot.</string>
+    <string name="TITLE_GATE_OUT">Vehicle Exited</string>
+    <string name="BODY_GATE_OUT">Your vehicle (card %1$s) has just left the parking lot. Thank you!</string>
+    <string name="TITLE_PARKING_OVER_30_MIN">Parking over 30 mins</string>
+    <string name="BODY_PARKING_OVER_30_MIN">%1$s (Card %2$s) has been parked for %3$s minutes. Estimated fee: %4$s đ.</string>
+    <string name="TITLE_PARKING_OVERNIGHT">Overnight Parking</string>
+    <string name="BODY_PARKING_OVERNIGHT">Your %1$s (Card %2$s) has been parked overnight (since %3$s). Accumulated fee: %4$s đ.</string>
+    <string name="TITLE_PAYMENT_SUCCESS">Payment Successful</string>
+    <string name="BODY_PAYMENT_SUCCESS">You have paid %1$s đ for the parking service.</string>
+
     <!-- PAYMENT -->
     <string name="payment_topbar_title">Payment</string>
     <string name="payment_amount_due">Amount Due</string>

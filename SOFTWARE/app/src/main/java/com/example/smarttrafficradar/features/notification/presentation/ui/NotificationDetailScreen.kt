@@ -21,8 +21,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -45,6 +47,7 @@ fun NotificationDetailScreen(
     onBackClick: () -> Unit,
     viewModel: NotificationViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val notification by viewModel.selectedNotification.collectAsState()
 
     BackHandler { onBackClick() }
@@ -75,6 +78,29 @@ fun NotificationDetailScreen(
         }
     ) { paddingValues ->
         notification?.let { item ->
+            // Resolve title safely with remember
+            val title = remember(item.titleKey) {
+                item.titleKey?.let { key ->
+                    val resId = context.resources.getIdentifier(key.name, "string", context.packageName)
+                    if (resId != 0) context.getString(resId) else key.name
+                } ?: ""
+            }
+
+            // Resolve body safely with try-catch to prevent MissingFormatArgumentException
+            val body = remember(item.bodyKey, item.arguments) {
+                item.bodyKey?.let { key ->
+                    val resId = context.resources.getIdentifier(key.name, "string", context.packageName)
+                    if (resId != 0) {
+                        try {
+                            context.getString(resId, *item.arguments.toTypedArray())
+                        } catch (e: Exception) {
+                            // Fallback if arguments are missing or mismatch (e.g., from old data)
+                            context.getString(resId)
+                        }
+                    } else key.name
+                } ?: ""
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -83,13 +109,13 @@ fun NotificationDetailScreen(
                     .padding(Dimen.PaddingM)
             ) {
                 Text(
-                    text = item.title,
+                    text = title,
                     style = MaterialTheme.typography.s18,
                     fontWeight = FontWeight.Bold
                 )
                 
                 Text(
-                    text = formatTimestamp(item.timestamp),
+                    text = formatTimestamp(item.createdAt),
                     style = MaterialTheme.typography.s12,
                     color = Color.Gray,
                     modifier = Modifier.padding(vertical = Dimen.PaddingS)
@@ -98,7 +124,7 @@ fun NotificationDetailScreen(
                 Spacer(modifier = Modifier.height(AppSpacing.MediumLarge))
 
                 Text(
-                    text = item.body,
+                    text = body,
                     style = MaterialTheme.typography.s16,
                     modifier = Modifier.fillMaxWidth(),
                     lineHeight = MaterialTheme.typography.bodyLarge.lineHeight

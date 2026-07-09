@@ -17,10 +17,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.smarttrafficradar.features.notification.domain.model.Notification
@@ -39,8 +41,32 @@ fun NotificationItem(
     notification: Notification,
     onClick: () -> Unit
 ) {
+    val context = LocalContext.current
     val backgroundColor = if (notification.isRead) Color.Transparent else SmartBlue.copy(alpha = 0.05f)
     val indicatorColor = if (notification.isRead) Color.Transparent else SmartBlue
+
+    // Resolve title safely
+    val title = remember(notification.titleKey) {
+        notification.titleKey?.let { key ->
+            val resId = context.resources.getIdentifier(key.name, "string", context.packageName)
+            if (resId != 0) context.getString(resId) else key.name
+        } ?: ""
+    }
+
+    // Resolve body safely with try-catch to prevent MissingFormatArgumentException
+    val body = remember(notification.bodyKey, notification.arguments) {
+        notification.bodyKey?.let { key ->
+            val resId = context.resources.getIdentifier(key.name, "string", context.packageName)
+            if (resId != 0) {
+                try {
+                    context.getString(resId, *notification.arguments.toTypedArray())
+                } catch (e: Exception) {
+                    // Fallback to raw string without formatting if arguments are missing
+                    context.getString(resId)
+                }
+            } else key.name
+        } ?: ""
+    }
 
     Row(
         modifier = Modifier
@@ -52,7 +78,7 @@ fun NotificationItem(
     ) {
         Box(
             modifier = Modifier
-                .size(Dimen.HeightXXL / 6) // Roughly 50dp
+                .size(Dimen.HeightXXL / 6)
                 .clip(CircleShape)
                 .background(SmartBlue.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
@@ -70,14 +96,14 @@ fun NotificationItem(
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = notification.title,
+                    text = title,
                     style = MaterialTheme.typography.s16,
                     fontWeight = if (notification.isRead) FontWeight.Normal else FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
-                
+
                 if (!notification.isRead) {
                     Box(
                         modifier = Modifier
@@ -89,7 +115,7 @@ fun NotificationItem(
             }
 
             Text(
-                text = notification.body,
+                text = body,
                 style = MaterialTheme.typography.s14,
                 color = Color.Gray,
                 maxLines = 2,
@@ -97,7 +123,7 @@ fun NotificationItem(
             )
 
             Text(
-                text = formatTimestamp(notification.timestamp),
+                text = formatTimestamp(notification.createdAt),
                 style = MaterialTheme.typography.s12,
                 color = Color.LightGray,
                 modifier = Modifier.padding(top = Dimen.PaddingXS)
