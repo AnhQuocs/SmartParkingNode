@@ -51,6 +51,8 @@ fun DashboardTopBar(
     val initials = getInitials(fullName)
     val role = if (type == MemberType.STUDENT) R.string.student else R.string.employee
 
+    val hasUnreadNotifications = notifications.any { !it.isRead }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -127,7 +129,7 @@ fun DashboardTopBar(
             Spacer(modifier = Modifier.weight(1f))
 
             Icon(
-                painter = painterResource(id = if (notifications.isEmpty()) R.drawable.ic_notification2 else R.drawable.ic_notification),
+                painter = painterResource(id = if (hasUnreadNotifications) R.drawable.ic_notification else R.drawable.ic_notification2),
                 contentDescription = "Notification",
                 tint = Color.White,
                 modifier = Modifier

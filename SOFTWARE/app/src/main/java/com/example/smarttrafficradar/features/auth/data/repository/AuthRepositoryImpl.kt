@@ -9,9 +9,11 @@ import com.example.smarttrafficradar.features.auth.domain.model.UserRole
 import com.example.smarttrafficradar.features.auth.domain.model.UserStatus
 import com.example.smarttrafficradar.features.auth.domain.repository.AuthRepository
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
@@ -138,6 +140,19 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun changePassword(oldPassword: String, newPassword: String) {
+        val user = auth.currentUser ?: throw AuthError.UserNotFound()
+        val email = user.email ?: throw AuthError.UserNotFound()
+
+        try {
+            val credential = EmailAuthProvider.getCredential(email, oldPassword)
+            user.reauthenticate(credential).await()
+            user.updatePassword(newPassword).await()
+        } catch (e: Exception) {
+            throw mapFirebaseException(e)
+        }
+    }
+
     // ADMIN
     override suspend fun signUpAdmin(
         username: String,
@@ -195,6 +210,7 @@ class AuthRepositoryImpl @Inject constructor(
             is FirebaseAuthUserCollisionException -> AuthError.EmailAlreadyInUse()
             is FirebaseAuthInvalidUserException -> AuthError.UserNotFound()
             is FirebaseAuthInvalidCredentialsException -> AuthError.WrongPassword()
+            is FirebaseAuthRecentLoginRequiredException -> AuthError.RemoteError("Recent login required")
             else -> AuthError.RemoteError(e.message)
         }
     }

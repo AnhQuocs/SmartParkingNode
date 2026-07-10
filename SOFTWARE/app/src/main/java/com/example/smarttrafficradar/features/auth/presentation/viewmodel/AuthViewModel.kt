@@ -6,6 +6,7 @@ import com.example.smarttrafficradar.R
 import com.example.smarttrafficradar.features.auth.domain.model.AuthError
 import com.example.smarttrafficradar.features.auth.domain.model.AuthUser
 import com.example.smarttrafficradar.features.auth.domain.usecase.AuthUseCases
+import com.example.smarttrafficradar.features.auth.domain.usecase.ChangePasswordUseCase
 import com.example.smarttrafficradar.utils.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,11 +21,13 @@ sealed class AuthState {
     data class Success(val user: AuthUser) : AuthState()
     data object SignedOut : AuthState()
     data class Error(val message: UiText) : AuthState()
+    data object PasswordChanged : AuthState()
 }
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val authUseCases: AuthUseCases
+    private val authUseCases: AuthUseCases,
+    private val changePasswordUseCase: ChangePasswordUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<AuthState>(AuthState.Idle)
@@ -86,6 +89,20 @@ class AuthViewModel @Inject constructor(
             try {
                 val user = authUseCases.signUpAdminUseCase(username, email, password, adminCode)
                 _state.value = AuthState.Success(user)
+            } catch (e: AuthError) {
+                _state.value = AuthState.Error(mapAuthErrorToUiText(e))
+            } catch (e: Exception) {
+                _state.value = AuthState.Error(UiText.StringResource(R.string.error_unexpected))
+            }
+        }
+    }
+
+    fun changePassword(oldPassword: String, newPassword: String) {
+        viewModelScope.launch {
+            _state.value = AuthState.Loading
+            try {
+                changePasswordUseCase(oldPassword, newPassword)
+                _state.value = AuthState.PasswordChanged
             } catch (e: AuthError) {
                 _state.value = AuthState.Error(mapAuthErrorToUiText(e))
             } catch (e: Exception) {

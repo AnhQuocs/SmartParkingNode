@@ -9,6 +9,7 @@ import com.example.smarttrafficradar.features.user_profile.domain.model.UserLang
 import com.example.smarttrafficradar.features.user_profile.domain.model.UserProfile
 import com.example.smarttrafficradar.features.user_profile.domain.repository.UserProfileRepository
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -63,34 +64,38 @@ class UserProfileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveUserProfile(userProfile: UserProfile) {
-        // Read current app language from DataStore
+        // 1. Lấy ngôn ngữ hiện tại
         val currentAppLang = languagePreferenceManager.languageFlow.first()
         val userLang = when (currentAppLang) {
             AppLanguage.ENGLISH -> UserLang.EN
             AppLanguage.VIETNAMESE -> UserLang.VI
         }
 
-        // Attach current language to the profile
-        val profileToSave = userProfile.copy(language = userLang)
+        // 2. Cập nhật timestamp updatedAt để Firestore trigger listener
+        val profileToSave = userProfile.copy(
+            language = userLang,
+            updatedAt = System.currentTimeMillis()
+        )
 
-        // Find the organization member document first to update linkedUid
+        // 3. Tìm document trong organization_members
         val orgQuery = orgUsersCollection
-            .whereEqualTo("identifier", profileToSave.identifier)
-            .whereEqualTo("email", profileToSave.email)
+            .whereEqualTo("identifier", profileToSave.identifier.trim())
+            .whereEqualTo("email", profileToSave.email.trim())
             .limit(1)
             .get()
             .await()
 
+        // 4. Thực hiện Batch Update
         firestore.runBatch { batch ->
-            // 1. Save profile data to 'profiles' collection
+            // Lưu Profile (Dùng set để ghi đè toàn bộ)
             val profileRef = profilesCollection.document(profileToSave.uid)
             batch.set(profileRef, profileToSave.toDto())
             
-            // 2. Update status to ACTIVE in 'users' collection (AuthUser)
+            // Cập nhật status trong collection 'users' (Dùng set + merge để an toàn hơn update)
             val authUserRef = authUsersCollection.document(profileToSave.uid)
-            batch.update(authUserRef, "status", "ACTIVE")
+            batch.set(authUserRef, mapOf("status" to "ACTIVE"), SetOptions.merge())
 
-            // 3. Update linkedUid in 'organization_members'
+            // Cập nhật linkedUid trong 'organization_members'
             if (!orgQuery.isEmpty) {
                 batch.update(orgQuery.documents.first().reference, "linkedUid", profileToSave.uid)
             }
@@ -114,10 +119,10 @@ class UserProfileRepositoryImpl @Inject constructor(
         ).await()
     }
 
-    override suspend fun checkIdentifierInOrganization(identifier: String, email: String): Boolean {
+    override suspend fun checkIdentifierInOrganization(identifier: String, email: String, currentUid: String?): Boolean {
         val query = orgUsersCollection
-            .whereEqualTo("identifier", identifier)
-            .whereEqualTo("email", email)
+            .whereEqualTo("identifier", identifier.trim())
+            .whereEqualTo("email", email.trim())
             .limit(1)
             .get()
             .await()
@@ -125,12 +130,12 @@ class UserProfileRepositoryImpl @Inject constructor(
         if (query.isEmpty) return false
 
         val linkedUid = query.documents.first().getString("linkedUid")
-        // Return true if it matches and is not linked to any account yet
-        return linkedUid == null
+
+        return linkedUid == null || linkedUid == currentUid
     }
 
     override suspend fun isIdentifierTaken(identifier: String, currentUid: String): Boolean {
-        val query = profilesCollection.whereEqualTo("identifier", identifier).limit(1).get().await()
+        val query = profilesCollection.whereEqualTo("identifier", identifier.trim()).limit(1).get().await()
         if (query.isEmpty) return false
         val foundUid = query.documents.first().id
         return foundUid != currentUid
@@ -138,8 +143,8 @@ class UserProfileRepositoryImpl @Inject constructor(
 
     override suspend fun getOrganizationMember(identifier: String, email: String): Map<String, Any>? {
         val query = orgUsersCollection
-            .whereEqualTo("identifier", identifier)
-            .whereEqualTo("email", email)
+            .whereEqualTo("identifier", identifier.trim())
+            .whereEqualTo("email", email.trim())
             .limit(1)
             .get()
             .await()

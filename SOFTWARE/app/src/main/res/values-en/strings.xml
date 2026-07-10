@@ -157,6 +157,9 @@
     <string name="error_profile_not_found">User profile not found</string>
     <string name="error_debt_limit">Debt limit exceeded (Max 100k)</string>
     <string name="error_invalid_fullname">Invalid full name format</string>
+    <string name="error_password_mismatch">Passwords do not match</string>
+    <string name="error_same_password">New password must be different from old password</string>
+    <string name="password_changed_success">Password changed successfully</string>
 
     <!-- AUTH -->
     <string name="welcome_back">Welcome Back!</string>
@@ -244,6 +247,8 @@
     <string name="setting">Setting</string>
     <string name="security">Security</string>
     <string name="notification">Notification</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
     <string name="turn_on">Turn on</string>
     <string name="turn_off">Turn off</string>
     <string name="logout_title">Log out</string>
@@ -259,6 +264,20 @@
     <string name="change_password">Change Password</string>
     <string name="support_center">Support Center</string>
     <string name="app_version">Version %1$s</string>
+    <string name="notification_settings">Notification Settings</string>
+    <string name="security_settings">Security Settings</string>
+    <string name="enable_notifications">Enable Notifications</string>
+    <string name="receive_notifications_desc">Receive notifications about parking activities and system updates.</string>
+    <string name="security_info">Security Information</string>
+    <string name="security_desc">Manage your account security and authentication methods.</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="old_password">Old Password</string>
+    <string name="new_password">New Password</string>
+    <string name="confirm_password">Confirm New Password</string>
+    <string name="message_hint">Enter your message here…</string>
+    <string name="send_message">Send Message</string>
+    <string name="include_device_info">Include Device Information</string>
+    <string name="device_info_label">Device Info</string>
 
     <!-- HISTORY -->
     <string name="error_history_not_found">Parking history not found</string>
@@ -277,6 +296,7 @@
     <string name="vehicle_type_label">Vehicle Type</string>
     <string name="rfid_card_label">RFID Card</string>
     <string name="parking_duration_label">Parking Duration</string>
+    <string name="duration_hours_minutes">%1$dh %2$dm</string>
     <string name="duration_minutes_only">%1$d minutes</string>
     <string name="time_details_title">Time Details</string>
     <string name="date_time_format">%1$s - %2$s</string>
@@ -285,7 +305,6 @@
     <string name="check_in_time_label">Check-in time</string>
     <string name="check_out_time_label">Check-out time</string>
     <string name="parking_duration">Duration</string>
-    <string name="duration_hours_minutes">%1$dh %2$dm</string>
     <string name="duration_minutes_value">%1$dm</string>
 
     <!-- NOTIFICATION -->
@@ -338,5 +357,16 @@
     <string name="payment_history_status_failed">Failed</string>
     <string name="payment_history_method_momo">E-wallet - MoMo</string>
     <string name="currency_vnd_suffix">%1$s đ</string>
+
+    <!-- SECURITY TERMS -->
+    <string name="security_terms_title">Security Terms &amp; Privacy Policy</string>
+    <string name="security_term_1_title">Data Protection</string>
+    <string name="security_term_1_desc">Your personal information and parking history are encrypted and protected according to industry standards.</string>
+    <string name="security_term_2_title">RFID Security</string>
+    <string name="security_term_2_desc">Only authorized RFID cards can access the system. Do not share your card with others.</string>
+    <string name="security_term_3_title">Account Responsibility</string>
+    <string name="security_term_3_desc">Users are responsible for maintaining the confidentiality of their account credentials.</string>
+    <string name="security_term_4_title">System Usage</string>
+    <string name="security_term_4_desc">The system records entry/exit times and vehicle information for security and billing purposes.</string>
 
 </resources>

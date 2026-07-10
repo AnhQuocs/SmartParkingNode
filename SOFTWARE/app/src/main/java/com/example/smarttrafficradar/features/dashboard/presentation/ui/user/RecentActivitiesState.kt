@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -43,14 +42,12 @@ import com.example.smarttrafficradar.ui.dimens.Dimen
 import com.example.smarttrafficradar.ui.theme.Charcoal
 import com.example.smarttrafficradar.ui.theme.GreenBright
 import com.example.smarttrafficradar.ui.theme.LightPrimary
-import com.example.smarttrafficradar.ui.theme.OceanBlue
 import com.example.smarttrafficradar.ui.theme.RoyalPurple
 import com.example.smarttrafficradar.ui.theme.RoyalPurpleLight
 import com.example.smarttrafficradar.ui.theme.SlateGray
 import com.example.smarttrafficradar.ui.theme.TealGreenLight
 import com.example.smarttrafficradar.utils.s12
 import com.example.smarttrafficradar.utils.s13
-import com.example.smarttrafficradar.utils.s14
 import com.example.smarttrafficradar.utils.s15
 import com.example.smarttrafficradar.utils.s16
 import com.example.smarttrafficradar.utils.s18
@@ -60,7 +57,7 @@ import java.time.ZoneId
 
 @Composable
 fun RecentActivitiesState(
-    state: ParkingHistoryState, onDetail: (String) -> Unit, onSeeAll: () -> Unit
+    state: ParkingHistoryState, onDetail: (String) -> Unit
 ) {
     when (state) {
         is ParkingHistoryState.Idle, is ParkingHistoryState.Loading -> {
@@ -73,7 +70,7 @@ fun RecentActivitiesState(
             val histories = state.histories
 
             RecentActivitiesSection(
-                histories = histories, onDetail = onDetail, onSeeAll = onSeeAll
+                histories = histories, onDetail = onDetail
             )
         }
 
@@ -91,43 +88,20 @@ fun RecentActivitiesState(
 
 @Composable
 fun RecentActivitiesSection(
-    histories: List<ParkingHistory>, onDetail: (String) -> Unit, onSeeAll: () -> Unit
+    histories: List<ParkingHistory>, onDetail: (String) -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = Dimen.PaddingM)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = stringResource(id = R.string.recent_activities),
-                style = MaterialTheme.typography.s18.semiBold(),
-                color = Color.Black
-            )
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.clickable { onSeeAll() }) {
-                Text(
-                    text = stringResource(id = R.string.see_all),
-                    style = MaterialTheme.typography.s14.semiBold(),
-                    color = OceanBlue
-                )
-
-                Spacer(modifier = Modifier.width(AppSpacing.XS))
-
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_arrow_right),
-                    contentDescription = null,
-                    tint = OceanBlue,
-                    modifier = Modifier.size(Dimen.SizeSM)
-                )
-            }
-        }
+        Text(
+            text = stringResource(id = R.string.recent_activities),
+            style = MaterialTheme.typography.s18.semiBold(),
+            color = Color.Black,
+            textAlign = TextAlign.Start,
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(modifier = Modifier.height(AppSpacing.M))
 
@@ -225,7 +199,7 @@ fun RecentActivitiesItem(
                     color = SlateGray
                 )
 
-                if(isOvernight) {
+                if (isOvernight) {
                     Text(
                         text = "\uD83C\uDF19 " + stringResource(id = R.string.overnight),
                         style = MaterialTheme.typography.s13,

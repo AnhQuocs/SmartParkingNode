@@ -37,7 +37,8 @@ fun DashboardState(
     onSupport: () -> Unit,
     onDetail: (String) -> Unit,
     onNotificationClick: () -> Unit,
-    notifications: List<Notification>
+    notifications: List<Notification>,
+    onPayClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -80,9 +81,7 @@ fun DashboardState(
 
                 DebtCard(
                     currentDebt = profile.currentDebt,
-                    onPayClick = {
-
-                    }
+                    onPayClick = onPayClick
                 )
 
                 Spacer(modifier = Modifier.height(AppSpacing.L))
@@ -98,8 +97,7 @@ fun DashboardState(
 
                 RecentActivitiesState(
                     state = historyState,
-                    onDetail = onDetail,
-                    onSeeAll = {}
+                    onDetail = onDetail
                 )
             }
         }

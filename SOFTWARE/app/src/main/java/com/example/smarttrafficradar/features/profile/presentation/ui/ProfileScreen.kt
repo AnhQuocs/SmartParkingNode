@@ -38,8 +38,13 @@ import com.example.smarttrafficradar.R
 import com.example.smarttrafficradar.features.app_system.language.domain.model.AppLanguage
 import com.example.smarttrafficradar.features.app_system.language.presentation.ui.ChangeLanguageActivity
 import com.example.smarttrafficradar.features.app_system.language.presentation.viewmodel.LanguageViewModel
+import com.example.smarttrafficradar.features.app_system.settings.presentation.ui.NotificationSettingsActivity
+import com.example.smarttrafficradar.features.app_system.settings.presentation.ui.SecuritySettingsActivity
+import com.example.smarttrafficradar.features.app_system.settings.presentation.viewmodel.SettingsViewModel
+import com.example.smarttrafficradar.features.auth.presentation.ui.ChangePasswordActivity
 import com.example.smarttrafficradar.features.auth.presentation.viewmodel.AuthViewModel
 import com.example.smarttrafficradar.features.user_profile.domain.model.UserProfile
+import com.example.smarttrafficradar.features.user_profile.presentation.ui.EditProfileActivity
 import com.example.smarttrafficradar.ui.dimens.AppShape
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
@@ -58,7 +63,8 @@ fun ProfileScreen(
     profile: UserProfile,
     navController: NavController,
     authViewModel: AuthViewModel = hiltViewModel(),
-    languageViewModel: LanguageViewModel = hiltViewModel()
+    languageViewModel: LanguageViewModel = hiltViewModel(),
+    settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
@@ -68,6 +74,9 @@ fun ProfileScreen(
         AppLanguage.ENGLISH -> stringResource(id = R.string.english)
         AppLanguage.VIETNAMESE -> stringResource(id = R.string.vietnamese)
     }
+
+    val isNotificationEnabled by settingsViewModel.isNotificationEnabled.collectAsState()
+    val notificationText = if (isNotificationEnabled) stringResource(id = R.string.on) else stringResource(id = R.string.off)
 
     var isShowDialog by remember { mutableStateOf(false) }
 
@@ -97,6 +106,7 @@ fun ProfileScreen(
 
             SettingCard(
                 languageText = languageText,
+                notificationText = notificationText,
                 onLanguageClick = {
                     context.startActivity(
                         Intent(
@@ -104,8 +114,20 @@ fun ProfileScreen(
                         )
                     )
                 },
-                onNotificationClick = {},
-                onSecurityClick = {},
+                onNotificationClick = {
+                    context.startActivity(
+                        Intent(
+                            context, NotificationSettingsActivity::class.java
+                        )
+                    )
+                },
+                onSecurityClick = {
+                    context.startActivity(
+                        Intent(
+                            context, SecuritySettingsActivity::class.java
+                        )
+                    )
+                },
                 modifier = Modifier
                     .offset(y = (-16).dp)
                     .padding(horizontal = Dimen.PaddingM)
@@ -113,13 +135,13 @@ fun ProfileScreen(
 
             AccountCard(
                 onEditProfile = {
-
-            },
+                    context.startActivity(Intent(context, EditProfileActivity::class.java))
+                },
                 onSupportCenter = {
-
+                    context.startActivity(Intent(context, SupportCenterActivity::class.java))
                 },
                 onChangePassword = {
-
+                    context.startActivity(Intent(context, ChangePasswordActivity::class.java))
                 },
                 onLogout = { isShowDialog = true },
                 modifier = Modifier.padding(horizontal = Dimen.PaddingM)

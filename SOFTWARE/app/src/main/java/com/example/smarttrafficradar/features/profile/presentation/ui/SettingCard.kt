@@ -25,7 +25,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.example.smarttrafficradar.R
 import com.example.smarttrafficradar.ui.dimens.AppShape
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
@@ -38,13 +37,14 @@ import com.example.smarttrafficradar.utils.semiBold
 @Composable
 fun SettingCard(
     languageText: String,
+    notificationText: String,
     onLanguageClick: () -> Unit,
     onNotificationClick: () -> Unit,
     onSecurityClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimen.PaddingXXS),
         shape = RoundedCornerShape(AppShape.ShapeL),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         modifier = modifier.fillMaxWidth()
@@ -70,21 +70,21 @@ fun SettingCard(
                     icon = painterResource(id = R.drawable.ic_language),
                     text = stringResource(id = R.string.language),
                     subText = languageText,
-                    onClick = { onLanguageClick() }
+                    onClick = onLanguageClick
                 )
 
                 SettingItem(
                     icon = painterResource(id = R.drawable.ic_notification2),
                     text = stringResource(id = R.string.notification),
-                    subText = stringResource(id = R.string.turn_on),
-                    onClick = { onNotificationClick() }
+                    subText = notificationText,
+                    onClick = onNotificationClick
                 )
 
                 SettingItem(
                     icon = painterResource(id = R.drawable.ic_security),
                     text = stringResource(id = R.string.security),
                     subText = null,
-                    onClick = { onSecurityClick() }
+                    onClick = onSecurityClick
                 )
             }
         }
@@ -99,7 +99,10 @@ fun SettingItem(
     onClick: () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = Dimen.PaddingXXS),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -121,16 +124,16 @@ fun SettingItem(
         }
 
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable { onClick() }
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = subText ?: "",
-                style = MaterialTheme.typography.s16,
-                color = SlateGray
-            )
-
-            Spacer(modifier = Modifier.width(AppSpacing.M))
+            if (subText != null) {
+                Text(
+                    text = subText,
+                    style = MaterialTheme.typography.s16,
+                    color = SlateGray
+                )
+                Spacer(modifier = Modifier.width(AppSpacing.M))
+            }
 
             Icon(
                 imageVector = Icons.Default.ArrowForwardIos,

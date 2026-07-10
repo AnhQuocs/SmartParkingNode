@@ -20,6 +20,23 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SMART_PARKING"
         android:usesCleartextTraffic="true">
+        
+        <activity
+            android:name=".features.user_profile.presentation.ui.EditProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".features.auth.presentation.ui.ChangePasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".features.profile.presentation.ui.SupportCenterActivity"
+            android:exported="false" />
+            
+        <activity
+            android:name=".features.app_system.settings.presentation.ui.SecuritySettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".features.app_system.settings.presentation.ui.NotificationSettingsActivity"
+            android:exported="false" />
         <activity
             android:name=".features.payment.presentation.ui.pay_history.PayHistoryActivity"
             android:exported="false" />

@@ -9,7 +9,7 @@ interface UserProfileRepository {
     suspend fun saveUserProfile(userProfile: UserProfile)
     suspend fun updateDebt(uid: String, amount: Long)
     suspend fun updateLanguage(uid: String, language: UserLang)
-    suspend fun checkIdentifierInOrganization(identifier: String, email: String): Boolean
+    suspend fun checkIdentifierInOrganization(identifier: String, email: String, currentUid: String? = null): Boolean
     suspend fun isIdentifierTaken(identifier: String, currentUid: String): Boolean
     suspend fun getOrganizationMember(identifier: String, email: String): Map<String, Any>?
 }

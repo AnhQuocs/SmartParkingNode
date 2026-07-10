@@ -154,6 +154,9 @@
     <string name="error_profile_not_found">Không tìm thấy thông tin cá nhân</string>
     <string name="error_debt_limit">Vượt quá hạn mức nợ (Tối đa 100k)</string>
     <string name="error_invalid_fullname">Định dạng họ tên không hợp lệ</string>
+    <string name="error_password_mismatch">Mật khẩu không khớp</string>
+    <string name="error_same_password">Mật khẩu mới phải khác mật khẩu cũ</string>
+    <string name="password_changed_success">Đổi mật khẩu thành công</string>
 
     <!-- AUTH -->
     <string name="welcome_back">Chào mừng trở lại!</string>
@@ -241,6 +244,8 @@
     <string name="setting">Cài đặt</string>
     <string name="security">Bảo mật</string>
     <string name="notification">Thông báo</string>
+    <string name="on">Bật</string>
+    <string name="off">Tắt</string>
     <string name="turn_on">Bật</string>
     <string name="turn_off">Tắt</string>
     <string name="logout_title">Đăng xuất</string>
@@ -256,6 +261,20 @@
     <string name="change_password">Đổi mật khẩu</string>
     <string name="support_center">Trung tâm hỗ trợ</string>
     <string name="app_version">Phiên bản %1$s</string>
+    <string name="notification_settings">Cài đặt thông báo</string>
+    <string name="security_settings">Cài đặt bảo mật</string>
+    <string name="enable_notifications">Bật thông báo</string>
+    <string name="receive_notifications_desc">Nhận thông báo về hoạt động bãi đỗ xe và các cập nhật từ hệ thống.</string>
+    <string name="security_info">Thông tin bảo mật</string>
+    <string name="security_desc">Quản lý bảo mật tài khoản và các phương thức xác thực của bạn.</string>
+    <string name="save_changes">Lưu thay đổi</string>
+    <string name="old_password">Mật khẩu cũ</string>
+    <string name="new_password">Mật khẩu mới</string>
+    <string name="confirm_password">Xác nhận mật khẩu mới</string>
+    <string name="message_hint">Nhập tin nhắn của bạn tại đây…</string>
+    <string name="send_message">Gửi tin nhắn</string>
+    <string name="include_device_info">Gửi kèm thông tin thiết bị</string>
+    <string name="device_info_label">Thông tin thiết bị</string>
 
     <!-- HISTORY -->
     <string name="error_history_not_found">Không tìm thấy lịch sử gửi xe</string>
@@ -335,5 +354,16 @@
     <string name="payment_history_status_failed">Thất bại</string>
     <string name="payment_history_method_momo">Ví điện tử - MoMo</string>
     <string name="currency_vnd_suffix">%1$s đ</string>
+
+    <!-- SECURITY TERMS -->
+    <string name="security_terms_title">Điều khoản bảo mật &amp; Chính sách quyền riêng tư</string>
+    <string name="security_term_1_title">Bảo vệ dữ liệu</string>
+    <string name="security_term_1_desc">Thông tin cá nhân và lịch sử gửi xe của bạn được mã hóa và bảo vệ theo các tiêu chuẩn công nghiệp.</string>
+    <string name="security_term_2_title">Bảo mật RFID</string>
+    <string name="security_term_2_desc">Chỉ những thẻ RFID được ủy quyền mới có thể truy cập hệ thống. Không chia sẻ thẻ của bạn với người khác.</string>
+    <string name="security_term_3_title">Trách nhiệm tài khoản</string>
+    <string name="security_term_3_desc">Người dùng có trách nhiệm bảo mật thông tin đăng nhập tài khoản của mình.</string>
+    <string name="security_term_4_title">Sử dụng hệ thống</string>
+    <string name="security_term_4_desc">Hệ thống ghi lại thời gian vào/ra và thông tin phương tiện nhằm mục đích an ninh và thanh toán.</string>
 
 </resources>

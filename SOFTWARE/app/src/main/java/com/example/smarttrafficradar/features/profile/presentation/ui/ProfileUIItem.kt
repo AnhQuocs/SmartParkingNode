@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -26,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -252,9 +251,9 @@ fun AccountItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(Dimen.PaddingS)
             .clip(RoundedCornerShape(AppShape.ShapeS))
-            .clickable { if (isLogout) onClick() },
+            .clickable { onClick() }
+            .padding(Dimen.PaddingS),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -275,12 +274,10 @@ fun AccountItem(
         Spacer(modifier = Modifier.weight(1f))
 
         Icon(
-            imageVector = Icons.Default.ArrowForwardIos,
+            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
             contentDescription = null,
             tint = arrowColor,
-            modifier = Modifier
-                .size(Dimen.SizeS)
-                .clickable { onClick() }
+            modifier = Modifier.size(Dimen.SizeS)
         )
     }
 }

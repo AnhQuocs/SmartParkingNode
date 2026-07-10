@@ -15,6 +15,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.smarttrafficradar.features.history.presentation.ui.HistoryDetailActivity
 import com.example.smarttrafficradar.features.history.presentation.viewmodel.ParkingHistoryViewModel
 import com.example.smarttrafficradar.features.notification.presentation.viewmodel.NotificationViewModel
+import com.example.smarttrafficradar.features.payment.presentation.ui.pay_debt.PayDebtActivity
 import com.example.smarttrafficradar.features.user_profile.domain.model.VehicleType
 import com.example.smarttrafficradar.features.user_profile.presentation.viewmodel.UserProfileState
 import com.example.smarttrafficradar.features.user_profile.presentation.viewmodel.UserProfileViewModel
@@ -29,7 +30,7 @@ fun DashboardScreen(
     onNotificationClick: () -> Unit,
     userProfileViewModel: UserProfileViewModel = hiltViewModel(),
     parkingHistoryViewModel: ParkingHistoryViewModel = hiltViewModel(),
-    notificationViewModel: NotificationViewModel = hiltViewModel()
+    notificationViewModel: NotificationViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
 
@@ -59,6 +60,12 @@ fun DashboardScreen(
                 val intent = Intent(context, HistoryDetailActivity::class.java)
                     .putExtra("historyId", historyId)
                     .putExtra("vehicleType", vehicleType)
+
+                context.startActivity(intent)
+            },
+            onPayClick = {
+                val intent = Intent(context, PayDebtActivity::class.java)
+                    .putExtra("uid", uid)
 
                 context.startActivity(intent)
             },

@@ -15,7 +15,8 @@ class SaveUserProfileUseCase @Inject constructor(
         }
 
         // 2. Check if identifier exists in Organization list (Matched with Email)
-        val existsInOrg = repository.checkIdentifierInOrganization(userProfile.identifier, userProfile.email)
+        // Cần truyền userProfile.uid để hệ thống biết đây là chủ sở hữu hiện tại của mã định danh này
+        val existsInOrg = repository.checkIdentifierInOrganization(userProfile.identifier, userProfile.email, userProfile.uid)
         if (!existsInOrg) {
             throw UserProfileError.IdentifierNotFound
         }
