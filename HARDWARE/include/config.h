@@ -29,7 +29,7 @@
 #define SERVO_CLOSE_ANGLE 90
 
 // ── DEVICE ID ────────────────────────────────────────────────
-#define DEVICE_ID "parking_node_01"
+#define DEVICE_ID "parking_node"
 
 #define HARDWARE_EVENT_PATH "/api/hardware/event"
 
