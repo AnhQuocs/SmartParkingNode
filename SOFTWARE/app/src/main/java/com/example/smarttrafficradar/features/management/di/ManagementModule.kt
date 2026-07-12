@@ -3,6 +3,7 @@ package com.example.smarttrafficradar.features.management.di
 import com.example.smarttrafficradar.features.management.data.repository.RegistrationRepositoryImpl
 import com.example.smarttrafficradar.features.management.domain.repository.RegistrationRepository
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,6 +17,7 @@ object ManagementModule {
     @Provides
     @Singleton
     fun provideRegistrationRepository(
-        db: FirebaseDatabase
-    ): RegistrationRepository = RegistrationRepositoryImpl(db)
+        db: FirebaseDatabase,
+        firestore: FirebaseFirestore
+    ): RegistrationRepository = RegistrationRepositoryImpl(db, firestore)
 }

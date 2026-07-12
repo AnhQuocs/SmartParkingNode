@@ -6,5 +6,7 @@ data class RegistrationUseCases @Inject constructor(
     val sendRegistrationRequest: SendRegistrationRequestUseCase,
     val getRegistrationRequests: GetRegistrationRequestsUseCase,
     val approveRegistration: ApproveRegistrationUseCase,
-    val rejectRegistration: RejectRegistrationUseCase
+    val rejectRegistration: RejectRegistrationUseCase,
+    val getRegisteredCards: GetRegisteredCardsUseCase,
+    val updateCardStatus: UpdateCardStatusUseCase
 )

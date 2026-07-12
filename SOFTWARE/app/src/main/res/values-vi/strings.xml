@@ -387,4 +387,14 @@
     <string name="security_term_4_title">Sử dụng hệ thống</string>
     <string name="security_term_4_desc">Hệ thống ghi lại thời gian vào/ra và thông tin phương tiện nhằm mục đích an ninh và thanh toán.</string>
 
+    <!-- MANAGEMENT -->
+    <string name="management_desc">Quản lý thẻ, người dùng và phương tiện</string>
+    <string name="management_categories">Danh mục quản lý</string>
+    <plurals name="item_count">
+        <item quantity="other">%d mục</item>
+    </plurals>
+    <string name="pending_registrations">Yêu cầu đăng ký</string>
+    <string name="registered_cards">Thẻ đã đăng ký</string>
+    <string name="users">Người dùng</string>
+
 </resources>

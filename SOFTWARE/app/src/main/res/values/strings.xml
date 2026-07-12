@@ -390,4 +390,15 @@
     <string name="security_term_4_title">System Usage</string>
     <string name="security_term_4_desc">The system records entry/exit times and vehicle information for security and billing purposes.</string>
 
+    <!-- MANAGEMENT -->
+    <string name="management_desc">Manage access cards, users, and vehicles</string>
+    <string name="management_categories">Management Categories</string>
+    <plurals name="item_count">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
+    <string name="pending_registrations">Pending Registrations</string>
+    <string name="registered_cards">Registered Cards</string>
+    <string name="users">Users</string>
+
 </resources>

@@ -78,6 +78,10 @@ val CyanPrimary = Color(0xFF00D4FF)
 val CyanBorder = Color(0xFF06586F)
 val CyanBackground = Color(0xFF092331)
 
+val IndigoPrimary = Color(0xFF6366F1)
+
+val IndigoBackground = Color(0xFF1D2142)
+
 val SurfaceDark = Color(0xFF0E1117)
 val TextSecondary = Color(0xFF8690A0)
 
