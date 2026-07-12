@@ -117,7 +117,7 @@
     <string name="current_connection">Kết nối hiện tại</string>
     <string name="enter_password_for">Nhập mật khẩu cho %1$s</string>
     <string name="connect">Kết nối</string>
-    <string name="cancel">Hủy</string>
+    <string name="cancel">Cancel</string>
     <string name="scanning">Đang dò tìm…</string>
     <string name="connection_timeout">Hết thời gian kết nối. Thiết bị không phản hồi.</string>
     <string name="current_task_format">Tác vụ hiện tại: %1$s</string>
@@ -190,7 +190,7 @@
     <string name="onboarding_title_1">Chào mừng đến với Smart Parking</string>
     <string name="onboarding_desc_1">Giải pháp bãi đỗ xe thông minh giúp việc gửi xe trong khuôn viên trường trở nên thuận tiện và nhanh chóng hơn.</string>
     <string name="onboarding_title_2">Ra vào phương tiện an toàn</string>
-    <string name="onboarding_desc_2">Xác thực bằng thẻ RFID và nhận diện phương tiện giúp kiểm soát ra vào chính xác, an toàn và đáng tin cậy.</string>
+    <string name="onboarding_desc_2">Xác thực bằng thẻ RFID và nhận diện phương tiện giúp kiểm soát ra vào chính xác, an toàn và đáng tinậy.</string>
     <string name="onboarding_title_3">Thông tin gửi xe trong tầm tay</string>
     <string name="onboarding_desc_3">Theo dõi lịch sử gửi xe, quản lý tài khoản và cập nhật thông tin phương tiện mọi lúc ngay trên điện thoại.</string>
     <string name="onboarding_skip">Bỏ qua</string>
@@ -239,6 +239,27 @@
     <string name="view_all">Xem tất cả</string>
     <string name="entry_gate">Vào bãi</string>
     <string name="exit_gate">Ra bãi</string>
+
+    <!-- REGISTER CARD -->
+    <string name="register_card_title">Đăng ký thẻ gửi xe</string>
+    <string name="need_to_register_rfid">Cần đăng ký thẻ RFID</string>
+    <string name="register_instruction_desc">Để sử dụng dịch vụ gửi xe, bạn cần đăng ký thẻ RFID tại văn phòng quản lý.</string>
+    <string name="register_guide">Hướng dẫn đăng ký</string>
+    <string name="register_step_1">Mang theo thẻ sinh viên/nhân viên đến văn phòng quản lý bãi xe</string>
+    <string name="register_step_2">Cung cấp thông tin cá nhân và giấy tờ phương tiện để đăng ký</string>
+    <string name="register_step_3">Nhận thẻ RFID và kích hoạt trong ứng dụng</string>
+    <string name="office_address_title">Địa chỉ văn phòng</string>
+    <string name="office_location">Vị trí: Tòa nhà A, tầng 1</string>
+    <string name="office_hours">Giờ làm việc: 8:00 – 17:00 (Thứ 2 - Thứ 6)</string>
+    <string name="office_phone">Điện thoại: 024 1234 5678</string>
+    <string name="select_vehicle_type">Chọn loại xe đăng ký</string>
+    <string name="send_registration_request">Gửi yêu cầu đăng ký thẻ</string>
+    <string name="registration_request_sent">Yêu cầu đăng ký đã được gửi thành công</string>
+    <string name="card_already_registered_title">Thẻ đã được đăng ký</string>
+    <string name="card_already_registered_desc">Bạn đã có thẻ RFID đang hoạt động trong hệ thống.</string>
+    <string name="rfid_code_label">Mã thẻ: %1$s</string>
+    <string name="registered_vehicle_type">Loại xe đăng ký: %1$s</string>
+    <string name="back_to_dashboard">Quay lại Trang chủ</string>
 
     <!-- PROFILE -->
     <string name="setting">Cài đặt</string>
