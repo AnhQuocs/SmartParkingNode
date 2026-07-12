@@ -51,6 +51,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.smarttrafficradar.R
+import com.example.smarttrafficradar.features.dashboard.presentation.viewmodel.RegisterCardState
+import com.example.smarttrafficradar.features.dashboard.presentation.viewmodel.RegisterCardViewModel
 import com.example.smarttrafficradar.features.user_profile.domain.model.VehicleType
 import com.example.smarttrafficradar.ui.dimens.AppShape
 import com.example.smarttrafficradar.ui.dimens.AppSpacing

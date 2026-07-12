@@ -1,12 +1,5 @@
 package com.example.smarttrafficradar.features.main.ui
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,7 +25,6 @@ fun AdminMainScreen(
     navController: NavController
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    var previousTabIndex by remember { mutableIntStateOf(0) }
 
     Scaffold(
         topBar = {
@@ -45,52 +37,16 @@ fun AdminMainScreen(
         bottomBar = {
             AdminBottomBar(
                 currentIndex = selectedTabIndex,
-                onTabSelected = { newIndex ->
-                    previousTabIndex = selectedTabIndex
-                    selectedTabIndex = newIndex
-                }
+                onTabSelected = { selectedTabIndex = it }
             )
         }
     ) { paddingValues ->
-        val isForward = selectedTabIndex > previousTabIndex
-
-        AnimatedContent(
-            targetState = selectedTabIndex,
-            label = "AdminTabTransition",
-            transitionSpec = {
-                if (isForward) {
-                    (slideInHorizontally(
-                        initialOffsetX = { width -> width },
-                        animationSpec = tween(durationMillis = 200)
-                    ) + fadeIn(
-                        animationSpec = tween(durationMillis = 200)
-                    )).togetherWith(
-                        slideOutHorizontally(
-                            targetOffsetX = { width -> -width },
-                            animationSpec = tween(durationMillis = 200)
-                        )
-                    )
-                } else {
-                    (slideInHorizontally(
-                        initialOffsetX = { width -> -width },
-                        animationSpec = tween(durationMillis = 200)
-                    ) + fadeIn(
-                        animationSpec = tween(durationMillis = 200)
-                    )).togetherWith(
-                        slideOutHorizontally(
-                            targetOffsetX = { width -> width },
-                            animationSpec = tween(durationMillis = 200)
-                        )
-                    )
-                }.using(
-                    SizeTransform(clip = false)
-                )
-            },
+        Box(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
-        ) { tab ->
-            when (tab) {
+        ) {
+            when (selectedTabIndex) {
                 0 -> MonitorScreen(
                     navController = navController
                 )

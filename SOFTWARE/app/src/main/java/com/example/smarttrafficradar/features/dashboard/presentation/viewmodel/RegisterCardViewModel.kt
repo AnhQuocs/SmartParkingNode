@@ -1,15 +1,17 @@
-package com.example.smarttrafficradar.features.dashboard.presentation.ui.user.register_card
+package com.example.smarttrafficradar.features.dashboard.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.smarttrafficradar.features.management.domain.model.RegistrationRequest
+import com.example.smarttrafficradar.features.management.domain.model.RegistrationStatus
+import com.example.smarttrafficradar.features.management.domain.usecase.RegistrationUseCases
 import com.example.smarttrafficradar.features.user_profile.domain.model.VehicleType
 import com.example.smarttrafficradar.features.user_profile.domain.usecase.UserProfileUseCases
-import com.google.firebase.database.FirebaseDatabase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 data class RegisterCardState(
@@ -25,7 +27,7 @@ data class RegisterCardState(
 @HiltViewModel
 class RegisterCardViewModel @Inject constructor(
     private val userProfileUseCases: UserProfileUseCases,
-    private val db: FirebaseDatabase
+    private val registrationUseCases: RegistrationUseCases
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(RegisterCardState())
@@ -58,24 +60,23 @@ class RegisterCardViewModel @Inject constructor(
             _state.value = _state.value.copy(isLoading = true, error = null)
             try {
                 // Lấy thông tin profile tại thời điểm gửi
-                userProfileUseCases.getUserProfile(uid).collect { profile ->
-                    if (profile != null) {
-                        val request = mapOf(
-                            "uid" to profile.uid,
-                            "fullName" to profile.fullName,
-                            "identifier" to profile.identifier,
-                            "vehicleType" to _state.value.selectedVehicleType.name,
-                            "status" to "PENDING",
-                            "timestamp" to System.currentTimeMillis()
-                        )
-                        
-                        db.getReference("registration_requests")
-                            .child(uid)
-                            .setValue(request)
-                            .await()
+                val profile = userProfileUseCases.getUserProfile(uid).firstOrNull()
+                
+                if (profile != null) {
+                    val request = RegistrationRequest(
+                        uid = profile.uid,
+                        fullName = profile.fullName,
+                        identifier = profile.identifier,
+                        vehicleType = _state.value.selectedVehicleType,
+                        status = RegistrationStatus.PENDING,
+                        timestamp = System.currentTimeMillis()
+                    )
+                    
+                    registrationUseCases.sendRegistrationRequest(request)
                             
-                        _state.value = _state.value.copy(isLoading = false, isSuccess = true)
-                    }
+                    _state.value = _state.value.copy(isLoading = false, isSuccess = true)
+                } else {
+                    _state.value = _state.value.copy(isLoading = false, error = "User profile not found")
                 }
             } catch (e: Exception) {
                 _state.value = _state.value.copy(isLoading = false, error = e.message)

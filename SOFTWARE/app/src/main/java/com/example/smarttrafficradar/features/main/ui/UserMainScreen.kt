@@ -67,7 +67,6 @@ fun UserMainScreen(
             )
         }
     ) { paddingValues ->
-
         Box(
             modifier = Modifier
                 .padding(paddingValues)

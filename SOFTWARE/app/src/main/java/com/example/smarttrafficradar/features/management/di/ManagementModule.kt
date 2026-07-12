@@ -1,0 +1,21 @@
+package com.example.smarttrafficradar.features.management.di
+
+import com.example.smarttrafficradar.features.management.data.repository.RegistrationRepositoryImpl
+import com.example.smarttrafficradar.features.management.domain.repository.RegistrationRepository
+import com.google.firebase.database.FirebaseDatabase
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object ManagementModule {
+
+    @Provides
+    @Singleton
+    fun provideRegistrationRepository(
+        db: FirebaseDatabase
+    ): RegistrationRepository = RegistrationRepositoryImpl(db)
+}
