@@ -243,6 +243,27 @@
     <string name="entry_gate">Entry</string>
     <string name="exit_gate">Exit</string>
 
+    <!-- REGISTER CARD -->
+    <string name="register_card_title">Parking Card Registration</string>
+    <string name="need_to_register_rfid">RFID Card Required</string>
+    <string name="register_instruction_desc">To use the parking service, you need to register an RFID card at the management office.</string>
+    <string name="register_guide">Registration Guide</string>
+    <string name="register_step_1">Bring your student/employee card to the parking management office</string>
+    <string name="register_step_2">Provide personal information and vehicle documents to register</string>
+    <string name="register_step_3">Receive the RFID card and activate it in the app</string>
+    <string name="office_address_title">Office Address</string>
+    <string name="office_location">Location: Building A, 1st floor</string>
+    <string name="office_hours">Working hours: 8:00 – 17:00 (Mon - Fri)</string>
+    <string name="office_phone">Phone: 024 1234 5678</string>
+    <string name="select_vehicle_type">Select vehicle type to register</string>
+    <string name="send_registration_request">Send Registration Request</string>
+    <string name="registration_request_sent">Registration request sent successfully</string>
+    <string name="card_already_registered_title">Card Already Registered</string>
+    <string name="card_already_registered_desc">You already have an active RFID card in the system.</string>
+    <string name="rfid_code_label">Card Code: %1$s</string>
+    <string name="registered_vehicle_type">Registered Vehicle: %1$s</string>
+    <string name="back_to_dashboard">Back to Dashboard</string>
+
     <!-- PROFILE -->
     <string name="setting">Setting</string>
     <string name="security">Security</string>

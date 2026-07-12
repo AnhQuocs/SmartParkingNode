@@ -30,6 +30,9 @@
         <activity
             android:name=".features.profile.presentation.ui.SupportCenterActivity"
             android:exported="false" />
+        <activity
+            android:name=".features.dashboard.presentation.ui.user.register_card.RegisterCardActivity"
+            android:exported="false" />
             
         <activity
             android:name=".features.app_system.settings.presentation.ui.SecuritySettingsActivity"

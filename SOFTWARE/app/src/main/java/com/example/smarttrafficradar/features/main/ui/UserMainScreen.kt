@@ -22,6 +22,7 @@ import androidx.navigation.NavController
 import com.example.smarttrafficradar.components.UserBottomBar
 import com.example.smarttrafficradar.features.auth.presentation.viewmodel.AuthViewModel
 import com.example.smarttrafficradar.features.dashboard.presentation.ui.user.DashboardScreen
+import com.example.smarttrafficradar.features.dashboard.presentation.ui.user.register_card.RegisterCardActivity
 import com.example.smarttrafficradar.features.history.presentation.ui.HistoryScreen
 import com.example.smarttrafficradar.features.notification.presentation.ui.NotificationActivity
 import com.example.smarttrafficradar.features.payment.presentation.ui.PaymentScreen
@@ -66,7 +67,6 @@ fun UserMainScreen(
             )
         }
     ) { paddingValues ->
-
         Box(
             modifier = Modifier
                 .padding(paddingValues)
@@ -84,7 +84,10 @@ fun UserMainScreen(
                                 context.startActivity(Intent(context, SupportCenterActivity::class.java))
                             },
                             onRegisterCard = {
-
+                                val intent = Intent(context, RegisterCardActivity::class.java).apply {
+                                    putExtra("uid", user.uid)
+                                }
+                                context.startActivity(intent)
                             },
                             onPayment = {
                                 selectedTabIndex = 2
