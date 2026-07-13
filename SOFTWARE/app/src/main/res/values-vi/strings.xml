@@ -397,4 +397,11 @@
     <string name="registered_cards">Thẻ đã đăng ký</string>
     <string name="users">Người dùng</string>
 
+    <!-- PENDING CARDS -->
+    <string name="unpaid_cards_title">Thẻ vi phạm/Chưa thanh toán (Pending)</string>
+    <string name="approve">Cho qua</string>
+    <string name="reject">Từ chối</string>
+    <string name="no_pending_cards">Hiện không có thẻ nào bị treo.</string>
+    <string name="error_loading_pending">Lỗi tải dữ liệu: %1$s</string>
+
 </resources>

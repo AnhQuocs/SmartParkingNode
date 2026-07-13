@@ -9,6 +9,7 @@ import com.example.smarttrafficradar.features.management.domain.model.Registered
 import com.example.smarttrafficradar.features.management.domain.model.RegistrationRequest
 import com.example.smarttrafficradar.features.management.domain.model.RegistrationStatus
 import com.example.smarttrafficradar.features.management.domain.repository.RegistrationRepository
+import com.example.smarttrafficradar.features.user_profile.domain.model.VehicleType
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -42,6 +43,7 @@ class RegistrationRepositoryImpl @Inject constructor(
                 }
                 trySend(requests)
             }
+
             override fun onCancelled(error: DatabaseError) {
                 close(error.toException())
             }
@@ -61,7 +63,7 @@ class RegistrationRepositoryImpl @Inject constructor(
                     id = cardsCollection.document().id,
                     uid = it.uid ?: uid,
                     rfidUid = it.identifier ?: "",
-                    vehicleType = it.vehicleType ?: com.example.smarttrafficradar.features.user_profile.domain.model.VehicleType.MOTORBIKE,
+                    vehicleType = (it.vehicleType ?: VehicleType.MOTORBIKE) as VehicleType,
                     status = CardStatus.ACTIVE,
                     ownerName = it.fullName ?: ""
                 )

@@ -2,19 +2,24 @@ package com.example.smarttrafficradar.features.management.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.smarttrafficradar.features.management.domain.model.RegisteredCard
 import com.example.smarttrafficradar.features.management.domain.model.RegistrationRequest
 import com.example.smarttrafficradar.features.management.domain.usecase.RegistrationUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed class RegistrationListState {
     data object Loading : RegistrationListState()
-    data class Success(val requests: List<RegistrationRequest>) : RegistrationListState()
+    data class Success(
+        val requests: List<RegistrationRequest>,
+        val cards: List<RegisteredCard>
+    ) : RegistrationListState()
     data class Error(val message: String) : RegistrationListState()
 }
 
@@ -27,12 +32,20 @@ class RegistrationListViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     init {
-        getRegistrationRequests()
+        getData()
     }
 
-    private fun getRegistrationRequests() {
+    private fun getData() {
         viewModelScope.launch {
-            registrationUseCases.getRegistrationRequests()
+            combine(
+                registrationUseCases.getRegistrationRequests(),
+                registrationUseCases.getRegisteredCards()
+            ) { requests, cards ->
+                RegistrationListState.Success(
+                    requests = requests.sortedByDescending { it.timestamp },
+                    cards = cards
+                )
+            }
                 .onStart {
                     _state.value = RegistrationListState.Loading
                 }
@@ -41,10 +54,8 @@ class RegistrationListViewModel @Inject constructor(
                         e.message ?: "An unknown error occurred"
                     )
                 }
-                .collect { requests ->
-                    _state.value = RegistrationListState.Success(
-                        requests.sortedByDescending { it.timestamp }
-                    )
+                .collect { newState ->
+                    _state.value = newState
                 }
         }
     }

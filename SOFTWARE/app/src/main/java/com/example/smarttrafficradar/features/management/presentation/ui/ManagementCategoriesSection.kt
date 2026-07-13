@@ -31,6 +31,9 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.smarttrafficradar.R
+import com.example.smarttrafficradar.features.management.domain.model.OrganizationMember
+import com.example.smarttrafficradar.features.management.domain.model.RegisteredCard
+import com.example.smarttrafficradar.features.management.domain.model.RegistrationRequest
 import com.example.smarttrafficradar.ui.dimens.AppShape
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
@@ -47,7 +50,9 @@ fun ManagementCategoriesSection(
     onRegistrationRequests: () -> Unit,
     onRegisteredCardsClick: () -> Unit,
     onUserListClick: () -> Unit,
-//    registrationRequests: List<RegistrationRequest>
+    registrationRequests: List<RegistrationRequest>,
+    registeredCards: List<RegisteredCard>,
+    users: List<OrganizationMember>
 ) {
     Column(
         modifier = Modifier
@@ -60,7 +65,7 @@ fun ManagementCategoriesSection(
             iconColor = OrangePrimary,
             text = stringResource(id = R.string.pending_registrations),
             onClick = onRegistrationRequests,
-            count = 2
+            count = registrationRequests.size
         )
 
         ManagementCategoryItem(
@@ -68,7 +73,7 @@ fun ManagementCategoriesSection(
             iconColor = CyanPrimary,
             text = stringResource(id = R.string.registered_cards),
             onClick = onRegisteredCardsClick,
-            count = 2
+            count = registeredCards.size
         )
 
         ManagementCategoryItem(
@@ -76,7 +81,7 @@ fun ManagementCategoriesSection(
             iconColor = IndigoPrimary,
             text = stringResource(id = R.string.users),
             onClick = onUserListClick,
-            count = 2
+            count = users.size
         )
     }
 }
@@ -106,8 +111,8 @@ fun ManagementCategoryItem(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(vertical = Dimen.PaddingSM, horizontal = Dimen.PaddingM)
-                .clickable { onClick() },
+                .clickable { onClick() }
+                .padding(vertical = Dimen.PaddingSM, horizontal = Dimen.PaddingM),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
