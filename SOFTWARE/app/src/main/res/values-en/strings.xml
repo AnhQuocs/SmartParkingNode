@@ -360,7 +360,7 @@
     <string name="debt_increased">Debt increased</string>
     <string name="no_outstanding_debt_history">No outstanding debts yet</string>
     <string name="payment_momo_button">Pay %1$d₫ via MoMo</string>
-    <string name="payment_initializing">Initializing payment...</string>
+    <string name="payment_initializing">Initializing payment…</string>
     <string name="retry">Retry</string>
     <string name="please_install_momo">Please install the MoMo app.</string>
     <string name="select_all">Select all</string>
@@ -397,8 +397,27 @@
         <item quantity="one">%d item</item>
         <item quantity="other">%d items</item>
     </plurals>
+    <plurals name="pending_requests">
+        <item quantity="one">%d pending request</item>
+        <item quantity="other">%d pending requests</item>
+    </plurals>
+    <plurals name="total_cards">
+        <item quantity="one">%d card in the system</item>
+        <item quantity="other">%d cards in the system</item>
+    </plurals>
     <string name="pending_registrations">Pending Registrations</string>
     <string name="registered_cards">Registered Cards</string>
     <string name="users">Users</string>
+
+    <!-- PENDING CARDS -->
+    <string name="unpaid_cards_title">Violation Cards / Unpaid (Pending)</string>
+    <string name="approve">Pass</string>
+    <string name="reject">Reject</string>
+    <string name="register">Register</string>
+    <string name="no_pending_cards">No cards are currently pending.</string>
+    <string name="error_loading_pending">Error loading data: %1$s</string>
+
+    <string name="reject_request_title">Reject Request</string>
+    <string name="reject_request_message">Are you sure you want to reject this registration request? This will remove the request from the system.</string>
 
 </resources>

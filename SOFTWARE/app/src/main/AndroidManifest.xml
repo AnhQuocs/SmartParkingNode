@@ -20,7 +20,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SMART_PARKING"
         android:usesCleartextTraffic="true">
-        
+        <activity
+            android:name=".features.management.presentation.ui.registerd_card.RegisteredCardsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".features.management.presentation.ui.registration_requests.RegistrationRequestsActivity"
+            android:exported="false" />
         <activity
             android:name=".features.user_profile.presentation.ui.EditProfileActivity"
             android:exported="false" />
@@ -33,7 +38,6 @@
         <activity
             android:name=".features.dashboard.presentation.ui.user.register_card.RegisterCardActivity"
             android:exported="false" />
-            
         <activity
             android:name=".features.app_system.settings.presentation.ui.SecuritySettingsActivity"
             android:exported="false" />

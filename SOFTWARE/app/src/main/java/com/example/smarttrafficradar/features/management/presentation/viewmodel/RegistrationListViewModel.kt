@@ -2,14 +2,17 @@ package com.example.smarttrafficradar.features.management.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.smarttrafficradar.features.management.domain.model.CardStatus
 import com.example.smarttrafficradar.features.management.domain.model.RegisteredCard
 import com.example.smarttrafficradar.features.management.domain.model.RegistrationRequest
 import com.example.smarttrafficradar.features.management.domain.usecase.RegistrationUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -18,7 +21,8 @@ sealed class RegistrationListState {
     data object Loading : RegistrationListState()
     data class Success(
         val requests: List<RegistrationRequest>,
-        val cards: List<RegisteredCard>
+        val cards: List<RegisteredCard>,
+        val filteredCards: List<RegisteredCard> = emptyList()
     ) : RegistrationListState()
     data class Error(val message: String) : RegistrationListState()
 }
@@ -31,19 +35,36 @@ class RegistrationListViewModel @Inject constructor(
     private val _state = MutableStateFlow<RegistrationListState>(RegistrationListState.Loading)
     val state = _state.asStateFlow()
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
+
+    private val _selectedStatus = MutableStateFlow<CardStatus?>(null)
+    val selectedStatus = _selectedStatus.asStateFlow()
+
     init {
         getData()
     }
 
+    @OptIn(FlowPreview::class)
     private fun getData() {
         viewModelScope.launch {
             combine(
                 registrationUseCases.getRegistrationRequests(),
-                registrationUseCases.getRegisteredCards()
-            ) { requests, cards ->
+                registrationUseCases.getRegisteredCards(),
+                _searchQuery.debounce(300),
+                _selectedStatus
+            ) { requests, cards, query, status ->
+                val filtered = cards.filter { card ->
+                    val matchesQuery = card.ownerName.contains(query, ignoreCase = true) ||
+                            card.rfidUid.contains(query, ignoreCase = true)
+                    val matchesStatus = status == null || card.status == status
+                    matchesQuery && matchesStatus
+                }
+
                 RegistrationListState.Success(
                     requests = requests.sortedByDescending { it.timestamp },
-                    cards = cards
+                    cards = cards,
+                    filteredCards = filtered
                 )
             }
                 .onStart {
@@ -58,6 +79,14 @@ class RegistrationListViewModel @Inject constructor(
                     _state.value = newState
                 }
         }
+    }
+
+    fun onSearchQueryChange(query: String) {
+        _searchQuery.value = query
+    }
+
+    fun onStatusFilterChange(status: CardStatus?) {
+        _selectedStatus.value = status
     }
 
     fun approveRequest(uid: String) {

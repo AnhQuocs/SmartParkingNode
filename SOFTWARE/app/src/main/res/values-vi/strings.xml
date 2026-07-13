@@ -117,7 +117,7 @@
     <string name="current_connection">Kết nối hiện tại</string>
     <string name="enter_password_for">Nhập mật khẩu cho %1$s</string>
     <string name="connect">Kết nối</string>
-    <string name="cancel">Cancel</string>
+    <string name="cancel">Hủy</string>
     <string name="scanning">Đang dò tìm…</string>
     <string name="connection_timeout">Hết thời gian kết nối. Thiết bị không phản hồi.</string>
     <string name="current_task_format">Tác vụ hiện tại: %1$s</string>
@@ -357,7 +357,7 @@
     <string name="debt_increased">Dư nợ tăng</string>
     <string name="no_outstanding_debt_history">Chưa có phát sinh dư nợ nào</string>
     <string name="payment_momo_button">Thanh toán %1$dđ qua MoMo</string>
-    <string name="payment_initializing">Đang khởi tạo thanh toán...</string>
+    <string name="payment_initializing">Đang khởi tạo thanh toán…</string>
     <string name="retry">Thử lại</string>
     <string name="please_install_momo">Vui lòng cài đặt ứng dụng MoMo.</string>
     <string name="select_all">Chọn tất cả</string>
@@ -395,13 +395,31 @@
     </plurals>
     <string name="pending_registrations">Yêu cầu đăng ký</string>
     <string name="registered_cards">Thẻ đã đăng ký</string>
+    <plurals name="pending_requests">
+        <item quantity="other">%d yêu cầu đang chờ</item>
+    </plurals>
+    <plurals name="total_cards">
+        <item quantity="other">%d thẻ trong hệ thống</item>
+    </plurals>
     <string name="users">Người dùng</string>
 
     <!-- PENDING CARDS -->
     <string name="unpaid_cards_title">Thẻ vi phạm/Chưa thanh toán (Pending)</string>
     <string name="approve">Cho qua</string>
     <string name="reject">Từ chối</string>
+    <string name="register">Đăng ký</string>
     <string name="no_pending_cards">Hiện không có thẻ nào bị treo.</string>
     <string name="error_loading_pending">Lỗi tải dữ liệu: %1$s</string>
+
+    <string name="reject_request_title">Từ chối yêu cầu</string>
+    <string name="reject_request_message">Bạn có chắc chắn muốn từ chối yêu cầu đăng ký này không? Hành động này sẽ xóa yêu cầu khỏi hệ thống.</string>
+
+    <!-- REGISTERED CARDS -->
+    <string name="search_registered_cards_hint">Tìm theo UID hoặc chủ sở hữu...</string>
+    <string name="filter_all">Tất cả</string>
+    <string name="filter_active">Hoạt động</string>
+    <string name="filter_blocked">Khóa</string>
+    <string name="registered_date_label">Đăng ký: %1$s</string>
+    <string name="license_plate_format">BKS %1$s - %2$s</string>
 
 </resources>

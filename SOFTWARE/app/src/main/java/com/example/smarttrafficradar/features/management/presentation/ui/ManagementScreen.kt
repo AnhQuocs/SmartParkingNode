@@ -1,5 +1,6 @@
 package com.example.smarttrafficradar.features.management.presentation.ui
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,8 +20,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.smarttrafficradar.features.management.presentation.ui.registerd_card.RegisteredCardsActivity
+import com.example.smarttrafficradar.features.management.presentation.ui.registration_requests.RegistrationRequestsActivity
 import com.example.smarttrafficradar.features.management.presentation.viewmodel.OrganizationMemberListState
 import com.example.smarttrafficradar.features.management.presentation.viewmodel.OrganizationMemberListViewModel
 import com.example.smarttrafficradar.features.management.presentation.viewmodel.PendingCardsState
@@ -39,19 +43,21 @@ fun ManagementScreen(
     organizationMemberListViewModel: OrganizationMemberListViewModel = hiltViewModel(),
     pendingCardsViewModel: PendingCardsViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+
     val registrationState by registrationListViewModel.state.collectAsState()
     val organizationMemberState by organizationMemberListViewModel.state.collectAsState()
     val pendingCardsState by pendingCardsViewModel.state.collectAsState()
-    
+
     val scrollState = rememberScrollState()
 
-    val isLoading = registrationState is RegistrationListState.Loading || 
-                    organizationMemberState is OrganizationMemberListState.Loading ||
-                    pendingCardsState is PendingCardsState.Loading
-    
-    val errorMessage = (registrationState as? RegistrationListState.Error)?.message ?:
-                       (organizationMemberState as? OrganizationMemberListState.Error)?.message ?:
-                       (pendingCardsState as? PendingCardsState.Error)?.message
+    val isLoading = registrationState is RegistrationListState.Loading ||
+            organizationMemberState is OrganizationMemberListState.Loading ||
+            pendingCardsState is PendingCardsState.Loading
+
+    val errorMessage = (registrationState as? RegistrationListState.Error)?.message
+        ?: (organizationMemberState as? OrganizationMemberListState.Error)?.message
+        ?: (pendingCardsState as? PendingCardsState.Error)?.message
 
     Box(
         modifier = Modifier
@@ -91,16 +97,22 @@ fun ManagementScreen(
                     )
                 }
             } else {
-                val registrationRequests = (registrationState as? RegistrationListState.Success)?.requests ?: emptyList()
-                val registeredCards = (registrationState as? RegistrationListState.Success)?.cards ?: emptyList()
-                val users = (organizationMemberState as? OrganizationMemberListState.Success)?.members ?: emptyList()
+                val registrationRequests =
+                    (registrationState as? RegistrationListState.Success)?.requests ?: emptyList()
+                val registeredCards =
+                    (registrationState as? RegistrationListState.Success)?.cards ?: emptyList()
+                val users =
+                    (organizationMemberState as? OrganizationMemberListState.Success)?.members
+                        ?: emptyList()
 
                 ManagementCategoriesSection(
                     onRegistrationRequests = {
-                        // Navigate to registration requests
+                        val intent = Intent(context, RegistrationRequestsActivity::class.java)
+                        context.startActivity(intent)
                     },
                     onRegisteredCardsClick = {
-                        // Navigate to registered cards
+                        val intent = Intent(context, RegisteredCardsActivity::class.java)
+                        context.startActivity(intent)
                     },
                     onUserListClick = {
                         // Navigate to user list

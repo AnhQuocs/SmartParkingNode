@@ -9,7 +9,6 @@ import com.example.smarttrafficradar.features.management.domain.model.Registered
 import com.example.smarttrafficradar.features.management.domain.model.RegistrationRequest
 import com.example.smarttrafficradar.features.management.domain.model.RegistrationStatus
 import com.example.smarttrafficradar.features.management.domain.repository.RegistrationRepository
-import com.example.smarttrafficradar.features.user_profile.domain.model.VehicleType
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -21,6 +20,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 import javax.inject.Inject
 
 class RegistrationRepositoryImpl @Inject constructor(
@@ -52,24 +55,35 @@ class RegistrationRepositoryImpl @Inject constructor(
         awaitClose { registrationRef.removeEventListener(listener) }
     }
 
-    // Đổi tên override cho khớp với Interface
     override suspend fun handleRegistrationDecision(uid: String, status: RegistrationStatus) {
         if (status == RegistrationStatus.APPROVED) {
             val snapshot = registrationRef.child(uid).get().await()
-            val requestDto = snapshot.getValue(RegistrationRequestDto::class.java)
+            val request = snapshot.getValue(RegistrationRequestDto::class.java)?.toDomain()
 
-            requestDto?.let {
+            request?.let {
+                // Định dạng thời gian theo chuẩn ISO 8601 (UTC)
+                val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()).apply {
+                    timeZone = TimeZone.getTimeZone("UTC")
+                }
+                val now = isoFormat.format(Date())
+
                 val card = RegisteredCard(
-                    id = cardsCollection.document().id,
-                    uid = it.uid ?: uid,
-                    rfidUid = it.identifier ?: "",
-                    vehicleType = (it.vehicleType ?: VehicleType.MOTORBIKE) as VehicleType,
+                    id = it.identifier, // Sử dụng identifier làm Document ID (ví dụ: ST0361)
+                    userId = it.uid,
+                    rfidUid = it.rfidUid,
+                    ownerName = it.fullName,
+                    identifier = it.identifier,
+                    department = it.department,
+                    cardType = it.cardType,
+                    vehicleType = it.vehicleType,
                     status = CardStatus.ACTIVE,
-                    ownerName = it.fullName ?: ""
+                    registeredAt = now,
+                    lastUsedAt = now
                 )
                 cardsCollection.document(card.id).set(card.toDto()).await()
             }
         }
+        // Sau khi duyệt hoặc từ chối, xóa yêu cầu khỏi Realtime Database
         registrationRef.child(uid).removeValue().await()
     }
 
@@ -83,7 +97,6 @@ class RegistrationRepositoryImpl @Inject constructor(
         cardsCollection.document(cardId).update("status", status.name).await()
     }
 
-    // Bổ sung lại hàm này vào interface hoặc giữ làm alias (xóa override nếu interface không có)
     override suspend fun updateRegistrationStatus(uid: String, status: RegistrationStatus) {
         handleRegistrationDecision(uid, status)
     }
