@@ -5,6 +5,7 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
+import com.google.firebase.database.*;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
@@ -12,6 +13,8 @@ import com.google.firebase.messaging.Notification;
 import com.trung.payment_backend.model.VehicleRecord;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -232,6 +235,22 @@ public class FirebaseService {
                 System.out.println("[FCM] Đã phát chuỗi thông báo tích hợp thành công: " + response);
             } catch (FirebaseMessagingException e) {
                 System.err.println("[FCM] Lỗi gửi tín hiệu FCM: " + e.getMessage());
+                String errorCode = String.valueOf(e.getErrorCode());
+                if ("messaging/registration-token-not-registered".equals(errorCode) ||
+                        "messaging/invalid-registration-token".equals(errorCode) ||
+                        e.getMessage().contains("Requested entity was not found")) {
+
+                    System.out.println("[FCM] Token đã hết hạn, tiến hành xóa token cũ của user: " + uid);
+                    try {
+                        ApiFuture<QuerySnapshot> query = db.collection("profiles").whereEqualTo("uid", uid).get();
+                        if (!query.get().isEmpty()) {
+                            String docId = query.get().getDocuments().get(0).getId();
+                            db.collection("profiles").document(docId).update("fcmToken", null);
+                        }
+                    } catch (Exception ex) {
+                        System.err.println("[FCM] Lỗi khi xóa token cũ: " + ex.getMessage());
+                    }
+                }
             }
         } else {
             System.out.println("[FCM] Bỏ qua gửi Push — fcmToken rỗng.");
@@ -248,7 +267,68 @@ public class FirebaseService {
         }
     }
 
-    // Hàm dịch tự động trên Backend hỗ trợ khi App bị Kill (Fallback)
+    public void updateRealtimeAnalytics(String direction, long feeAmount) {
+        try {
+            String todayStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            DatabaseReference ref = FirebaseDatabase.getInstance()
+                    .getReference("parking_analytics")
+                    .child(todayStr);
+
+            // Bắt đầu Transaction để cập nhật an toàn
+            ref.runTransaction(new Transaction.Handler() {
+                @Override
+                public Transaction.Result doTransaction(MutableData mutableData) {
+                    long vehiclesInLot = 0;
+                    long todayInCount = 0;
+                    long todayOutCount = 0;
+                    long todayRevenue = 0;
+
+                    if (mutableData.child("vehicles_in_lot").getValue() != null) {
+                        vehiclesInLot = (Long) mutableData.child("vehicles_in_lot").getValue();
+                    }
+                    if (mutableData.child("today_in_count").getValue() != null) {
+                        todayInCount = (Long) mutableData.child("today_in_count").getValue();
+                    }
+                    if (mutableData.child("today_out_count").getValue() != null) {
+                        todayOutCount = (Long) mutableData.child("today_out_count").getValue();
+                    }
+                    if (mutableData.child("today_revenue").getValue() != null) {
+                        todayRevenue = (Long) mutableData.child("today_revenue").getValue();
+                    }
+
+                    if ("IN".equalsIgnoreCase(direction)) {
+                        vehiclesInLot++;
+                        todayInCount++;
+                    } else if ("OUT".equalsIgnoreCase(direction)) {
+                        vehiclesInLot--;
+                        if (vehiclesInLot < 0) vehiclesInLot = 0;
+                        todayOutCount++;
+                        todayRevenue += feeAmount;
+                    }
+
+                    mutableData.child("vehicles_in_lot").setValue(vehiclesInLot);
+                    mutableData.child("today_in_count").setValue(todayInCount);
+                    mutableData.child("today_out_count").setValue(todayOutCount);
+                    mutableData.child("today_revenue").setValue(todayRevenue);
+
+                    return Transaction.success(mutableData);
+                }
+
+                @Override
+                public void onComplete(DatabaseError databaseError, boolean committed, DataSnapshot dataSnapshot) {
+                    if (committed) {
+                        System.out.printf("[ANALYTICS] Đã cập nhật thành công RTDB ngày %s hướng %s — Phí: %,d đ\n", todayStr, direction, feeAmount);
+                    } else {
+                        System.err.println("[ANALYTICS] Lỗi Transaction cập nhật Realtime Database: " + databaseError.getMessage());
+                    }
+                }
+            });
+
+        } catch (Exception e) {
+            System.err.println("[ANALYTICS] Lỗi ngoại lệ khi chạy Transaction: " + e.getMessage());
+        }
+    }
+
     private String getLocalizedText(String key, String lang, List<String> args) {
         boolean isEn = "en".equalsIgnoreCase(lang);
         String text = "";
@@ -289,7 +369,8 @@ public class FirebaseService {
                 text = isEn ? "You have successfully paid {0}đ for parking services." : "Bạn đã thanh toán {0}đ cho dịch vụ gửi xe."; // [cite: 3]
                 break;
 
-            default: text = key;
+            default:
+                text = key;
         }
 
         if (args != null) {

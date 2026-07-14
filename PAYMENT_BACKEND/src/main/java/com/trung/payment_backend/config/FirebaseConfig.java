@@ -22,6 +22,7 @@ public class FirebaseConfig {
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseOptions options = FirebaseOptions.builder()
                         .setCredentials(GoogleCredentials.fromStream(configFile.getInputStream()))
+                        .setDatabaseUrl("https://smarttrafficradar-default-rtdb.firebaseio.com")
                         .build();
                 FirebaseApp.initializeApp(options);
                 System.out.println("[FIREBASE] Khởi tạo Firebase Admin SDK thành công!");

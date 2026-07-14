@@ -1,19 +1,9 @@
 #pragma once
 
-// ============================================================
-//  config.h — Cấu hình chân GPIO và hằng số hệ thống
-//  Đồng bộ với Long (Hardware Engineer)
-// ============================================================
 
-// ── PIN MAP ──────────────────────────────────────────────────
-// RFID RC522 (SPI)
 #define PIN_RFID_SS 5
 #define PIN_RFID_RST 22
-// SCK=18, MOSI=23, MISO=19 — SPI mặc định của ESP32
 
-// IR Sensors — GPIO 34,35 là INPUT_ONLY, KHÔNG có internal pull-up
-// PIN_IR_A = cảm biến NGOÀI cổng (xe chạm đầu tiên khi đi VÀO)
-// PIN_IR_B = cảm biến TRONG cổng (xe chạm sau cùng khi đi VÀO)
 #define PIN_IR_A 35
 #define PIN_IR_B 33
 
@@ -44,3 +34,4 @@
 #define AUDIO_GATE_OPEN_CLOSE 1 // "Cổng đang mở/đóng"
 #define AUDIO_DEBT_EXCEED 2     // "Vượt hạn mức công nợ"
 #define AUDIO_CARD_UNKNOWN 3    // "Thẻ chưa đăng ký"
+#define AUDIO_CARD_REGISTERED 4   // "Thẻ đã đăng ký"

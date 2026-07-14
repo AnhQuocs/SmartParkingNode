@@ -38,6 +38,9 @@ unsigned long delayStartMs = 0;
 unsigned long lastTelemetryMs = 0;
 unsigned long lastWifiRetryMs = 0;
 
+bool isRegistrationMode = false;
+unsigned long regModeTimeoutMs = 0;
+
 String lastReadUID = "";
 unsigned long lastReadTime = 0;
 
@@ -102,7 +105,6 @@ void onVehiclePassed(bool confirmed)
 // ── Thực sự đóng Barie ─────────────────────
 void closeGateNow()
 {
-    // PHẦN CỨNG TRƯỚC (Hàm close này đã tự động kích hoạt Audio)
     barrier.close();
     gateState = IDLE;
 
@@ -136,6 +138,21 @@ void onCloudCommand(String cmd, String uid, String action)
     {
         // Thẻ chưa đăng ký (Track 3)
         barrier.playAudio(AUDIO_CARD_UNKNOWN);
+    }
+    else if (cmd == "REGISTER_MODE" || cmd == "MODE_1")
+    {
+        isRegistrationMode = true;
+        regModeTimeoutMs = millis() + 30000;
+
+        firebase.updateDeviceMode(1);
+        Serial.println("[MODE] Đã chuyển sang MODE 1: ĐĂNG KÝ THẺ (30 giây)...");
+    }
+    else if (cmd == "NORMAL_MODE" || cmd == "MODE_0")
+    {
+        isRegistrationMode = false;
+
+        firebase.updateDeviceMode(0);
+        Serial.println("[MODE] Đã hủy đăng ký, quay về MODE 0: BÌNH THƯỜNG.");
     }
 }
 
@@ -181,10 +198,8 @@ void setup()
 // ═══════════════════════════════════════════════════════════════
 void loop()
 {
-    // ── 1. Lệnh từ Cloud (polling) ───────────────────────────
     firebase.loop();
 
-    // ── 2. RFID — chỉ đọc khi đang IDLE ───────────────────────
     if (gateState == IDLE)
     {
         String uid = rfid.readUID();
@@ -196,12 +211,27 @@ void loop()
                 lastReadTime = millis();
 
                 Serial.printf("[RFID] Card: %s\n", uid.c_str());
-                firebase.processSwipeOnHardware(uid);
+                if (isRegistrationMode)
+                {
+                    Serial.println("[MODE] Đang trong chế độ Đăng ký. Bắn UID lên RTDB...");
+                    firebase.sendRegisteredUID(uid); 
+                    isRegistrationMode = false;      
+                    firebase.updateDeviceMode(0);
+                }
+                else
+                {
+                    firebase.processSwipeOnHardware(uid);
+                }
             }
         }
     }
 
-    // ── 3. Theo dõi IR đích duy nhất theo hướng ──────────────
+    if (isRegistrationMode && (millis() > regModeTimeoutMs))
+    {
+        isRegistrationMode = false;
+        Serial.println("[MODE] Hết hạn 30s. Đã tự động quay về MODE 0.");
+    }
+
     if (gateState == WAITING_IR)
     {
         SpeedSensor::Result r = irSensor.update();
@@ -216,7 +246,6 @@ void loop()
         }
     }
 
-    // ── 4. Đóng Barie sau độ trễ ─────────────────────────
     if (gateState == CLOSING_DELAY)
     {
         if (millis() - delayStartMs > GATE_CLOSE_DELAY_MS)
@@ -225,15 +254,13 @@ void loop()
         }
     }
 
-    // ── 5. Telemetry + check WiFi đổi từ xa ──────────────────
     if (millis() - lastTelemetryMs > TELEMETRY_INTERVAL_MS)
     {
         lastTelemetryMs = millis();
-        firebase.sendTelemetry(true, true); // IR đang hoạt động bình thường
+        firebase.sendTelemetry(true, true, gateState != IDLE); // IR đang hoạt động bình thường
         handleRemoteWiFiChange();
     }
 
-    // ── 6. WiFi watchdog ──────────────────────────────────────
     if (WiFi.status() != WL_CONNECTED)
     {
         if (millis() - lastWifiRetryMs > WIFI_RETRY_INTERVAL_MS)

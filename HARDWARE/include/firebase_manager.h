@@ -66,6 +66,8 @@ public:
         initialized = true;
 
         Firebase.setString(fbData, "/parking_status/cloud_command/cmd", "IDLE");
+
+        updateDeviceMode(0);
         Serial.println("[Firebase] Đã khởi tạo cấu hình cho Smart Parking.");
     }
 
@@ -113,112 +115,74 @@ public:
         if (!initialized || WiFi.status() != WL_CONNECTED)
             return;
 
-        Serial.printf("[LOGIC] Đang query thẻ %s trên Cloud Firestore...\n", uid.c_str());
+        Serial.printf("[LOGIC] Đang gửi UID %s về Spring Boot Backend để xử lý...\n", uid.c_str());
 
+        WiFiClient client;
         HTTPClient http;
         http.setReuse(false);
-        http.setTimeout(4000);
-        String url = "https://firestore.googleapis.com/v1/projects/smarttrafficradar"
-                     "/databases/(default)/documents:runQuery?key=" +
-                     String(FIREBASE_WEB_API_KEY);
-        secureClient.stop();
-        http.begin(secureClient, url);
+        http.setTimeout(5000);
+
+        String url = String(BACKEND_BASE_URL) + "/api/hardware/check-card";
+
+        http.begin(client, url);
         http.addHeader("Content-Type", "application/json");
 
-        String queryPayload =
-            "{\"structuredQuery\":{"
-            "\"from\":[{\"collectionId\":\"profiles\"}],"
-            "\"where\":{\"fieldFilter\":{"
-            "\"field\":{\"fieldPath\":\"rfidUid\"},"
-            "\"op\":\"EQUAL\","
-            "\"value\":{\"stringValue\":\"" +
-            uid + "\"}"
-                  "}}}}";
+        String payload = "{\"uid\":\"" + uid + "\"}";
+        int httpCode = http.POST(payload);
 
-        int httpCode = http.POST(queryPayload);
-
-        if (httpCode > 0)
+        if (httpCode == 200)
         {
-            String payload = http.getString();
-            if (httpCode == 200)
+            String resp = http.getString();
+            StaticJsonDocument<512> doc;
+            deserializeJson(doc, resp);
+
+            String action = doc["action"].as<String>();
+
+            if (action == "DENY_UNKNOWN")
             {
-                StaticJsonDocument<1024> doc;
-                DeserializationError err = deserializeJson(doc, payload);
+                Serial.println("[LOGIC] Thẻ chưa đăng ký.");
+                logInvalidSwipe(uid, "UNKNOWN");
+                onCloudCommand("CARD_UNKNOWN", uid, "");
+            }
+            else if (action == "DENY_BLOCKED")
+            {
+                Serial.println("[LOGIC] Thẻ đang bị khóa.");
+                logInvalidSwipe(uid, "BLOCKED");
+                onCloudCommand("BUZZER_ALERT", uid, "");
+            }
+            else if (action == "DENY_DEBT")
+            {
+                Serial.println("[LOGIC] Thẻ bị từ chối do nợ vượt hạn mức.");
+                logInvalidSwipe(uid, "DEBT_EXCEEDED");
+                onCloudCommand("BUZZER_ALERT", uid, "");
+            }
+            else if (action == "OPEN_IN" || action == "OPEN_OUT")
+            {
+                String direction = (action == "OPEN_OUT") ? "OUT" : "IN";
 
-                if (!err && doc[0].containsKey("document"))
+                _pending.active = true;
+                _pending.uid = uid;
+                _pending.userId = doc["userId"].as<String>();
+                _pending.vehicleType = doc["vehicleType"].as<String>();
+                _pending.profileDocPath = doc["profileDocPath"].as<String>();
+                _pending.currentDebt = doc["currentDebt"].as<long>();
+                _pending.direction = direction;
+
+                if (direction == "OUT")
                 {
-                    JsonObjectConst fields = doc[0]["document"]["fields"];
-                    bool isActive = fields["isActive"]["booleanValue"] | false;
-                    bool isParking = fields["isParking"]["booleanValue"] | false;
-
-                    int64_t currentDebt = 0;
-                    if (fields["currentDebt"]["integerValue"])
-                    {
-                        currentDebt = fields["currentDebt"]["integerValue"].as<long>();
-                    }
-
-                    String vehicleType = fields["vehicleType"]["stringValue"] | "MOTORBIKE";
-
-                    String profileUid = fields["uid"]["stringValue"] | "";
-                    if (profileUid == "")
-                        profileUid = fields["userId"]["stringValue"] | "";
-                    if (profileUid == "")
-                        profileUid = uid;
-
-                    String docName = doc[0]["document"]["name"] | "";
-
-                    if (isActive)
-                    {
-                        // <-- LOGIC KIỂM TRA HẠN MỨC NỢ TẠI ĐÂY -->
-                        if (currentDebt > 100000)
-                        {
-                            Serial.printf("[LOGIC] Thẻ %s bị từ chối. Dư nợ hiện tại (%lldđ) vượt quá hạn mức 100.000đ.\n", uid.c_str(), currentDebt);
-                            logInvalidSwipe(uid, "DEBT_EXCEEDED");   // Lưu lịch sử quẹt lỗi lên Firebase
-                            onCloudCommand("BUZZER_ALERT", uid, ""); // Báo còi / phát loa AUDIO_DEBT_EXCEED
-                        }
-                        else
-                        {
-                            // Nợ hợp lệ -> Xử lý mở cổng bình thường
-                            String direction = isParking ? "OUT" : "IN";
-
-                            _pending.active = true;
-                            _pending.uid = uid;
-                            _pending.userId = profileUid;
-                            _pending.profileDocPath = docName;
-                            _pending.direction = direction;
-                            _pending.currentDebt = currentDebt;
-                            _pending.vehicleType = vehicleType;
-
-                            if (direction == "OUT")
-                            {
-                                _findOpenHistory(uid);
-                            }
-
-                            Serial.printf("[LOGIC] Thẻ %s hợp lệ. Xe: %s. Hướng: %s. Nợ cũ: %lld. Mở Barie.\n",
-                                          uid.c_str(), vehicleType.c_str(), direction.c_str(), currentDebt);
-                            onCloudCommand("OPEN", uid, direction);
-                        }
-                    }
-                    else
-                    {
-                        Serial.printf("[LOGIC] Thẻ %s bị khóa.\n", uid.c_str());
-                        logInvalidSwipe(uid, "BLOCKED");
-                        onCloudCommand("BUZZER_ALERT", uid, ""); // Tái sử dụng âm thanh cảnh báo lỗi
-                    }
+                    _findOpenHistory(uid);
                 }
-                else
-                {
-                    Serial.printf("[LOGIC] Thẻ %s chưa đăng ký.\n", uid.c_str());
-                    logInvalidSwipe(uid, "UNKNOWN");
-                    onCloudCommand("CARD_UNKNOWN", uid, "");
-                }
+
+                Serial.printf("[LOGIC] Thẻ hợp lệ. Hướng: %s. Xe: %s. Nợ cũ: %lld. Mở Barie.\n",
+                              direction.c_str(), _pending.vehicleType.c_str(), _pending.currentDebt);
+                onCloudCommand("OPEN", uid, direction);
             }
         }
         else
         {
-            Serial.printf("[HTTP] Lỗi kết nối Firestore: %d\n", httpCode);
+            Serial.printf("[HTTP] Lỗi kết nối Backend: %d\n", httpCode);
+            onCloudCommand("BUZZER_ALERT", uid, "");
         }
-
         http.end();
     }
 
@@ -226,10 +190,56 @@ public:
     {
         if (!initialized)
             return;
+
+        String fullName = "Unknown";
+        String identifier = "Unknown";
+
+        HTTPClient http;
+        http.setReuse(false);
+        http.setTimeout(5000);
+
+        String url = "https://firestore.googleapis.com/v1/projects/smarttrafficradar/databases/(default)/documents:runQuery?key=" + String(FIREBASE_WEB_API_KEY);
+
+        secureClient.stop();
+        http.begin(secureClient, url);
+        http.addHeader("Content-Type", "application/json");
+
+        String queryPayload =
+            "{\"structuredQuery\":{\"from\":[{\"collectionId\":\"profiles\"}],"
+            "\"where\":{\"fieldFilter\":{\"field\":{\"fieldPath\":\"rfidUid\"},\"op\":\"EQUAL\","
+            "\"value\":{\"stringValue\":\"" +
+            uid + "\"}}},\"limit\":1}}";
+
+        int httpCode = http.POST(queryPayload);
+
+        if (httpCode == 200)
+        {
+            String resp = http.getString();
+            StaticJsonDocument<1024> doc;
+            if (!deserializeJson(doc, resp))
+            {
+                if (doc[0].containsKey("document"))
+                {
+                    JsonObject fields = doc[0]["document"]["fields"];
+                    fullName = fields["fullName"]["stringValue"].as<String>();
+                    identifier = fields["identifier"]["stringValue"].as<String>();
+                    Serial.printf("[LOGIC] Tìm thấy thông tin: %s - %s\n", fullName.c_str(), identifier.c_str());
+                }
+            }
+        }
+        else
+        {
+            Serial.printf("[LOGIC] Không tìm thấy thông tin profile, lỗi HTTP: %d\n", httpCode);
+        }
+        http.end();
+        secureClient.stop();
+
         FirebaseJson json;
         json.set("uid", uid);
-        json.set("timestamp", (int64_t)millis());
+        json.set("timestamp", (int64_t)time(nullptr));
         json.set("reason", reason);
+        json.set("fullName", fullName);
+        json.set("identifier", identifier);
         Firebase.setJSON(fbData, "/pending_cards/" + uid, json);
     }
 
@@ -286,6 +296,7 @@ public:
             return;
 
         time_t nowTs = time(nullptr);
+        double feeDouble = 0.0;
 
         if (_pending.direction == "IN")
         {
@@ -311,7 +322,7 @@ public:
         Serial.printf("[COMMIT-FIRESTORE] Hoàn tất ghi nhận %s cho UID %s\n",
                       _pending.direction.c_str(), _pending.uid.c_str());
 
-        _notifyBackendEvent(_pending.direction, _pending.uid, _pending.userId);
+        _notifyBackendEvent(_pending.direction, _pending.uid, _pending.userId, feeDouble);
 
         _pending = PendingTx();
     }
@@ -323,6 +334,21 @@ public:
             Serial.printf("[ABORT] Hủy giao dịch UID %s — không ghi Firestore\n", _pending.uid.c_str());
         }
         _pending = PendingTx();
+    }
+
+    void updateDeviceMode(int mode)
+    {
+        if (!initialized)
+            return;
+
+        if (Firebase.setInt(fbData, "/parking_status/current_mode", mode))
+        {
+            Serial.printf("[RTDB] Đã đồng bộ current_mode = %d lên Firebase\n", mode);
+        }
+        else
+        {
+            Serial.printf("[RTDB] Lỗi ghi current_mode: %s\n", fbData.errorReason().c_str());
+        }
     }
 
 private:
@@ -353,88 +379,68 @@ private:
     {
         if (fullDocPath.isEmpty())
             return;
-        HTTPClient http;
-        http.setReuse(false);
-        http.setTimeout(4000);
-
-        String url = "https://firestore.googleapis.com/v1/" + fullDocPath +
-                     "?updateMask.fieldPaths=isParking";
-
-        if (updateDebt)
         {
-            url += "&updateMask.fieldPaths=currentDebt";
-        }
-        url += "&key=" + String(FIREBASE_WEB_API_KEY);
+            HTTPClient http;
+            http.setReuse(false);
+            http.setTimeout(4000);
 
-        secureClient.stop();
-        http.begin(secureClient, url);
-        http.addHeader("Content-Type", "application/json");
-
-        String body = "{\"fields\":{\"isParking\":{\"booleanValue\":";
-        body += (newIsParking ? "true" : "false");
-        body += "}";
-
-        if (updateDebt)
-        {
-            body += ",\"currentDebt\":{\"integerValue\":\"" + String((long)newDebt) + "\"}";
-        }
-        body += "}}";
-
-        if (http.PATCH(body) > 0)
-        {
-            http.getString();
+            String url = "https://firestore.googleapis.com/v1/" + fullDocPath + "?updateMask.fieldPaths=isParking";
             if (updateDebt)
+                url += "&updateMask.fieldPaths=currentDebt";
+            url += "&key=" + String(FIREBASE_WEB_API_KEY);
+
+            secureClient.stop();
+            http.begin(secureClient, url);
+            http.addHeader("Content-Type", "application/json");
+
+            String body = "{\"fields\":{\"isParking\":{\"booleanValue\":";
+            body += (newIsParking ? "true" : "false");
+            body += "}";
+            if (updateDebt)
+                body += ",\"currentDebt\":{\"integerValue\":\"" + String((long)newDebt) + "\"}";
+            body += "}}";
+
+            if (http.PATCH(body) > 0)
             {
-                Serial.printf("[FIRESTORE] Đã cập nhật công nợ mới: %lldđ\n", newDebt);
+                http.getString();
+                if (updateDebt)
+                    Serial.printf("[FIRESTORE] Đã cập nhật công nợ mới: %lldđ\n", newDebt);
             }
+            http.end();
+            secureClient.stop();
         }
-        http.end();
     }
 
     void _createCheckInHistory(const String &userId, const String &uid, const String &vehicleType, time_t nowTs)
     {
-        HTTPClient http;
-        http.setReuse(false);
-        http.setTimeout(4000);
-
-        String url = "https://firestore.googleapis.com/v1/projects/smarttrafficradar"
-                     "/databases/(default)/documents/parking_histories?key=" +
-                     String(FIREBASE_WEB_API_KEY);
-
-        secureClient.stop();
-        http.begin(secureClient, url);
-        http.addHeader("Content-Type", "application/json");
-
-        String isoNow = getIso8601Time(nowTs);
-
-        String body =
-            "{\"fields\":{"
-            "\"userId\":{\"stringValue\":\"" +
-            userId + "\"},"
-                     "\"rfidUid\":{\"stringValue\":\"" +
-            uid + "\"},"
-                  "\"vehicleType\":{\"stringValue\":\"" +
-            vehicleType + "\"},"
-                          "\"checkInTime\":{\"timestampValue\":\"" +
-            isoNow + "\"},"
-                     "\"checkOutTime\":{\"nullValue\":null},"
-                     "\"durationMinutes\":{\"integerValue\":0},"
-                     "\"fee\":{\"doubleValue\":0.0},"
-                     "\"status\":{\"stringValue\":\"CHECK_IN\"},"
-                     "\"createdAt\":{\"timestampValue\":\"" +
-            isoNow + "\"},"
-                     "\"updatedAt\":{\"timestampValue\":\"" +
-            isoNow + "\"}"
-                     "}}";
-
-        int code = http.POST(body);
-        if (code > 0)
         {
-            http.getString();
-            if (code == 200)
-                Serial.println("[FIRESTORE] Đã tạo parking_histories (CHECK_IN) kèm vehicleType");
+            HTTPClient http;
+            http.setReuse(false);
+            http.setTimeout(4000);
+
+            String url = "https://firestore.googleapis.com/v1/projects/smarttrafficradar/databases/(default)/documents/parking_histories?key=" + String(FIREBASE_WEB_API_KEY);
+
+            secureClient.stop();
+            http.begin(secureClient, url);
+            http.addHeader("Content-Type", "application/json");
+
+            String isoNow = getIso8601Time(nowTs);
+            String body = "{\"fields\":{\"userId\":{\"stringValue\":\"" +
+                          userId + "\"},\"rfidUid\":{\"stringValue\":\"" +
+                          uid + "\"},\"vehicleType\":{\"stringValue\":\"" +
+                          vehicleType + "\"},\"checkInTime\":{\"timestampValue\":\"" +
+                          isoNow + "\"},\"checkOutTime\":{\"nullValue\":null},\"durationMinutes\":{\"integerValue\":0},\"fee\":{\"doubleValue\":0.0},\"status\":{\"stringValue\":\"CHECK_IN\"},\"createdAt\":{\"timestampValue\":\"" + isoNow + "\"},\"updatedAt\":{\"timestampValue\":\"" + isoNow + "\"}}}";
+
+            int code = http.POST(body);
+            if (code > 0)
+            {
+                http.getString();
+                if (code == 200)
+                    Serial.println("[FIRESTORE] Đã tạo parking_histories (CHECK_IN)");
+            }
+            http.end();
+            secureClient.stop();
         }
-        http.end();
     }
 
     void _updateCheckOutHistory(const String &historyId, time_t nowTs, int64_t durationMin, double fee)
@@ -442,57 +448,41 @@ private:
         if (historyId.isEmpty())
             return;
 
-        HTTPClient http;
-        http.setReuse(false);
-        http.setTimeout(4000);
-
-        String url = "https://firestore.googleapis.com/v1/projects/smarttrafficradar"
-                     "/databases/(default)/documents/parking_histories/" +
-                     historyId +
-                     "?updateMask.fieldPaths=checkOutTime"
-                     "&updateMask.fieldPaths=durationMinutes"
-                     "&updateMask.fieldPaths=fee"
-                     "&updateMask.fieldPaths=status"
-                     "&updateMask.fieldPaths=updatedAt"
-                     "&key=" +
-                     String(FIREBASE_WEB_API_KEY);
-
-        secureClient.stop();
-        http.begin(secureClient, url);
-        http.addHeader("Content-Type", "application/json");
-
-        String isoNow = getIso8601Time(nowTs);
-
-        String body =
-            "{\"fields\":{"
-            "\"checkOutTime\":{\"timestampValue\":\"" +
-            isoNow + "\"},"
-                     "\"durationMinutes\":{\"integerValue\":" +
-            String((long)durationMin) + "},"
-                                        "\"fee\":{\"doubleValue\":" +
-            String(fee) + "},"
-                          "\"status\":{\"stringValue\":\"CHECK_OUT\"},"
-                          "\"updatedAt\":{\"timestampValue\":\"" +
-            isoNow + "\"}"
-                     "}}";
-
-        int code = http.PATCH(body);
-        if (code > 0)
         {
-            http.getString();
-            if (code == 200)
+            HTTPClient http;
+            http.setReuse(false);
+            http.setTimeout(4000);
+
+            String url = "https://firestore.googleapis.com/v1/projects/smarttrafficradar/databases/(default)/documents/parking_histories/" + historyId + "?updateMask.fieldPaths=checkOutTime&updateMask.fieldPaths=durationMinutes&updateMask.fieldPaths=fee&updateMask.fieldPaths=status&updateMask.fieldPaths=updatedAt&key=" + String(FIREBASE_WEB_API_KEY);
+
+            secureClient.stop();
+            http.begin(secureClient, url);
+            http.addHeader("Content-Type", "application/json");
+
+            String isoNow = getIso8601Time(nowTs);
+            String body = "{\"fields\":{\"checkOutTime\":{\"timestampValue\":\"" +
+                          isoNow + "\"},\"durationMinutes\":{\"integerValue\":" +
+                          String((long)durationMin) + "},\"fee\":{\"doubleValue\":" +
+                          String(fee) + "},\"status\":{\"stringValue\":\"CHECK_OUT\"},\"updatedAt\":{\"timestampValue\":\"" +
+                          isoNow + "\"}}}";
+
+            int code = http.PATCH(body);
+            if (code > 0)
             {
-                Serial.printf("[FIRESTORE] Đã CHECK_OUT — duration=%lld phút, fee=%.0f\n", durationMin, fee);
+                http.getString();
+                if (code == 200)
+                    Serial.printf("[FIRESTORE] Đã CHECK_OUT — duration=%lld phút, fee=%.0f\n", durationMin, fee);
             }
+            http.end();
+            secureClient.stop();
         }
-        http.end();
     }
 
     double _calcFee(time_t checkInTs, time_t checkOutTs, int64_t durationMin, const String &vehicleType)
     {
-        // Miễn phí nếu thời gian đỗ dưới 30 phút
-        if (durationMin < 30)
-            return 0.0;
+        // // Miễn phí nếu thời gian đỗ dưới 30 phút
+        // if (durationMin < 30)
+        //     return 0.0;
 
         time_t inLocal = checkInTs + 7 * 3600;
         time_t outLocal = checkOutTs + 7 * 3600;
@@ -519,44 +509,41 @@ private:
         }
     }
 
-    void _notifyBackendEvent(const String &direction, const String &uid, const String &userId)
+    void _notifyBackendEvent(const String &direction, const String &uid, const String &userId, double fee)
     {
         Serial.printf("[HEAP] Free heap trước khi gọi API: %u bytes\n", ESP.getFreeHeap());
 
-        // CHỈ DÙNG WIFICLIENT THƯỜNG - RẤT NHẸ VÀ NHANH
-        WiFiClient client;
-        HTTPClient http;
-
-        http.setReuse(false);
-        http.setTimeout(10000);
-
-        String url = String(BACKEND_BASE_URL) + HARDWARE_EVENT_PATH;
-        http.begin(client, url);
-
-        http.addHeader("Content-Type", "application/json");
-        http.addHeader("Connection", "close");
-
-        String body =
-            "{\"type\":\"" + direction + "\","
-                                         "\"rfidUid\":\"" +
-            uid + "\","
-                  "\"userId\":\"" +
-            userId + "\","
-                     "\"deviceId\":\"" +
-            String(DEVICE_ID) + "\"}";
-
-        int code = http.POST(body);
-
-        if (code == 200 || code == 201)
         {
-            Serial.printf("[BACKEND] Đã báo sự kiện %s thành công!\n", direction.c_str());
-        }
-        else
-        {
-            Serial.printf("[BACKEND] Lỗi HTTP %d (%s)\n", code, http.errorToString(code).c_str());
-        }
+            WiFiClient client;
+            HTTPClient http;
+            http.setReuse(false);
+            http.setTimeout(10000);
 
-        http.end();
+            String url = String(BACKEND_BASE_URL) + HARDWARE_EVENT_PATH;
+            http.begin(client, url);
+            http.addHeader("Content-Type", "application/json");
+            http.addHeader("Connection", "close");
+
+            String body = "{\"type\":\"" +
+                          direction + "\",\"rfidUid\":\"" +
+                          uid + "\",\"userId\":\"" +
+                          userId + "\",\"deviceId\":\"" +
+                          String(DEVICE_ID) + "\",\"fee\":" +
+                          String(fee) + "}";
+
+            int code = http.POST(body);
+            if (code == 200 || code == 201)
+            {
+                Serial.printf("[BACKEND] Đã báo sự kiện %s thành công!\n", direction.c_str());
+            }
+            else
+            {
+                Serial.printf("[BACKEND] Lỗi HTTP %d (%s)\n", code, http.errorToString(code).c_str());
+            }
+            http.end();
+            client.stop();
+        }
+        Serial.printf("[HEAP] Free heap sau khi gọi API: %u bytes\n", ESP.getFreeHeap());
     }
 
 public:
@@ -619,7 +606,7 @@ public:
         }
     }
 
-    void sendTelemetry(bool irA_ok, bool irB_ok)
+    void sendTelemetry(bool irA_ok, bool irB_ok, bool isGateBusy = false)
     {
         if (!initialized || WiFi.status() != WL_CONNECTED)
             return;
@@ -641,17 +628,17 @@ public:
         float heapUsagePct = 100.0 - ((float)heapFree / heapTotal * 100.0);
         json.set("heap_usage_pct", heapUsagePct);
 
-        float cpuUsage = 15.0; 
-        if (gateState != IDLE)
+        float cpuUsage = 15.0;
+        if (isGateBusy)
         {
-            cpuUsage += 25.0; 
+            cpuUsage += 25.0;
         }
         cpuUsage += (random(-5, 5) / 1.0);
         json.set("cpu_usage_pct", cpuUsage);
 
         json.set("ir_in_status", irA_ok ? "OK" : "ERROR");
         json.set("ir_out_status", irB_ok ? "OK" : "ERROR");
-        json.set("rfid_status", "OK"); 
+        json.set("rfid_status", "OK");
 
         int rssi = WiFi.RSSI();
         json.set("wifi_signal_pct", constrain(map(rssi, -100, -50, 0, 100), 0, 100));
@@ -661,9 +648,18 @@ public:
         json.set("connection_status/firebase_status", "AUTHENTICATED");
         json.set("connection_status/ip_address", WiFi.localIP().toString().c_str());
 
-
         json.set("power_status", "Bình thường");
 
         Firebase.updateNode(fbData, path, json);
+    }
+    void sendRegisteredUID(String uid)
+    {
+        if (!initialized)
+            return;
+        Firebase.setString(fbData, "/parking_status/last_scanned_uid", uid);
+        Firebase.setString(fbData, "/parking_status/cloud_command/cmd", "IDLE");
+
+        updateDeviceMode(0);
+        Serial.printf("[FIRESTORE] Đã đẩy UID: %s lên /parking_status/last_scanned_uid\n", uid.c_str());
     }
 };

@@ -8,5 +8,5 @@ public class HardwareEventRequest {
     private String rfidUid;
     private String userId;
     private String deviceId;
-
+    private Long fee;
 }
