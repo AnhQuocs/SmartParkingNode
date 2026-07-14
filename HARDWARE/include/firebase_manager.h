@@ -78,7 +78,51 @@ public:
         if (millis() - lastPollMs < POLL_INTERVAL_MS)
             return;
         lastPollMs = millis();
+        if (_adminWait.active)
+        {
+            if (millis() > _adminWait.timeoutMs)
+            {
+                Serial.println("[ADMIN] Quá 10s không phản hồi. TỪ CHỐI.");
+                Firebase.deleteNode(fbData, "/pending_cards/" + _adminWait.uid); 
+                onCloudCommand("BUZZER_ALERT", _adminWait.uid, "");             
+                _adminWait.active = false;
+            }
+            else
+            {
+                if (Firebase.getString(fbData, "/pending_cards/" + _adminWait.uid + "/status"))
+                {
+                    String status = fbData.stringData();
 
+                    if (status == "APPROVED")
+                    {
+                        Serial.println("[ADMIN] ĐÃ PHÊ DUYỆT! Bắt đầu mở cổng...");
+                        Firebase.deleteNode(fbData, "/pending_cards/" + _adminWait.uid); // Xóa DB
+                        _adminWait.active = false;
+
+                        _pending.active = true;
+                        _pending.uid = _adminWait.uid;
+                        _pending.userId = _adminWait.userId;
+                        _pending.vehicleType = _adminWait.vehicleType;
+                        _pending.profileDocPath = _adminWait.profileDocPath;
+                        _pending.currentDebt = _adminWait.currentDebt;
+                        _pending.direction = _adminWait.direction;
+
+                        if (_pending.direction == "OUT")
+                        {
+                            _findOpenHistory(_pending.uid);
+                        }
+                        onCloudCommand("OPEN", _pending.uid, _pending.direction);
+                    }
+                    else if (status == "REJECTED")
+                    {
+                        Serial.println("[ADMIN] TỪ CHỐI! Đóng cổng.");
+                        Firebase.deleteNode(fbData, "/pending_cards/" + _adminWait.uid);
+                        onCloudCommand("BUZZER_ALERT", _adminWait.uid, "");            
+                        _adminWait.active = false;
+                    }
+                }
+            }
+        }
         if (Firebase.getString(fbData, "/parking_status/cloud_command/cmd"))
         {
             String cmd = fbData.stringData();
@@ -108,6 +152,17 @@ public:
         int64_t currentDebt = 0;
         String vehicleType = "";
     } _pending;
+    struct AdminWaitTx
+    {
+        bool active = false;
+        String uid = "";
+        String userId = "";
+        String profileDocPath = "";
+        String direction = "";
+        int64_t currentDebt = 0;
+        String vehicleType = "";
+        unsigned long timeoutMs = 0;
+    } _adminWait;
 
 public:
     void processSwipeOnHardware(String uid)
@@ -152,9 +207,16 @@ public:
             }
             else if (action == "DENY_DEBT")
             {
-                Serial.println("[LOGIC] Thẻ bị từ chối do nợ vượt hạn mức.");
+                Serial.println("[LOGIC] Thẻ nợ vượt hạn mức. Đợi Admin duyệt (10s)...");
                 logInvalidSwipe(uid, "DEBT_EXCEEDED");
-                onCloudCommand("BUZZER_ALERT", uid, "");
+                _adminWait.active = true;
+                _adminWait.uid = uid;
+                _adminWait.userId = doc["userId"].as<String>();
+                _adminWait.vehicleType = doc["vehicleType"].as<String>();
+                _adminWait.profileDocPath = doc["profileDocPath"].as<String>();
+                _adminWait.currentDebt = doc["currentDebt"].as<long>();
+                _adminWait.direction = doc["direction"].as<String>();
+                _adminWait.timeoutMs = millis() + 10000;
             }
             else if (action == "OPEN_IN" || action == "OPEN_OUT")
             {
@@ -240,6 +302,7 @@ public:
         json.set("reason", reason);
         json.set("fullName", fullName);
         json.set("identifier", identifier);
+        json.set("status", "PENDING");
         Firebase.setJSON(fbData, "/pending_cards/" + uid, json);
     }
 
@@ -647,8 +710,6 @@ public:
         json.set("connection_status/wifi_status", "CONNECTED");
         json.set("connection_status/firebase_status", "AUTHENTICATED");
         json.set("connection_status/ip_address", WiFi.localIP().toString().c_str());
-
-        json.set("power_status", "Bình thường");
 
         Firebase.updateNode(fbData, path, json);
     }

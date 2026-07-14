@@ -114,15 +114,18 @@ public class HardwareController {
             Boolean isParkingObj = profileDoc.getBoolean("isParking");
             boolean isParking = (isParkingObj != null) && isParkingObj;
 
+            String direction = isParking ? "OUT" : "IN";
+
             if (currentDebt > 100000) {
                 response.put("action", "DENY_DEBT");
             } else {
-                response.put("action", isParking ? "OPEN_OUT" : "OPEN_IN");
+                response.put("action", "OPEN_" + direction.toUpperCase());
             }
 
             response.put("userId", userId);
             response.put("vehicleType", vehicleType);
             response.put("currentDebt", currentDebt);
+            response.put("direction", direction);
 
             String profilePath = "projects/smarttrafficradar/databases/(default)/documents/profiles/" + profileDoc.getId();
             response.put("profileDocPath", profilePath);
