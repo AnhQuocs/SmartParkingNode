@@ -360,7 +360,7 @@
     <string name="debt_increased">Debt increased</string>
     <string name="no_outstanding_debt_history">No outstanding debts yet</string>
     <string name="payment_momo_button">Pay %1$d₫ via MoMo</string>
-    <string name="payment_initializing">Initializing payment...</string>
+    <string name="payment_initializing">Initializing payment…</string>
     <string name="retry">Retry</string>
     <string name="please_install_momo">Please install the MoMo app.</string>
     <string name="select_all">Select all</string>
@@ -435,5 +435,12 @@
     <string name="vehicle">Vehicle</string>
     <string name="registration_date">Registration Date</string>
     <string name="last_used">Last Used</string>
+    <string name="activate_card">Activate Card</string>
+    <string name="lock_card">Lock Card</string>
+    <string name="confirm_block_title">Confirm Block</string>
+    <string name="confirm_block_message">Are you sure you want to block this card? The user will not be able to use this card for parking.</string>
+    <string name="account_user_management">Account &amp; User Management</string>
 
+    <string name="unregistered">Unregistered</string>
+    <string name="registered">Registered</string>
 </resources>

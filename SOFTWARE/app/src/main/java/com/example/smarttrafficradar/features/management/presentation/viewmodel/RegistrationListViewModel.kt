@@ -108,4 +108,14 @@ class RegistrationListViewModel @Inject constructor(
             }
         }
     }
+
+    fun updateCardStatus(cardId: String, status: CardStatus) {
+        viewModelScope.launch {
+            try {
+                registrationUseCases.updateCardStatus(cardId, status)
+            } catch (e: Exception) {
+                _state.value = RegistrationListState.Error(e.message ?: "Failed to update card status")
+            }
+        }
+    }
 }

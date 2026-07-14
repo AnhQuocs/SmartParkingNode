@@ -435,5 +435,10 @@
     <string name="vehicle">Vehicle</string>
     <string name="registration_date">Registration Date</string>
     <string name="last_used">Last Used</string>
+    <string name="activate_card">Activate Card</string>
+    <string name="lock_card">Lock Card</string>
+    <string name="confirm_block_title">Confirm Block</string>
+    <string name="confirm_block_message">Are you sure you want to block this card? The user will not be able to use this card for parking.</string>
+    <string name="account_user_management">Account &amp; User Management</string>
 
 </resources>

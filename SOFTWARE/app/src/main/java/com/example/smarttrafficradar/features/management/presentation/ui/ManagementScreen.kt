@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.smarttrafficradar.features.management.presentation.ui.members.MembersActivity
 import com.example.smarttrafficradar.features.management.presentation.ui.registerd_card.RegisteredCardsActivity
 import com.example.smarttrafficradar.features.management.presentation.ui.registration_requests.RegistrationRequestsActivity
 import com.example.smarttrafficradar.features.management.presentation.viewmodel.OrganizationMemberListState
@@ -115,7 +116,8 @@ fun ManagementScreen(
                         context.startActivity(intent)
                     },
                     onUserListClick = {
-                        // Navigate to user list
+                        val intent = Intent(context, MembersActivity::class.java)
+                        context.startActivity(intent)
                     },
                     registrationRequests = registrationRequests,
                     registeredCards = registeredCards,

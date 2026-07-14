@@ -429,5 +429,12 @@
     <string name="vehicle">Phương tiện</string>
     <string name="registration_date">Ngày đăng ký</string>
     <string name="last_used">Lần dùng cuối</string>
+    <string name="activate_card">Kích hoạt thẻ</string>
+    <string name="lock_card">Khóa thẻ</string>
+    <string name="confirm_block_title">Xác nhận khóa</string>
+    <string name="confirm_block_message">Bạn có chắc chắn muốn khóa thẻ này không? Người dùng sẽ không thể sử dụng thẻ này để gửi xe.</string>
+    <string name="account_user_management">Quản lý tài khoản và người dùng</string>
 
+    <string name="unregistered">Chưa đăng ký</string>
+    <string name="registered">Đã đăng ký</string>
 </resources>

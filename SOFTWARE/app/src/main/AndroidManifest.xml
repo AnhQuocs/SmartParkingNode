@@ -21,6 +21,9 @@
         android:theme="@style/Theme.SMART_PARKING"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".features.management.presentation.ui.members.MembersActivity"
+            android:exported="false" />
+        <activity
             android:name=".features.management.presentation.ui.registerd_card.RegisteredCardsActivity"
             android:exported="false" />
         <activity
