@@ -55,6 +55,8 @@ fun PaymentScreen(
             val payUrl = (state as PaymentState.Success).payUrl
             val intent = Intent(context, PaymentWebViewActivity::class.java).apply {
                 putExtra("payUrl", payUrl)
+                putExtra("uid", uid)
+                putExtra("amount", amount)
             }
             context.startActivity(intent)
             paymentViewModel.resetState()

@@ -61,6 +61,20 @@
     <string name="kmh_unit">km/h</string>
 
     <!-- SYSTEM MONITOR -->
+    <string name="esp32_overview">Tổng quan ESP32</string>
+    <string name="avg_temp">Nhiệt độ TB</string>
+    <string name="avg_cpu">CPU TB</string>
+    <string name="power_source">Nguồn điện</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="heap_memory">Bộ nhớ Heap</string>
+    <string name="network_details">Chi tiết mạng</string>
+    <string name="sensors_peripheral">Cảm biến &amp; Ngoại vi</string>
+    <string name="ir_in">IR Vào</string>
+    <string name="ir_out">IR Ra</string>
+    <string name="rfid_sensor">Cảm biến RFID</string>
+    <string name="ip_addr">Địa chỉ IP</string>
+    <string name="wifi_signal">Tín hiệu Wi-Fi</string>
+
     <string name="device_status">Trạng thái thiết bị</string>
     <string name="hardware_monitoring">Giám sát phần cứng</string>
     <string name="connection_status">Trạng thái kết nối</string>
@@ -437,4 +451,26 @@
 
     <string name="unregistered">Chưa đăng ký</string>
     <string name="registered">Đã đăng ký</string>
+
+    <!-- ANALYTICS -->
+    <string name="revenue_statistics">Thống kê doanh thu</string>
+    <string name="export">Xuất</string>
+    <string name="total_revenue">Tổng doanh thu</string>
+    <string name="transactions">Giao dịch</string>
+    <string name="revenue_chart">Biểu đồ doanh thu</string>
+    <string name="transaction_details">Chi tiết giao dịch</string>
+    <string name="day">Ngày</string>
+    <string name="week">Tuần</string>
+    <string name="month">Tháng</string>
+    <string name="calendar">Lịch</string>
+    <string name="momo_transaction">Giao dịch MoMo</string>
+    <string name="select_date_range">Chọn khoảng thời gian</string>
+    <string name="select">Chọn</string>
+    <string name="report_filename_prefix">BaoCao_DoanhThu_</string>
+    <string name="csv_header">ID Giao Dịch,Ngày Giờ,Số Tiền,Phương Thức,Trạng Thái</string>
+    <string name="export_report_via">Xuất báo cáo qua…</string>
+
+    <!-- SYSTEM -->
+    <string name="device_monitoring">Theo dõi thiết bị</string>
+
 </resources>

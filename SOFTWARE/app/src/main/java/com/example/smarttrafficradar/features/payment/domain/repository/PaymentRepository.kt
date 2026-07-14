@@ -7,4 +7,6 @@ import kotlinx.coroutines.flow.Flow
 interface PaymentRepository {
     suspend fun createMomoUrl(uid: String, amount: Int): Result<PaymentInfo>
     fun getPaymentHistories(userId: String): Flow<List<PaymentHistory>>
+    fun getAllTransactions(): Flow<List<PaymentHistory>>
+    suspend fun saveTransaction(transaction: PaymentHistory): Result<Unit>
 }

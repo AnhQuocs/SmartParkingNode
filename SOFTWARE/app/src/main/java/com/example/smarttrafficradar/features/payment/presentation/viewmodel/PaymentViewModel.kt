@@ -8,6 +8,7 @@ import com.example.smarttrafficradar.features.payment.domain.usecase.CreateMomoU
 import com.example.smarttrafficradar.features.payment.domain.usecase.GetPaymentHistoriesUseCase
 import com.example.smarttrafficradar.features.payment.domain.usecase.GetPaymentSummaryUseCase
 import com.example.smarttrafficradar.features.payment.domain.usecase.PaymentSummary
+import com.example.smarttrafficradar.features.payment.domain.repository.PaymentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +26,7 @@ sealed class PaymentState {
     object Loading : PaymentState()
     data class Success(val payUrl: String) : PaymentState()
     data class Error(val message: String) : PaymentState()
+    object TransactionSaved : PaymentState()
 }
 
 @HiltViewModel
@@ -32,7 +34,8 @@ class PaymentViewModel @Inject constructor(
     private val createMomoUrlUseCase: CreateMomoUrlUseCase,
     private val getPaymentSummaryUseCase: GetPaymentSummaryUseCase,
     private val getPaymentHistoriesUseCase: GetPaymentHistoriesUseCase,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val paymentRepository: PaymentRepository
 ) : ViewModel() {
 
     private val _paymentState = MutableStateFlow<PaymentState>(PaymentState.Idle)
@@ -83,6 +86,20 @@ class PaymentViewModel @Inject constructor(
                         PaymentState.Error(exception.message ?: "Unknown Error")
                 }
             )
+        }
+    }
+
+    fun saveTransaction(userId: String, amount: Int) {
+        viewModelScope.launch {
+            val transaction = PaymentHistory(
+                userId = userId,
+                amount = amount,
+                method = "MOMO",
+                status = "SUCCESS",
+                createdAt = System.currentTimeMillis()
+            )
+            paymentRepository.saveTransaction(transaction)
+            _paymentState.value = PaymentState.TransactionSaved
         }
     }
 

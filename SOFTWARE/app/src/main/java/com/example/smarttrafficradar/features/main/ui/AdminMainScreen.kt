@@ -13,14 +13,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.smarttrafficradar.components.AdminBottomBar
 import com.example.smarttrafficradar.features.analytics.presentation.ui.AnalyticsScreen
-import com.example.smarttrafficradar.features.control.ControlScreen
+import com.example.smarttrafficradar.features.control.presentation.ui.ControlScreen
 import com.example.smarttrafficradar.features.dashboard.presentation.ui.admin.MonitorScreen
 import com.example.smarttrafficradar.features.management.presentation.ui.ManagementScreen
-import com.example.smarttrafficradar.features.management.presentation.viewmodel.RegistrationListViewModel
 
 @Composable
 fun AdminMainScreen(
@@ -59,9 +57,7 @@ fun AdminMainScreen(
 
                 2 -> {
                     ControlScreen(
-                        showNetworkSetup = {
 
-                        }
                     )
                 }
 

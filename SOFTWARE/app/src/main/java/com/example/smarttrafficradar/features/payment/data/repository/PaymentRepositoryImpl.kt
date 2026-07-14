@@ -7,11 +7,13 @@ import com.example.smarttrafficradar.features.payment.data.remote.dto.PaymentReq
 import com.example.smarttrafficradar.features.payment.domain.model.PaymentHistory
 import com.example.smarttrafficradar.features.payment.domain.model.PaymentInfo
 import com.example.smarttrafficradar.features.payment.domain.repository.PaymentRepository
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class PaymentRepositoryImpl @Inject constructor(
@@ -58,5 +60,39 @@ class PaymentRepositoryImpl @Inject constructor(
                 trySend(histories)
             }
         awaitClose { subscription.remove() }
+    }
+
+    override fun getAllTransactions(): Flow<List<PaymentHistory>> = callbackFlow {
+        val subscription = paymentCollection
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                val histories = snapshot?.documents?.mapNotNull { doc ->
+                    doc.toObject(PaymentHistoryDto::class.java)
+                        ?.copy(id = doc.id)
+                        ?.toDomain()
+                } ?: emptyList()
+                trySend(histories)
+            }
+        awaitClose { subscription.remove() }
+    }
+
+    override suspend fun saveTransaction(transaction: PaymentHistory): Result<Unit> {
+        return try {
+            val dto = PaymentHistoryDto(
+                userId = transaction.userId,
+                amount = transaction.amount,
+                method = transaction.method,
+                status = transaction.status,
+                createdAt = Timestamp(transaction.createdAt / 1000, ((transaction.createdAt % 1000) * 1000000).toInt())
+            )
+            paymentCollection.add(dto).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

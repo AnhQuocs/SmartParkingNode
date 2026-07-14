@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.sp
 /**
  * Các Extension Properties để gọi nhanh theo Size
  */
+val androidx.compose.material3.Typography.s10: TextStyle get() = labelLarge.copy(fontSize = 10.sp, lineHeight = 14.sp)
 val androidx.compose.material3.Typography.s12: TextStyle get() = labelLarge.copy(fontSize = 12.sp, lineHeight = 16.sp)
 val androidx.compose.material3.Typography.s13: TextStyle get() = bodySmall.copy(fontSize = 13.sp, lineHeight = 18.sp)
 val androidx.compose.material3.Typography.s14: TextStyle get() = bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp)

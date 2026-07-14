@@ -85,10 +85,12 @@ fun PayDebtState(
     }
 
     LaunchedEffect(paymentState) {
-        if (paymentState is PaymentState.Success) {
+        if (paymentState is PaymentState.Success && profileState is UserProfileState.Success) {
             val payUrl = (paymentState as PaymentState.Success).payUrl
             val intent = Intent(context, PaymentWebViewActivity::class.java).apply {
                 putExtra("payUrl", payUrl)
+                putExtra("uid", profileState.profile.uid)
+                putExtra("amount", profileState.profile.currentDebt)
             }
             context.startActivity(intent)
             paymentViewModel.resetState()

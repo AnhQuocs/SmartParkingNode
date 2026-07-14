@@ -64,6 +64,19 @@
     <string name="kmh_unit">km/h</string>
 
     <!-- SYSTEM MONITOR -->
+    <string name="esp32_overview">ESP32 Overview</string>
+    <string name="avg_temp">Avg Temp</string>
+    <string name="avg_cpu">Avg CPU</string>
+    <string name="power_source">Power Source</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="heap_memory">Heap Memory</string>
+    <string name="network_details">Network Details</string>
+    <string name="sensors_peripheral">Sensors &amp; Peripheral</string>
+    <string name="ir_in">IR Entry</string>
+    <string name="ir_out">IR Exit</string>
+    <string name="rfid_sensor">RFID Sensor</string>
+    <string name="ip_addr">IP Address</string>
+
     <string name="device_status">Device Status</string>
     <string name="hardware_monitoring">Hardware monitoring</string>
     <string name="connection_status">Connection Status</string>
@@ -440,5 +453,29 @@
     <string name="confirm_block_title">Confirm Block</string>
     <string name="confirm_block_message">Are you sure you want to block this card? The user will not be able to use this card for parking.</string>
     <string name="account_user_management">Account &amp; User Management</string>
+
+    <string name="unregistered">Unregistered</string>
+    <string name="registered">Registered</string>
+
+    <!-- ANALYTICS -->
+    <string name="revenue_statistics">Revenue Statistics</string>
+    <string name="export">Export</string>
+    <string name="total_revenue">Total Revenue</string>
+    <string name="transactions">Transactions</string>
+    <string name="revenue_chart">Revenue Chart</string>
+    <string name="transaction_details">Transaction Details</string>
+    <string name="day">Day</string>
+    <string name="week">Week</string>
+    <string name="month">Month</string>
+    <string name="calendar">Calendar</string>
+    <string name="momo_transaction">MoMo Transaction</string>
+    <string name="select_date_range">Select Date Range</string>
+    <string name="select">Select</string>
+    <string name="report_filename_prefix">Revenue_Report_</string>
+    <string name="csv_header">Transaction ID,Date Time,Amount,Method,Status</string>
+    <string name="export_report_via">Export report via…</string>
+
+    <!-- SYSTEM -->
+    <string name="device_monitoring">Device Monitoring</string>
 
 </resources>
