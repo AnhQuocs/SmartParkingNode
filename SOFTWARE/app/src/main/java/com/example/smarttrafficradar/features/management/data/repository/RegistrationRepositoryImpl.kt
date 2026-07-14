@@ -20,10 +20,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
 import javax.inject.Inject
 
 class RegistrationRepositoryImpl @Inject constructor(
@@ -61,14 +57,10 @@ class RegistrationRepositoryImpl @Inject constructor(
             val request = snapshot.getValue(RegistrationRequestDto::class.java)?.toDomain()
 
             request?.let {
-                // Định dạng thời gian theo chuẩn ISO 8601 (UTC)
-                val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()).apply {
-                    timeZone = TimeZone.getTimeZone("UTC")
-                }
-                val now = isoFormat.format(Date())
+                val now = System.currentTimeMillis()
 
                 val card = RegisteredCard(
-                    id = it.identifier, // Sử dụng identifier làm Document ID (ví dụ: ST0361)
+                    id = it.identifier,
                     userId = it.uid,
                     rfidUid = it.rfidUid,
                     ownerName = it.fullName,
@@ -89,7 +81,15 @@ class RegistrationRepositoryImpl @Inject constructor(
 
     override fun getRegisteredCards(): Flow<List<RegisteredCard>> {
         return cardsCollection.snapshots().map { snapshot ->
-            snapshot.toObjects(RegisteredCardDto::class.java).map { it.toDomain() }
+            snapshot.documents.mapNotNull { doc ->
+                try {
+                    val dto = doc.toObject(RegisteredCardDto::class.java)
+                    dto?.copy(id = doc.id)?.toDomain()
+                } catch (e: Exception) {
+                    android.util.Log.e("FirestoreError", "Document [${doc.id}] bị sai định dạng: ${e.message}")
+                    null
+                }
+            }
         }
     }
 

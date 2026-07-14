@@ -97,6 +97,7 @@ fun DebtHistorySection(
         } else {
             debtHistories.take(4).forEach { history ->
                 DebtHistoryItem(history = history, onClick = onDetail)
+                Spacer(modifier = Modifier.height(AppSpacing.M))
             }
         }
     }

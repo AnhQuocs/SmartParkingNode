@@ -2,7 +2,18 @@ package com.example.smarttrafficradar.features.management.presentation.ui.regist
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -10,8 +21,19 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,17 +52,28 @@ import com.example.smarttrafficradar.features.user_profile.domain.model.VehicleT
 import com.example.smarttrafficradar.ui.dimens.AppShape
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
-import com.example.smarttrafficradar.ui.theme.*
+import com.example.smarttrafficradar.ui.theme.ActionDanger
+import com.example.smarttrafficradar.ui.theme.Background
+import com.example.smarttrafficradar.ui.theme.InputBackground
+import com.example.smarttrafficradar.ui.theme.SlateGray
+import com.example.smarttrafficradar.ui.theme.SmartBlue
+import com.example.smarttrafficradar.ui.theme.SuccessBackground
+import com.example.smarttrafficradar.ui.theme.SuccessGreen
+import com.example.smarttrafficradar.ui.theme.TextPrimaryDark
+import com.example.smarttrafficradar.ui.theme.TextSecondary
+import com.example.smarttrafficradar.ui.theme.TextTertiary
 import com.example.smarttrafficradar.utils.s12
 import com.example.smarttrafficradar.utils.s14
 import com.example.smarttrafficradar.utils.s16
 import com.example.smarttrafficradar.utils.semiBold
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun RegisteredCardsScreen(
     onBackClick: () -> Unit,
+    onClick: (RegisteredCard) -> Unit,
     registrationListViewModel: RegistrationListViewModel = hiltViewModel()
 ) {
     val state by registrationListViewModel.state.collectAsState()
@@ -87,6 +120,7 @@ fun RegisteredCardsScreen(
                             color = SmartBlue
                         )
                     }
+
                     is RegistrationListState.Error -> {
                         Text(
                             text = currentState.message,
@@ -95,6 +129,7 @@ fun RegisteredCardsScreen(
                             style = MaterialTheme.typography.s14
                         )
                     }
+
                     is RegistrationListState.Success -> {
                         if (currentState.filteredCards.isEmpty()) {
                             Text(
@@ -109,7 +144,10 @@ fun RegisteredCardsScreen(
                                 contentPadding = PaddingValues(bottom = Dimen.PaddingL)
                             ) {
                                 items(currentState.filteredCards) { card ->
-                                    RegisteredCardItem(card = card)
+                                    RegisteredCardItem(
+                                        card = card,
+                                        onClick = { onClick(card) }
+                                    )
                                 }
                             }
                         }
@@ -184,7 +222,10 @@ private fun FilterCategories(
                 shadowElevation = if (isSelected) 0.dp else 1.dp
             ) {
                 Box(
-                    modifier = Modifier.padding(horizontal = Dimen.PaddingML, vertical = Dimen.PaddingXSPlus),
+                    modifier = Modifier.padding(
+                        horizontal = Dimen.PaddingML,
+                        vertical = Dimen.PaddingXSPlus
+                    ),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -200,16 +241,24 @@ private fun FilterCategories(
 }
 
 @Composable
-private fun RegisteredCardItem(card: RegisteredCard) {
+private fun RegisteredCardItem(card: RegisteredCard, onClick: () -> Unit) {
+    val vehicleIcon = when (card.vehicleType) {
+        VehicleType.CAR -> R.drawable.ic_car
+        VehicleType.MOTORBIKE -> R.drawable.ic_motorcycle
+    }
+
     val vehicleTypeStr = when (card.vehicleType) {
         VehicleType.MOTORBIKE -> stringResource(id = R.string.motorcycle)
         VehicleType.CAR -> stringResource(id = R.string.car)
     }
 
-    val registrationDate = formatIsoDate(card.registeredAt)
+    val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
+    val registrationDate = if (card.registeredAt != 0L) dateFormatter.format(Date(card.registeredAt)) else "--/--/----"
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = RoundedCornerShape(AppShape.ShapeXL2),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -228,7 +277,10 @@ private fun RegisteredCardItem(card: RegisteredCard) {
                     ) {
                         Text(
                             text = card.rfidUid,
-                            modifier = Modifier.padding(horizontal = AppSpacing.S, vertical = AppSpacing.XXS),
+                            modifier = Modifier.padding(
+                                horizontal = AppSpacing.S,
+                                vertical = AppSpacing.XXS
+                            ),
                             style = MaterialTheme.typography.s12.semiBold(),
                             color = TextPrimaryDark
                         )
@@ -237,8 +289,17 @@ private fun RegisteredCardItem(card: RegisteredCard) {
                     Spacer(modifier = Modifier.width(AppSpacing.S))
 
                     val (bgColor, textColor, labelId) = when (card.status) {
-                        CardStatus.ACTIVE -> Triple(SuccessBackground, SuccessGreen, R.string.filter_active)
-                        CardStatus.BLOCKED -> Triple(ActionDanger.copy(alpha = 0.1f), ActionDanger, R.string.filter_blocked)
+                        CardStatus.ACTIVE -> Triple(
+                            SuccessBackground,
+                            SuccessGreen,
+                            R.string.filter_active
+                        )
+
+                        CardStatus.BLOCKED -> Triple(
+                            ActionDanger.copy(alpha = 0.1f),
+                            ActionDanger,
+                            R.string.filter_blocked
+                        )
                     }
 
                     Surface(
@@ -247,7 +308,10 @@ private fun RegisteredCardItem(card: RegisteredCard) {
                     ) {
                         Text(
                             text = stringResource(id = labelId),
-                            modifier = Modifier.padding(horizontal = AppSpacing.S, vertical = AppSpacing.XXS),
+                            modifier = Modifier.padding(
+                                horizontal = AppSpacing.S,
+                                vertical = AppSpacing.XXS
+                            ),
                             style = MaterialTheme.typography.s12,
                             color = textColor
                         )
@@ -262,11 +326,24 @@ private fun RegisteredCardItem(card: RegisteredCard) {
                     color = TextPrimaryDark
                 )
 
-                Text(
-                    text = stringResource(id = R.string.license_plate_format, card.identifier, vehicleTypeStr),
-                    style = MaterialTheme.typography.s14,
-                    color = SlateGray
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(id = vehicleIcon),
+                        contentDescription = null,
+                        tint = SlateGray,
+                        modifier = Modifier.size(Dimen.SizeS)
+                    )
+
+                    Spacer(modifier = Modifier.width(AppSpacing.S))
+
+                    Text(
+                        text = vehicleTypeStr,
+                        style = MaterialTheme.typography.s14,
+                        color = SlateGray
+                    )
+                }
 
                 Text(
                     text = stringResource(id = R.string.registered_date_label, registrationDate),
@@ -279,20 +356,8 @@ private fun RegisteredCardItem(card: RegisteredCard) {
                 painter = painterResource(id = R.drawable.ic_arrow_right),
                 contentDescription = null,
                 tint = TextTertiary,
-                modifier = Modifier.size(Dimen.SizeS)
+                modifier = Modifier.size(Dimen.SizeSM)
             )
         }
-    }
-}
-
-private fun formatIsoDate(isoString: String): String {
-    return try {
-        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
-        inputFormat.timeZone = TimeZone.getTimeZone("UTC")
-        val date = inputFormat.parse(isoString)
-        val outputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        outputFormat.format(date!!)
-    } catch (e: Exception) {
-        isoString.split("T").firstOrNull() ?: "--/--/----"
     }
 }

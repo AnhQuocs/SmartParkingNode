@@ -421,11 +421,19 @@
     <string name="reject_request_message">Are you sure you want to reject this registration request? This will remove the request from the system.</string>
 
     <!-- REGISTERED CARDS -->
-    <string name="search_registered_cards_hint">Search by UID or owner...</string>
+    <string name="search_registered_cards_hint">Search by UID or owner…</string>
     <string name="filter_all">All</string>
     <string name="filter_active">Active</string>
     <string name="filter_blocked">Blocked</string>
     <string name="registered_date_label">Registered: %1$s</string>
-    <string name="license_plate_format">BKS %1$s - %2$s</string>
+    <string name="card_status">Card status</string>
+    <string name="card_detail">Card detail</string>
+    <string name="card_info">Card Information</string>
+    <string name="rfid_uid">RFID UID</string>
+    <string name="card_owner">Owner</string>
+    <string name="card_type">Type</string>
+    <string name="vehicle">Vehicle</string>
+    <string name="registration_date">Registration Date</string>
+    <string name="last_used">Last Used</string>
 
 </resources>

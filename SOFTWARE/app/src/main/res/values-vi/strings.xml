@@ -415,11 +415,19 @@
     <string name="reject_request_message">Bạn có chắc chắn muốn từ chối yêu cầu đăng ký này không? Hành động này sẽ xóa yêu cầu khỏi hệ thống.</string>
 
     <!-- REGISTERED CARDS -->
-    <string name="search_registered_cards_hint">Tìm theo UID hoặc chủ sở hữu...</string>
+    <string name="search_registered_cards_hint">Tìm theo UID hoặc chủ sở hữu…</string>
     <string name="filter_all">Tất cả</string>
     <string name="filter_active">Hoạt động</string>
     <string name="filter_blocked">Khóa</string>
     <string name="registered_date_label">Đăng ký: %1$s</string>
-    <string name="license_plate_format">BKS %1$s - %2$s</string>
+    <string name="card_status">Trạng thái thẻ</string>
+    <string name="card_detail">Chi tiết thẻ</string>
+    <string name="card_info">Thông tin thẻ</string>
+    <string name="rfid_uid">RFID UID</string>
+    <string name="card_owner">Chủ sở hữu</string>
+    <string name="card_type">Loại</string>
+    <string name="vehicle">Phương tiện</string>
+    <string name="registration_date">Ngày đăng ký</string>
+    <string name="last_used">Lần dùng cuối</string>
 
 </resources>

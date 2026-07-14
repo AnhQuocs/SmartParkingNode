@@ -18,6 +18,6 @@ data class RegisteredCard(
     val cardType: MemberType = MemberType.STUDENT,
     val vehicleType: VehicleType = VehicleType.MOTORBIKE,
     val status: CardStatus = CardStatus.ACTIVE,
-    val registeredAt: String = "",
-    val lastUsedAt: String = ""
+    val registeredAt: Long = 0L,
+    val lastUsedAt: Long = 0L
 )
