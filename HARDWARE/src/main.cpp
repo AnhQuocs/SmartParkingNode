@@ -156,25 +156,6 @@ void onCloudCommand(String cmd, String uid, String action)
     }
 }
 
-// ── Đổi WiFi từ xa ───────────────────────────────────────────
-void handleRemoteWiFiChange()
-{
-    String newSSID, newPass;
-    if (!firebase.checkRemoteWiFiChange(newSSID, newPass))
-        return;
-
-    Serial.printf("[WIFI] Remote switch -> %s\n", newSSID.c_str());
-    WiFi.disconnect();
-    delay(1000);
-    connectWiFi(newSSID, newPass);
-
-    bool ok = (WiFi.status() == WL_CONNECTED);
-    firebase.reportWiFiSwitchResult(ok);
-    if (!ok)
-        connectWiFi(WIFI_SSID, WIFI_PASSWORD);
-}
-
-// ═══════════════════════════════════════════════════════════════
 void setup()
 {
     Serial.begin(115200);
@@ -189,7 +170,6 @@ void setup()
     if (WiFi.status() == WL_CONNECTED)
     {
         firebase.begin();
-        firebase.scanAndUploadNetworks();
     }
 
     Serial.println("[BOOT] Setup complete. Quẹt thẻ để test.");
@@ -258,7 +238,6 @@ void loop()
     {
         lastTelemetryMs = millis();
         firebase.sendTelemetry(true, true, gateState != IDLE); // IR đang hoạt động bình thường
-        handleRemoteWiFiChange();
     }
 
     if (WiFi.status() != WL_CONNECTED)
@@ -271,7 +250,6 @@ void loop()
             if (WiFi.status() == WL_CONNECTED)
             {
                 firebase.begin();
-                firebase.scanAndUploadNetworks();
             }
         }
     }

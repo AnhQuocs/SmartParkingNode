@@ -15,7 +15,6 @@ class FirebaseManager
 {
 private:
     FirebaseData fbData;
-    FirebaseData fbNetData;
     FirebaseAuth fbAuth;
     FirebaseConfig fbConfig;
     bool initialized = false;
@@ -615,58 +614,6 @@ public:
         if (!initialized)
             return;
         Firebase.setString(fbData, "/parking_status/gate_control", status);
-    }
-
-    bool checkRemoteWiFiChange(String &newSSID, String &newPass)
-    {
-        if (!initialized || WiFi.status() != WL_CONNECTED)
-            return false;
-        String path = "/network_setup/" + String(DEVICE_ID);
-
-        if (Firebase.getString(fbNetData, path + "/status"))
-        {
-            if (fbNetData.stringData() == "SWITCHING")
-            {
-                if (Firebase.getString(fbNetData, path + "/ssid"))
-                    newSSID = fbNetData.stringData();
-                if (Firebase.getString(fbNetData, path + "/password"))
-                    newPass = fbNetData.stringData();
-                return true;
-            }
-        }
-        return false;
-    }
-
-    void reportWiFiSwitchResult(bool ok)
-    {
-        if (!initialized)
-            return;
-        String path = "/network_setup/" + String(DEVICE_ID);
-        Firebase.setString(fbNetData, path + "/status", ok ? "SUCCESS" : "FAILED");
-        Firebase.setString(fbNetData, path + "/message",
-                           ok ? "Connected IP: " + WiFi.localIP().toString() : "Connection Timeout");
-    }
-
-    void scanAndUploadNetworks()
-    {
-        if (!initialized)
-            return;
-        int n = WiFi.scanNetworks();
-        String path = "/system_monitor/" + String(DEVICE_ID) + "/available_networks";
-        Firebase.deleteNode(fbData, path);
-
-        for (int i = 0; i < n; ++i)
-        {
-            FirebaseJson net;
-            int rssi = WiFi.RSSI(i);
-            net.set("ssid", WiFi.SSID(i).c_str());
-            net.set("rssi", rssi);
-            net.set("signal_pct", constrain(map(rssi, -100, -50, 0, 100), 0, 100));
-            net.set("strength", rssi >= -50 ? "Excellent" : rssi >= -65 ? "Good"
-                                                        : rssi >= -75   ? "Fair"
-                                                                        : "Weak");
-            Firebase.setJSON(fbData, path + "/net_" + String(i), net);
-        }
     }
 
     void sendTelemetry(bool irA_ok, bool irB_ok, bool isGateBusy = false)
