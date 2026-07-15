@@ -58,7 +58,7 @@ public class NotificationScheduler {
 
     private long calculateFee(long checkInMs, long nowMs, String vehicleType) {
         long durationMin = (long) Math.ceil((double) (nowMs - checkInMs) / 60000.0);
-        if (durationMin < 30) return 0;
+//        if (durationMin < 30) return 0;
 //        long durationSec = (nowMs - checkInMs) / 1000;
 //        if (durationSec <= 10) return 0;
 

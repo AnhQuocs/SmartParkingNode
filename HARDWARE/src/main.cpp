@@ -1,13 +1,3 @@
-// ============================================================
-//  main.cpp — Smart Parking Node
-//
-//  Luồng:
-//    Quẹt thẻ → check Firestore → biết hướng IN/OUT
-//      → mở Barie → startWatch(hướng tương ứng)
-//      → IN  : chỉ chờ IR_B chắn rồi thả ra
-//      → OUT : chỉ chờ IR_A chắn rồi thả ra
-//    → Sau khi xác nhận, đóng Barie sau GATE_CLOSE_DELAY_MS
-// ============================================================
 
 #include <Arduino.h>
 #include <WiFi.h>
@@ -111,7 +101,7 @@ void closeGateNow()
     Serial.println("[GATE] Đóng Barie — IDLE, sẵn sàng thẻ tiếp theo");
 
     // Firebase SAU
-    firebase.setGateStatus("auto");
+    firebase.setGateStatus("close");
 
     pendingUID = "";
     pendingAction = "";

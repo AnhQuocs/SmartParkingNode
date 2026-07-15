@@ -1,17 +1,5 @@
 #pragma once
 
-// ============================================================
-//  speed_sensor.h — PHIÊN BẢN ĐƠN GIẢN
-//
-//  Yêu cầu: Xe đi VÀO → chỉ cần chờ IR_B (cảm biến phía trong)
-//                        chắn rồi thả ra → xe đã qua.
-//           Xe đi RA  → chỉ cần chờ IR_A (cảm biến phía ngoài)
-//                        chắn rồi thả ra → xe đã qua.
-//  Không theo dõi chuỗi 2 cảm biến, không có state phức tạp.
-//  Chỉ 1 cảm biến "đích" cần theo dõi tùy theo hướng đã biết
-//  trước (do hệ thống xác định IN/OUT lúc quẹt thẻ).
-// ============================================================
-
 #include <Arduino.h>
 #include "config.h"
 

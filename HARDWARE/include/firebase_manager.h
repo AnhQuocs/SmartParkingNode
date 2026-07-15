@@ -169,7 +169,7 @@ public:
         if (!initialized || WiFi.status() != WL_CONNECTED)
             return;
 
-        Serial.printf("[LOGIC] Đang gửi UID %s về Spring Boot Backend để xử lý...\n", uid.c_str());
+        Serial.printf("[LOGIC] Đang gửi UID %s về Backend để xử lý...\n", uid.c_str());
 
         WiFiClient client;
         HTTPClient http;
@@ -195,7 +195,6 @@ public:
             if (action == "DENY_UNKNOWN")
             {
                 Serial.println("[LOGIC] Thẻ chưa đăng ký.");
-                logInvalidSwipe(uid, "UNKNOWN");
                 onCloudCommand("CARD_UNKNOWN", uid, "");
             }
             else if (action == "DENY_BLOCKED")

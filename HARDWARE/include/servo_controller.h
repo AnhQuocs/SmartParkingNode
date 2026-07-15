@@ -55,6 +55,17 @@ public:
         if (!_audioReady)
             return;
 
+        static unsigned long lastPlayMs = 0;
+        static int lastTrack = -1;
+
+        if (track == lastTrack && (millis() - lastPlayMs < 2500))
+        {
+            return;
+        }
+
+        lastPlayMs = millis();
+        lastTrack = track;
+
         _dfPlayer.play(track);
         Serial.printf("[AUDIO] Playing track %d\n", track);
     }
