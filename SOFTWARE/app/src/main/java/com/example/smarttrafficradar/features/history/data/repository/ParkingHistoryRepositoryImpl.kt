@@ -1,5 +1,6 @@
 package com.example.smarttrafficradar.features.history.data.repository
 
+import android.util.Log
 import com.example.smarttrafficradar.features.history.data.dto.ParkingHistoryDto
 import com.example.smarttrafficradar.features.history.data.mapper.toDomain
 import com.example.smarttrafficradar.features.history.domain.model.ParkingHistory
@@ -28,7 +29,6 @@ class ParkingHistoryRepositoryImpl @Inject constructor(
     private val historyFlowCache = ConcurrentHashMap<String, Flow<List<ParkingHistory>>>()
 
     override fun observeHistoriesByUserId(userId: String): Flow<List<ParkingHistory>> {
-        // Trả về Flow rỗng ngay lập tức nếu userId không hợp lệ
         if (userId.isBlank()) {
             return kotlinx.coroutines.flow.flowOf(emptyList())
         }
@@ -40,7 +40,9 @@ class ParkingHistoryRepositoryImpl @Inject constructor(
                     .orderBy("createdAt", Query.Direction.DESCENDING)
                     .addSnapshotListener { snapshot, error ->
                         if (error != null) {
-                            close(error) // Báo lỗi cho Flow để phía ViewModel có thể catch được
+                            Log.e("ParkingHistoryRepo", "Firestore error: ${error.message}")
+                            // Trả về list trống thay vì close(error) để tránh crash khi logout
+                            trySend(emptyList())
                             return@addSnapshotListener
                         }
 
@@ -56,8 +58,8 @@ class ParkingHistoryRepositoryImpl @Inject constructor(
                 awaitClose { subscription.remove() }
             }.shareIn(
                 scope = repositoryScope,
-                started = SharingStarted.WhileSubscribed(5000L), // Giữ kết nối thêm 5s sau khi không còn ai observe
-                replay = 1 // Cache lại list history mới nhất trên RAM
+                started = SharingStarted.WhileSubscribed(5000L),
+                replay = 1
             )
         }
     }

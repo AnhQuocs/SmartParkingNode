@@ -24,11 +24,13 @@ import javax.inject.Inject
 
 class RegistrationRepositoryImpl @Inject constructor(
     db: FirebaseDatabase,
-    firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore
 ) : RegistrationRepository {
 
     private val registrationRef = db.getReference("registration_requests")
     private val cardsCollection = firestore.collection("registered_cards")
+
+    private val profilesCollection = firestore.collection("profiles")
 
     override suspend fun sendRegistrationRequest(request: RegistrationRequest) {
         registrationRef.child(request.uid).setValue(request.toDto()).await()
@@ -54,13 +56,15 @@ class RegistrationRepositoryImpl @Inject constructor(
     override suspend fun handleRegistrationDecision(uid: String, status: RegistrationStatus) {
         if (status == RegistrationStatus.APPROVED) {
             val snapshot = registrationRef.child(uid).get().await()
-            val request = snapshot.getValue(RegistrationRequestDto::class.java)?.toDomain()
+            val requestDto = snapshot.getValue(RegistrationRequestDto::class.java)
+            val request = requestDto?.toDomain()
 
             request?.let {
                 val now = System.currentTimeMillis()
 
+                // 1. Tạo thông tin thẻ đã đăng ký
                 val card = RegisteredCard(
-                    id = it.identifier,
+                    id = it.identifier, // Thường dùng Student/Employee ID làm document ID
                     userId = it.uid,
                     rfidUid = it.rfidUid,
                     ownerName = it.fullName,
@@ -72,9 +76,21 @@ class RegistrationRepositoryImpl @Inject constructor(
                     registeredAt = now,
                     lastUsedAt = now
                 )
+
+                // 2. Lưu vào collection registered_cards
                 cardsCollection.document(card.id).set(card.toDto()).await()
+
+                // 3. Cập nhật thông tin User Profile để kích hoạt tài khoản trên App người dùng
+                profilesCollection.document(it.uid).update(
+                    mapOf(
+                        "isActive" to true,
+                        "rfidUid" to it.rfidUid,
+                        "vehicleType" to it.vehicleType.name
+                    )
+                ).await()
             }
         }
+
         // Sau khi duyệt hoặc từ chối, xóa yêu cầu khỏi Realtime Database
         registrationRef.child(uid).removeValue().await()
     }
@@ -86,7 +102,6 @@ class RegistrationRepositoryImpl @Inject constructor(
                     val dto = doc.toObject(RegisteredCardDto::class.java)
                     dto?.copy(id = doc.id)?.toDomain()
                 } catch (e: Exception) {
-                    android.util.Log.e("FirestoreError", "Document [${doc.id}] bị sai định dạng: ${e.message}")
                     null
                 }
             }

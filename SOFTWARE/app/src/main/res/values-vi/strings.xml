@@ -470,7 +470,32 @@
     <string name="csv_header">ID Giao Dịch,Ngày Giờ,Số Tiền,Phương Thức,Trạng Thái</string>
     <string name="export_report_via">Xuất báo cáo qua…</string>
 
+    <!-- REGISTER CARD -->
+    <string name="register_rfid_card">Đăng ký thẻ RFID</string>
+    <string name="assign_card_to_user">Gán thẻ cho người dùng</string>
+
     <!-- SYSTEM -->
     <string name="device_monitoring">Theo dõi thiết bị</string>
+
+    <!-- NEW STRINGS -->
+    <string name="requester_information">Thông tin người yêu cầu</string>
+    <string name="registration_request_details">Chi tiết yêu cầu đăng ký</string>
+    <string name="request_time">Thời gian yêu cầu</string>
+    <string name="not_registered_yet">Chưa đăng ký</string>
+
+    <!-- SCAN CARD FEATURES -->
+    <string name="scan_card">Quẹt thẻ</string>
+    <string name="scan_card_instruction">Vui lòng quẹt thẻ RFID lên đầu đọc</string>
+    <string name="parking_fee_info">Thông tin phí gửi xe</string>
+    <string name="under_30_mins">Dưới 30 phút</string>
+    <string name="from_30_mins">Từ 30 phút trở đi</string>
+    <string name="overnight_fee">Gửi xe qua đêm</string>
+    <string name="free">Miễn phí</string>
+    <string name="price_per_turn">%1$s/lượt</string>
+    <string name="price_per_night">%1$s/đêm</string>
+    <string name="scanned_uid">UID đã quét: %1$s</string>
+    <string name="confirm_registration">Xác nhận đăng ký</string>
+    <string name="scanning_mode_active">Chế độ quẹt đang bật (%1$ds)</string>
+    <string name="registration_complete">Đăng ký thẻ thành công</string>
 
 </resources>

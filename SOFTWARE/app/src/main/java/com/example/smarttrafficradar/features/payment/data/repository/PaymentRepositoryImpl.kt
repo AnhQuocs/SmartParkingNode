@@ -49,7 +49,8 @@ class PaymentRepositoryImpl @Inject constructor(
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    // Thay vì close(error) gây crash, ta chỉ cần log và emit danh sách trống
+                    trySend(emptyList())
                     return@addSnapshotListener
                 }
                 val histories = snapshot?.documents?.mapNotNull { doc ->
@@ -67,7 +68,7 @@ class PaymentRepositoryImpl @Inject constructor(
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    trySend(emptyList())
                     return@addSnapshotListener
                 }
                 val histories = snapshot?.documents?.mapNotNull { doc ->

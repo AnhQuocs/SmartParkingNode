@@ -1,5 +1,6 @@
 package com.example.smarttrafficradar.features.control.data.repository
 
+import android.util.Log
 import com.example.smarttrafficradar.features.control.data.dto.SystemMonitorDto
 import com.example.smarttrafficradar.features.control.data.mapper.toDomain
 import com.example.smarttrafficradar.features.control.domain.model.SystemMonitor
@@ -29,7 +30,8 @@ class SystemMonitorRepositoryImpl @Inject constructor(
             }
 
             override fun onCancelled(error: DatabaseError) {
-                close(error.toException())
+                // Log lỗi thay vì close(error) gây crash khi logout
+                Log.e("SystemMonitorRepo", "Database error: ${error.message}")
             }
         }
 

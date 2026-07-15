@@ -16,6 +16,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -30,26 +31,40 @@ class AuthRepositoryImpl @Inject constructor(
     private val userCollection = firestore.collection("users")
 
     override fun getCurrentUser(): Flow<AuthUser?> = callbackFlow {
-        val uid = auth.currentUser?.uid
-        if (uid == null) {
-            trySend(null)
-            close()
-            return@callbackFlow
+        var firestoreListener: ListenerRegistration? = null
+
+        // Lắng nghe sự thay đổi trạng thái Auth (Login/Logout)
+        val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            val uid = firebaseAuth.currentUser?.uid
+            
+            // Luôn hủy listener Firestore cũ khi trạng thái Auth thay đổi
+            firestoreListener?.remove()
+            firestoreListener = null
+            
+            if (uid == null) {
+                trySend(null)
+            } else {
+                firestoreListener = userCollection
+                    .document(uid)
+                    .addSnapshotListener { snapshot, error ->
+                        if (error != null) {
+                            // Nếu có lỗi (ví dụ: mất quyền truy cập khi logout), trả về null
+                            trySend(null)
+                            return@addSnapshotListener
+                        }
+
+                        val user = snapshot?.toObject(AuthUserDto::class.java)?.toDomain()
+                        trySend(user)
+                    }
+            }
         }
 
-        val subscription = userCollection
-            .document(uid)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    trySend(null)
-                    return@addSnapshotListener
-                }
+        auth.addAuthStateListener(authStateListener)
 
-                val user = snapshot?.toObject(AuthUserDto::class.java)?.toDomain()
-                trySend(user)
-            }
-
-        awaitClose { subscription.remove() }
+        awaitClose {
+            auth.removeAuthStateListener(authStateListener)
+            firestoreListener?.remove()
+        }
     }
 
     override fun getUserById(userId: String): Flow<AuthUser?> = callbackFlow {
@@ -93,7 +108,18 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun signOut() {
-        auth.signOut()
+        try {
+            val uid = auth.currentUser?.uid
+            if (uid != null) {
+                firestore.collection("profiles").document(uid)
+                    .update("fcmToken", null)
+                    .await()
+            }
+        } catch (e: Exception) {
+            // Log error if needed, but continue with sign out
+        } finally {
+            auth.signOut()
+        }
     }
 
     // USER

@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.smarttrafficradar.R
 import com.example.smarttrafficradar.features.management.domain.model.RegistrationRequest
 import com.example.smarttrafficradar.features.management.presentation.viewmodel.RegistrationListState
@@ -66,6 +67,7 @@ import java.util.Locale
 @Composable
 fun RegistrationRequestsScreen(
     onBack: () -> Unit,
+    navController: NavController,
     registrationListViewModel: RegistrationListViewModel = hiltViewModel()
 ) {
     val registrationListState by registrationListViewModel.state.collectAsState()
@@ -102,7 +104,9 @@ fun RegistrationRequestsScreen(
                             RegistrationRequestItem(
                                 request = request,
                                 onRegister = {
-                                    // Handle registration approval
+                                    navController.navigate(
+                                        "register_card/${request.uid}/${request.vehicleType.name}/${request.timestamp}"
+                                    )
                                 },
                                 onReject = {
                                     requestToReject = request

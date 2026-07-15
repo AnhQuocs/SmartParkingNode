@@ -476,7 +476,32 @@
     <string name="csv_header">Transaction ID,Date Time,Amount,Method,Status</string>
     <string name="export_report_via">Export report via…</string>
 
+    <!-- REGISTER CARD -->
+    <string name="register_rfid_card">Register RFID Card</string>
+    <string name="assign_card_to_user">Assign Card to User</string>
+
     <!-- SYSTEM -->
     <string name="device_monitoring">Device Monitoring</string>
+
+    <!-- NEW STRINGS -->
+    <string name="requester_information">Requester Information</string>
+    <string name="registration_request_details">Registration Request Details</string>
+    <string name="request_time">Request Time</string>
+    <string name="not_registered_yet">Not Registered Yet</string>
+
+    <!-- SCAN CARD FEATURES -->
+    <string name="scan_card">Scan Card</string>
+    <string name="scan_card_instruction">Please swipe the RFID card on the reader</string>
+    <string name="parking_fee_info">Parking Fee Information</string>
+    <string name="under_30_mins">Under 30 mins</string>
+    <string name="from_30_mins">From 30 mins onwards</string>
+    <string name="overnight_fee">Overnight parking</string>
+    <string name="free">Free</string>
+    <string name="price_per_turn">%1$s/turn</string>
+    <string name="price_per_night">%1$s/night</string>
+    <string name="scanned_uid">Scanned UID: %1$s</string>
+    <string name="confirm_registration">Confirm Registration</string>
+    <string name="scanning_mode_active">Scanning mode active (%1$ds)</string>
+    <string name="registration_complete">Card registration completed successfully</string>
 
 </resources>

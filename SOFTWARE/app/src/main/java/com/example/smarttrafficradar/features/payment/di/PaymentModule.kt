@@ -17,7 +17,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object PaymentModule {
 
-    private const val BASE_URL = "https://0ae6-183-80-51-51.ngrok-free.app/"
+    private const val BASE_URL = "https://e5f1-118-70-182-219.ngrok-free.app/"
 //    private const val BASE_URL = "http://192.168.0.103:8080"
 
     @Provides

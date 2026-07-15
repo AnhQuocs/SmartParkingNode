@@ -27,7 +27,8 @@ class NotificationRepositoryImpl @Inject constructor(
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    close(error)
+                    // Tránh crash khi logout bằng cách gửi list trống thay vì close(error)
+                    trySend(emptyList())
                     return@addSnapshotListener
                 }
 

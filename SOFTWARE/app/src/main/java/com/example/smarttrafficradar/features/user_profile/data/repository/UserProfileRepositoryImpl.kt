@@ -1,5 +1,6 @@
 package com.example.smarttrafficradar.features.user_profile.data.repository
 
+import android.util.Log
 import com.example.smarttrafficradar.features.app_system.language.data.preference.LanguagePreferenceManager
 import com.example.smarttrafficradar.features.app_system.language.domain.model.AppLanguage
 import com.example.smarttrafficradar.features.user_profile.data.dto.UserProfileDto
@@ -46,7 +47,9 @@ class UserProfileRepositoryImpl @Inject constructor(
                     .document(uid)
                     .addSnapshotListener { snapshot, error ->
                         if (error != null) {
-                            close(error)
+                            Log.e("UserProfileRepo", "Firestore error: ${error.message}")
+                            // Trả về null thay vì close(error) để tránh crash khi logout
+                            trySend(null)
                             return@addSnapshotListener
                         }
 
@@ -64,20 +67,17 @@ class UserProfileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveUserProfile(userProfile: UserProfile) {
-        // 1. Lấy ngôn ngữ hiện tại
         val currentAppLang = languagePreferenceManager.languageFlow.first()
         val userLang = when (currentAppLang) {
             AppLanguage.ENGLISH -> UserLang.EN
             AppLanguage.VIETNAMESE -> UserLang.VI
         }
 
-        // 2. Cập nhật timestamp updatedAt để Firestore trigger listener
         val profileToSave = userProfile.copy(
             language = userLang,
             updatedAt = System.currentTimeMillis()
         )
 
-        // 3. Tìm document trong organization_members
         val orgQuery = orgUsersCollection
             .whereEqualTo("identifier", profileToSave.identifier.trim())
             .whereEqualTo("email", profileToSave.email.trim())
@@ -85,17 +85,13 @@ class UserProfileRepositoryImpl @Inject constructor(
             .get()
             .await()
 
-        // 4. Thực hiện Batch Update
         firestore.runBatch { batch ->
-            // Lưu Profile (Dùng set để ghi đè toàn bộ)
             val profileRef = profilesCollection.document(profileToSave.uid)
             batch.set(profileRef, profileToSave.toDto())
             
-            // Cập nhật status trong collection 'users' (Dùng set + merge để an toàn hơn update)
             val authUserRef = authUsersCollection.document(profileToSave.uid)
             batch.set(authUserRef, mapOf("status" to "ACTIVE"), SetOptions.merge())
 
-            // Cập nhật linkedUid trong 'organization_members'
             if (!orgQuery.isEmpty) {
                 batch.update(orgQuery.documents.first().reference, "linkedUid", profileToSave.uid)
             }
