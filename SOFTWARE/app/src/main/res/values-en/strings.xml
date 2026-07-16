@@ -504,4 +504,48 @@
     <string name="scanning_mode_active">Scanning mode active (%1$ds)</string>
     <string name="registration_complete">Card registration completed successfully</string>
 
+    <!-- MONITOR -->
+    <string name="admin_topbar">Admin</string>
+    <string name="system_running_normally">System running normally</string>
+    <string name="date_pattern">EEEE, dd/MM/yyyy</string>
+    <string name="system_overview">System Overview</string>
+    <string name="vehicles_in_lot">Vehicles in lot</string>
+    <string name="today_traffic">Today\'s traffic</string>
+    <string name="traffic_in_out_format">In: %1$d / Out: %2$d</string>
+    <string name="today_revenue_label">Today\'s revenue</string>
+    <string name="revenue_comparison_format">%1$+.1f%% vs yesterday</string>
+    <string name="card_label">Card</string>
+    <string name="in_label">In</string>
+    <string name="out_label">Out</string>
+    <string name="parking_capacity">Parking Capacity</string>
+    <string name="available_spots">Available: %1$d spots</string>
+
+    <!-- ADMIN PROFILE -->
+    <string name="system_administrator">System Administrator</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="terms_of_use">Terms of Use</string>
+
+    <!-- ADMIN TERMS & PRIVACY -->
+    <string name="admin_terms_title">Administrator Terms of Use</string>
+    <string name="admin_terms_intro">As an administrator of the Smart Parking system, you are granted elevated privileges to manage the system. Your use of these features is subject to the following terms.</string>
+    <string name="admin_terms_section_1_title">1. Administrative Authority</string>
+    <string name="admin_terms_section_1_desc">You must use your administrative access solely for the purpose of managing the parking system, user accounts, and hardware configurations.</string>
+    <string name="admin_terms_section_2_title">2. Data Stewardship</string>
+    <string name="admin_terms_section_2_desc">Administrators are responsible for maintaining the accuracy and confidentiality of all system data, including user personal information and financial records.</string>
+    <string name="admin_terms_section_3_title">3. Accountability</string>
+    <string name="admin_terms_section_3_desc">All administrative actions are logged. You are responsible for any changes made using your administrative credentials.</string>
+    <string name="admin_terms_section_4_title">4. Prohibited Conduct</string>
+    <string name="admin_terms_section_4_desc">Unauthorized sharing of administrative codes, tampering with security logs, or accessing private user data for non-system purposes is strictly prohibited.</string>
+
+    <string name="admin_privacy_title">Administrator Privacy Policy</string>
+    <string name="admin_privacy_intro">This policy explains how administrative activities and data are handled within the Smart Parking system.</string>
+    <string name="admin_privacy_section_1_title">1. Collection of Admin Data</string>
+    <string name="admin_privacy_section_1_desc">We collect data related to your administrative sessions, including IP addresses, timestamps, and specific actions performed within the management dashboard.</string>
+    <string name="admin_privacy_section_2_title">2. Use of Administrative Information</string>
+    <string name="admin_privacy_section_2_desc">This information is used for system auditing, security monitoring, and to improve the overall performance and reliability of the platform.</string>
+    <string name="admin_privacy_section_3_title">3. Access Controls</string>
+    <string name="admin_privacy_section_3_desc">Only senior system architects and authorized security personnel have access to administrative logs to ensure accountability and prevent abuse of power.</string>
+    <string name="admin_privacy_section_4_title">4. Data Retention</string>
+    <string name="admin_privacy_section_4_desc">Administrative logs are retained for a minimum of 12 months to support audit requirements and security investigations.</string>
+
 </resources>

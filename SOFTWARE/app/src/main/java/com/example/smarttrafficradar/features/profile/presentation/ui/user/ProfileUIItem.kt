@@ -1,4 +1,4 @@
-package com.example.smarttrafficradar.features.profile.presentation.ui
+package com.example.smarttrafficradar.features.profile.presentation.ui.user
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

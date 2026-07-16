@@ -8,7 +8,8 @@ import javax.inject.Inject
 
 class ParkingHistoryUseCases @Inject constructor(
     val observeHistoriesByUserIdUseCase: ObserveHistoriesByUserIdUseCase,
-    val getHistoryDetailUseCase: GetHistoryDetailUseCase
+    val getHistoryDetailUseCase: GetHistoryDetailUseCase,
+    val observeRecentHistoriesUseCase: ObserveRecentHistoriesUseCase
 )
 
 class ObserveHistoriesByUserIdUseCase @Inject constructor(
@@ -20,6 +21,14 @@ class ObserveHistoriesByUserIdUseCase @Inject constructor(
         }
 
         return repository.observeHistoriesByUserId(userId)
+    }
+}
+
+class ObserveRecentHistoriesUseCase @Inject constructor(
+    private val repository: ParkingHistoryRepository
+) {
+    operator fun invoke(limit: Int = 5): Flow<List<ParkingHistory>> {
+        return repository.observeAllHistories(limit)
     }
 }
 

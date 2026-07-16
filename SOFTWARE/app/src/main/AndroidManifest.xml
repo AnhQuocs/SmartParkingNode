@@ -21,6 +21,15 @@
         android:theme="@style/Theme.SMART_PARKING"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".features.profile.presentation.ui.admin.AdminProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".features.profile.presentation.ui.admin.TermOfUseActivity"
+            android:exported="false" />
+        <activity
+            android:name=".features.profile.presentation.ui.admin.PrivacyPolicyActivity"
+            android:exported="false" />
+        <activity
             android:name=".features.management.presentation.ui.members.MembersActivity"
             android:exported="false" />
         <activity
@@ -36,7 +45,7 @@
             android:name=".features.auth.presentation.ui.ChangePasswordActivity"
             android:exported="false" />
         <activity
-            android:name=".features.profile.presentation.ui.SupportCenterActivity"
+            android:name=".features.profile.presentation.ui.user.SupportCenterActivity"
             android:exported="false" />
         <activity
             android:name=".features.dashboard.presentation.ui.user.register_card.RegisterCardActivity"

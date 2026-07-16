@@ -41,7 +41,6 @@ class ParkingHistoryRepositoryImpl @Inject constructor(
                     .addSnapshotListener { snapshot, error ->
                         if (error != null) {
                             Log.e("ParkingHistoryRepo", "Firestore error: ${error.message}")
-                            // Trả về list trống thay vì close(error) để tránh crash khi logout
                             trySend(emptyList())
                             return@addSnapshotListener
                         }
@@ -62,6 +61,36 @@ class ParkingHistoryRepositoryImpl @Inject constructor(
                 replay = 1
             )
         }
+    }
+
+    override fun observeAllHistories(limit: Int): Flow<List<ParkingHistory>> {
+        return callbackFlow {
+            // Order by updatedAt to show most recent events (Check-in or Check-out) at the top
+            val subscription = collection
+                .orderBy("updatedAt", Query.Direction.DESCENDING)
+                .limit(limit.toLong())
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) {
+                        Log.e("ParkingHistoryRepo", "Firestore error: ${error.message}")
+                        trySend(emptyList())
+                        return@addSnapshotListener
+                    }
+
+                    val histories = snapshot?.documents?.mapNotNull { doc ->
+                        doc.toObject(ParkingHistoryDto::class.java)
+                            ?.copy(id = doc.id)
+                            ?.toDomain()
+                    } ?: emptyList()
+
+                    trySend(histories)
+                }
+
+            awaitClose { subscription.remove() }
+        }.shareIn(
+            scope = repositoryScope,
+            started = SharingStarted.WhileSubscribed(5000L),
+            replay = 1
+        )
     }
 
     override suspend fun getHistoryDetail(historyId: String): ParkingHistory {

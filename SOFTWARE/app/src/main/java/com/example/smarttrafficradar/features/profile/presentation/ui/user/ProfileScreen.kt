@@ -1,4 +1,4 @@
-package com.example.smarttrafficradar.features.profile.presentation.ui
+package com.example.smarttrafficradar.features.profile.presentation.ui.user
 
 import android.content.Intent
 import android.widget.Toast
@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +43,7 @@ import com.example.smarttrafficradar.features.app_system.settings.presentation.u
 import com.example.smarttrafficradar.features.app_system.settings.presentation.ui.SecuritySettingsActivity
 import com.example.smarttrafficradar.features.app_system.settings.presentation.viewmodel.SettingsViewModel
 import com.example.smarttrafficradar.features.auth.presentation.ui.ChangePasswordActivity
+import com.example.smarttrafficradar.features.auth.presentation.viewmodel.AuthState
 import com.example.smarttrafficradar.features.auth.presentation.viewmodel.AuthViewModel
 import com.example.smarttrafficradar.features.user_profile.domain.model.UserProfile
 import com.example.smarttrafficradar.features.user_profile.presentation.ui.EditProfileActivity
@@ -79,6 +81,15 @@ fun ProfileScreen(
     val notificationText = if (isNotificationEnabled) stringResource(id = R.string.on) else stringResource(id = R.string.off)
 
     var isShowDialog by remember { mutableStateOf(false) }
+
+    val authState by authViewModel.state.collectAsState()
+    LaunchedEffect(authState) {
+        if (authState is AuthState.SignedOut) {
+            navController.navigate("auth") {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -174,11 +185,7 @@ fun ProfileScreen(
         if (isShowDialog) {
             LogoutDialog(onDismiss = { isShowDialog = false }, onConfirm = {
                 authViewModel.signOut()
-                authViewModel.clearError()
                 isShowDialog = false
-                navController.navigate("auth") {
-                    popUpTo(0) { inclusive = true }
-                }
             })
         }
     }

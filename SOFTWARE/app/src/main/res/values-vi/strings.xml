@@ -5,12 +5,12 @@
     <string name="dashboard">Trang chủ</string>
     <string name="history">Lịch sử</string>
     <string name="payment">Thanh toán</string>
-    <string name="profile">Cá nhân</string>
+    <string name="profile">Hồ sơ</string>
 
     <!-- ADMIN BOTTOM BAR -->
     <string name="monitor">Giám sát</string>
     <string name="management">Quản lý</string>
-    <string name="hardware">Hệ thống</string>
+    <string name="hardware">Phần cứng</string>
     <string name="analytics">Thống kê</string>
 
     <!-- SETTING-LANGUAGE -->
@@ -21,11 +21,10 @@
     <string name="vietnamese">Tiếng Việt</string>
     <string name="apply">Áp dụng</string>
 
-
     <!-- DASHBOARD -->
     <string name="error_unexpected">Đã xảy ra lỗi không mong muốn</string>
-    <string name="real_time_monitoring_active">Giám sát thời gian thực</string>
-    <string name="speed_analysis_recent_10">PHÂN TÍCH TỐC ĐỘ (10 XE GẦN NHẤT)</string>
+    <string name="real_time_monitoring_active">Đang giám sát thời gian thực</string>
+    <string name="speed_analysis_recent_10">PHÂN TÍCH TỐC ĐỘ (10 GẦN NHẤT)</string>
 
     <!-- VIOLATION -->
     <string name="violation_level_critical">NGHIÊM TRỌNG</string>
@@ -35,7 +34,7 @@
     <string name="violation_recorded_speed">Tốc độ ghi nhận</string>
     <string name="violation_speed_limit">Giới hạn tốc độ</string>
     <string name="violation_excess">Vượt quá</string>
-    <string name="incidents">%1$d vi phạm gần đây</string>
+    <string name="incidents">%1$d sự cố gần đây</string>
 
     <string name="just_now">Vừa xong</string>
     <plurals name="minutes_ago">
@@ -57,7 +56,7 @@
     <string name="control_panel">Bảng điều khiển</string>
     <string name="system_configuration">Cấu hình hệ thống</string>
     <string name="speed_limit_threshold">Ngưỡng giới hạn tốc độ</string>
-    <string name="trigger_violations_desc">Kích hoạt vi phạm trên tốc độ này</string>
+    <string name="trigger_violations_desc">Kích hoạt vi phạm khi vượt quá tốc độ này</string>
     <string name="kmh_unit">km/h</string>
 
     <!-- SYSTEM MONITOR -->
@@ -69,8 +68,8 @@
     <string name="heap_memory">Bộ nhớ Heap</string>
     <string name="network_details">Chi tiết mạng</string>
     <string name="sensors_peripheral">Cảm biến &amp; Ngoại vi</string>
-    <string name="ir_in">IR Vào</string>
-    <string name="ir_out">IR Ra</string>
+    <string name="ir_in">Cảm biến Vào</string>
+    <string name="ir_out">Cảm biến Ra</string>
     <string name="rfid_sensor">Cảm biến RFID</string>
     <string name="ip_addr">Địa chỉ IP</string>
     <string name="wifi_signal">Tín hiệu Wi-Fi</string>
@@ -80,44 +79,44 @@
     <string name="connection_status">Trạng thái kết nối</string>
     <string name="online">TRỰC TUYẾN</string>
     <string name="offline">NGOẠI TUYẾN</string>
-    
+
     <string name="device_information">Thông tin thiết bị</string>
     <string name="hardware_details">Chi tiết phần cứng</string>
-    <string name="device_id">ID thiết bị</string>
+    <string name="device_id">Mã thiết bị</string>
     <string name="device_type">Loại thiết bị</string>
-    <string name="firmware">Phiên bản</string>
+    <string name="firmware">Phiên bản Firmware</string>
     <string name="uptime">Thời gian hoạt động</string>
-    <string name="connected_to">Kết nối tới</string>
-    
+    <string name="connected_to">Đã kết nối với</string>
+
     <string name="signal_strength">Cường độ tín hiệu</string>
     <string name="excellent_connection">Kết nối tuyệt vời</string>
     <string name="good_connection">Kết nối tốt</string>
     <string name="fair_connection">Kết nối trung bình</string>
     <string name="weak_connection">Kết nối yếu</string>
-    
+
     <string name="data_synchronization">Đồng bộ dữ liệu</string>
-    
+
     <string name="database_status">Trạng thái Database</string>
     <string name="firebase_connection">Kết nối Firebase</string>
-    
+
     <string name="hardware_health">Sức khỏe phần cứng</string>
     <string name="system_performance">Hiệu suất hệ thống</string>
     <string name="cpu_usage">Sử dụng CPU</string>
     <string name="cpu_temp">Nhiệt độ CPU</string>
     <string name="ram_usage">Sử dụng RAM</string>
     <string name="ram_free">RAM trống</string>
-    <string name="cycle_time">Thời gian chu kỳ</string>
+    <string name="cycle_time">Chu kỳ quét</string>
     <string name="fps">FPS</string>
-    
+
     <string name="network_performance">Hiệu suất mạng</string>
-    <string name="firebase_ping">Ping Firebase</string>
+    <string name="firebase_ping">Firebase Ping</string>
     <string name="reconnect_count">Số lần kết nối lại</string>
-    
+
     <string name="sensor_status">Trạng thái cảm biến</string>
     <string name="peripheral_check">Kiểm tra ngoại vi</string>
     <string name="ir_sensor_1">Cảm biến IR 1</string>
     <string name="ir_sensor_2">Cảm biến IR 2</string>
-    <string name="rfid_module">Module RFID</string>
+    <string name="rfid_module">Mô-đun RFID</string>
 
     <string name="wifi_status">Trạng thái WiFi</string>
     <string name="firebase_status">Trạng thái Firebase</string>
@@ -126,13 +125,13 @@
     <string name="disconnected">MẤT KẾT NỐI</string>
     <string name="authenticated">ĐÃ XÁC THỰC</string>
     <string name="unauthenticated">CHƯA XÁC THỰC</string>
-    <string name="setup_network">Thiết lập mạng</string>
+    <string name="setup_network">Cấu hình mạng</string>
     <string name="available_networks">Các mạng khả dụng</string>
     <string name="current_connection">Kết nối hiện tại</string>
     <string name="enter_password_for">Nhập mật khẩu cho %1$s</string>
     <string name="connect">Kết nối</string>
     <string name="cancel">Hủy</string>
-    <string name="scanning">Đang dò tìm…</string>
+    <string name="scanning">Đang quét…</string>
     <string name="connection_timeout">Hết thời gian kết nối. Thiết bị không phản hồi.</string>
     <string name="current_task_format">Tác vụ hiện tại: %1$s</string>
     <string name="status_format">Trạng thái: %1$s</string>
@@ -140,15 +139,15 @@
     <string name="forget_network">Quên mạng</string>
     <string name="forget_confirm">Bạn có chắc chắn muốn quên mạng này không?</string>
     <string name="forget">Quên</string>
-    
+
     <string name="wifi_status_idle">CHỜ</string>
     <string name="wifi_status_pending">ĐANG XỬ LÝ</string>
     <string name="wifi_status_success">THÀNH CÔNG</string>
     <string name="wifi_status_failed">THẤT BẠI</string>
-    <string name="wifi_status_switching">ĐANG CHUYỂN MẠNG</string>
+    <string name="wifi_status_switching">ĐANG CHUYỂN</string>
 
     <!-- AUTH ERRORS -->
-    <string name="error_empty_username">Tên người dùng không được để trống</string>
+    <string name="error_empty_username">Tên đăng nhập không được để trống</string>
     <string name="error_invalid_email">Địa chỉ email không hợp lệ</string>
     <string name="error_empty_password">Mật khẩu không được để trống</string>
     <string name="error_password_too_short">Mật khẩu phải có ít nhất 6 ký tự</string>
@@ -156,33 +155,33 @@
     <string name="error_user_not_found">Không tìm thấy người dùng</string>
     <string name="error_wrong_password">Mật khẩu không chính xác</string>
     <string name="error_email_already_in_use">Email này đã được sử dụng</string>
-    <string name="error_invalid_admin_code">Mã admin không hợp lệ hoặc đã được dùng</string>
+    <string name="error_invalid_admin_code">Mã admin không hợp lệ hoặc đã được sử dụng</string>
     <string name="error_auth_failed">Xác thực thất bại</string>
-    <string name="error_username_too_short">Tên người dùng phải có ít nhất 8 ký tự</string>
+    <string name="error_username_too_short">Tên đăng nhập phải có ít nhất 8 ký tự</string>
     <string name="sign_in_failed">Đăng nhập thất bại. Vui lòng thử lại!</string>
     <string name="sign_up_failed">Đăng ký thất bại. Vui lòng thử lại!</string>
 
     <!-- PROFILE ERRORS -->
-    <string name="error_identifier_exists">Mã định danh này đã được đăng ký</string>
-    <string name="error_identifier_not_found">Mã định danh không tồn tại trong tổ chức</string>
-    <string name="error_profile_not_found">Không tìm thấy thông tin cá nhân</string>
-    <string name="error_debt_limit">Vượt quá hạn mức nợ (Tối đa 100k)</string>
+    <string name="error_identifier_exists">Mã định danh đã được đăng ký</string>
+    <string name="error_identifier_not_found">Không tìm thấy mã định danh trong tổ chức</string>
+    <string name="error_profile_not_found">Không tìm thấy hồ sơ người dùng</string>
+    <string name="error_debt_limit">Vượt quá hạn mức dư nợ (Tối đa 100k)</string>
     <string name="error_invalid_fullname">Định dạng họ tên không hợp lệ</string>
-    <string name="error_password_mismatch">Mật khẩu không khớp</string>
+    <string name="error_password_mismatch">Mật khẩu xác nhận không khớp</string>
     <string name="error_same_password">Mật khẩu mới phải khác mật khẩu cũ</string>
     <string name="password_changed_success">Đổi mật khẩu thành công</string>
 
     <!-- AUTH -->
     <string name="welcome_back">Chào mừng trở lại!</string>
     <string name="sign_in_hint">Đăng nhập để tiếp tục sử dụng dịch vụ</string>
-    <string name="create_account">Tạo tài khoản mới</string>
-    <string name="create_account_hint">Đăng ký để trải nghiệm hệ thống bãi đỗ xe thông minh</string>
+    <string name="create_account">Tạo tài khoản</string>
+    <string name="create_account_hint">Tạo tài khoản để trải nghiệm hệ thống gửi xe thông minh</string>
 
-    <string name="username">Tên người dùng</string>
+    <string name="username">Tên đăng nhập</string>
     <string name="email_address">Email</string>
     <string name="password">Mật khẩu</string>
-    <string name="email_placeholder">Nhập địa chỉ email</string>
-    <string name="password_placeholder">Nhập mật khẩu</string>
+    <string name="email_placeholder">Nhập địa chỉ email của bạn</string>
+    <string name="password_placeholder">Nhập mật khẩu của bạn</string>
     <string name="forgot_password">Quên mật khẩu</string>
     <string name="continue_google">Tiếp tục với Google</string>
 
@@ -190,23 +189,23 @@
     <string name="dont_have_account">Chưa có tài khoản?</string>
     <string name="or">Hoặc</string>
 
-    <string name="username_placeholder">Nhập tên người dùng</string>
+    <string name="username_placeholder">Nhập tên đăng nhập của bạn</string>
     <string name="already_account">Đã có tài khoản?</string>
     <string name="sign_up">Đăng ký</string>
 
-    <string name="sign_up_admin">Đăng ký (Quản trị viên)</string>
-    <string name="register_admin">Đăng ký quản trị viên</string>
-    <string name="admin_code">Mã quản trị</string>
-    <string name="admin_code_placeholder">Nhập mã quản trị viên</string>
-    <string name="code_is_required">Mã không được để trống</string>
+    <string name="sign_up_admin">Đăng ký (Admin)</string>
+    <string name="register_admin">Đăng ký quyền Admin</string>
+    <string name="admin_code">Mã Admin</string>
+    <string name="admin_code_placeholder">Nhập mã bí mật</string>
+    <string name="code_is_required">Mã code là bắt buộc</string>
 
     <!-- ONBOARDING -->
-    <string name="onboarding_title_1">Chào mừng đến với Smart Parking</string>
-    <string name="onboarding_desc_1">Giải pháp bãi đỗ xe thông minh giúp việc gửi xe trong khuôn viên trường trở nên thuận tiện và nhanh chóng hơn.</string>
-    <string name="onboarding_title_2">Ra vào phương tiện an toàn</string>
-    <string name="onboarding_desc_2">Xác thực bằng thẻ RFID và nhận diện phương tiện giúp kiểm soát ra vào chính xác, an toàn và đáng tinậy.</string>
-    <string name="onboarding_title_3">Thông tin gửi xe trong tầm tay</string>
-    <string name="onboarding_desc_3">Theo dõi lịch sử gửi xe, quản lý tài khoản và cập nhật thông tin phương tiện mọi lúc ngay trên điện thoại.</string>
+    <string name="onboarding_title_1">Chào mừng tới Smart Parking</string>
+    <string name="onboarding_desc_1">Giải pháp gửi xe thông minh giúp việc đỗ xe trong khuôn viên trường thuận tiện hơn.</string>
+    <string name="onboarding_title_2">Truy cập xe an toàn</string>
+    <string name="onboarding_desc_2">Xác thực RFID và nhận diện phương tiện giúp kiểm soát vào ra an toàn, chính xác.</string>
+    <string name="onboarding_title_3">Thông tin gửi xe mọi lúc</string>
+    <string name="onboarding_desc_3">Xem lịch sử gửi xe, quản lý tài khoản và cập nhật thông tin xe ngay trên điện thoại.</string>
     <string name="onboarding_skip">Bỏ qua</string>
     <string name="onboarding_next">Tiếp theo</string>
     <string name="onboarding_get_started">Bắt đầu</string>
@@ -345,7 +344,7 @@
     <string name="notification_detail_title">Chi tiết thông báo</string>
     <string name="system_notification">Thông báo hệ thống</string>
     <string name="mark_all_as_read">Đánh dấu tất cả là đã đọc</string>
-    
+
     <!-- NOTIFICATION KEYS -->
     <string name="TITLE_GATE_IN">Xe vào bãi</string>
     <string name="BODY_GATE_IN">Xe của bạn (thẻ %1$s) vừa vào bãi đỗ.</string>
@@ -497,5 +496,49 @@
     <string name="confirm_registration">Xác nhận đăng ký</string>
     <string name="scanning_mode_active">Chế độ quẹt đang bật (%1$ds)</string>
     <string name="registration_complete">Đăng ký thẻ thành công</string>
+
+    <!-- MONITOR -->
+    <string name="admin_topbar">Quản trị viên</string>
+    <string name="system_running_normally">Hệ thống hoạt động bình thường</string>
+    <string name="date_pattern">EEEE, dd/MM/yyyy</string>
+    <string name="system_overview">Tổng quan hệ thống</string>
+    <string name="vehicles_in_lot">Xe đang trong bãi</string>
+    <string name="today_traffic">Lưu lượng hôm nay</string>
+    <string name="traffic_in_out_format">Vào: %1$d / Ra: %2$d</string>
+    <string name="today_revenue_label">Doanh thu hôm nay</string>
+    <string name="revenue_comparison_format">%1$+.1f%% so với hôm qua</string>
+    <string name="card_label">Thẻ</string>
+    <string name="in_label">Vào</string>
+    <string name="out_label">Ra</string>
+    <string name="parking_capacity">Sức chứa bãi xe</string>
+    <string name="available_spots">Còn trống: %1$d chỗ</string>
+
+    <!-- ADMIN PROFILE -->
+    <string name="system_administrator">Quản trị viên hệ thống</string>
+    <string name="privacy_policy">Chính sách bảo mật</string>
+    <string name="terms_of_use">Điều khoản sử dụng</string>
+
+    <!-- ADMIN TERMS & PRIVACY -->
+    <string name="admin_terms_title">Điều khoản sử dụng cho Quản trị viên</string>
+    <string name="admin_terms_intro">Với tư cách là quản trị viên của hệ thống Smart Parking, bạn được cấp các quyền hạn nâng cao để quản lý hệ thống. Việc sử dụng các tính năng này phải tuân thủ các điều khoản sau.</string>
+    <string name="admin_terms_section_1_title">1. Quyền hạn Quản trị</string>
+    <string name="admin_terms_section_1_desc">Bạn chỉ được sử dụng quyền truy cập quản trị của mình cho mục đích quản lý hệ thống bãi xe, tài khoản người dùng và cấu hình phần cứng.</string>
+    <string name="admin_terms_section_2_title">2. Quản lý Dữ liệu</string>
+    <string name="admin_terms_section_2_desc">Quản trị viên có trách nhiệm duy trì tính chính xác và bảo mật của tất cả dữ liệu hệ thống, bao gồm thông tin cá nhân của người dùng và hồ sơ tài chính.</string>
+    <string name="admin_terms_section_3_title">3. Trách nhiệm giải trình</string>
+    <string name="admin_terms_section_3_desc">Tất cả các hành động quản trị đều được ghi lại. Bạn chịu trách nhiệm cho bất kỳ thay đổi nào được thực hiện bằng thông tin đăng nhập quản trị của mình.</string>
+    <string name="admin_terms_section_4_title">4. Hành vi bị nghiêm cấm</string>
+    <string name="admin_terms_section_4_desc">Nghiêm cấm chia sẻ mã quản trị trái phép, giả mạo nhật ký bảo mật hoặc truy cập dữ liệu cá nhân của người dùng cho các mục đích không thuộc hệ thống.</string>
+
+    <string name="admin_privacy_title">Chính sách Bảo mật cho Quản trị viên</string>
+    <string name="admin_privacy_intro">Chính sách này giải thích cách thức các hoạt động và dữ liệu quản trị được xử lý trong hệ thống Smart Parking.</string>
+    <string name="admin_privacy_section_1_title">1. Thu thập dữ liệu quản trị</string>
+    <string name="admin_privacy_section_1_desc">Chúng tôi thu thập dữ liệu liên quan đến các phiên quản trị của bạn, bao gồm địa chỉ IP, dấu thời gian và các hành động cụ thể được thực hiện trong bảng điều khiển quản lý.</string>
+    <string name="admin_privacy_section_2_title">2. Sử dụng thông tin quản trị</string>
+    <string name="admin_privacy_section_2_desc">Thông tin này được sử dụng để kiểm tra hệ thống, giám sát bảo mật và nâng cao hiệu suất cũng như độ tin cậy tổng thể của nền tảng.</string>
+    <string name="admin_privacy_section_3_title">3. Kiểm soát truy cập</string>
+    <string name="admin_privacy_section_3_desc">Chỉ các kiến trúc sư hệ thống cấp cao và nhân viên bảo mật được ủy quyền mới có quyền truy cập vào nhật ký quản trị để đảm bảo tính trách nhiệm và ngăn chặn lạm dụng quyền lực.</string>
+    <string name="admin_privacy_section_4_title">4. Lưu trữ dữ liệu</string>
+    <string name="admin_privacy_section_4_desc">Nhật ký quản trị được lưu giữ trong ít nhất 12 tháng để hỗ trợ các yêu cầu kiểm tra và điều tra bảo mật.</string>
 
 </resources>

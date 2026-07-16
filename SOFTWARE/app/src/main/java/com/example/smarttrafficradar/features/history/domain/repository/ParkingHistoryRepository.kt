@@ -5,5 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface ParkingHistoryRepository {
     fun observeHistoriesByUserId(userId: String): Flow<List<ParkingHistory>>
+    fun observeAllHistories(limit: Int): Flow<List<ParkingHistory>>
     suspend fun getHistoryDetail(historyId: String): ParkingHistory
 }

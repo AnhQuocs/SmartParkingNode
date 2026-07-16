@@ -1,4 +1,4 @@
-package com.example.smarttrafficradar.features.profile.presentation.ui
+package com.example.smarttrafficradar.features.profile.presentation.ui.user
 
 import android.content.Intent
 import android.net.Uri

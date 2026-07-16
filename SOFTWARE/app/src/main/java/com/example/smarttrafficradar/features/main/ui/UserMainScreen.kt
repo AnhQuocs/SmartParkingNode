@@ -26,8 +26,8 @@ import com.example.smarttrafficradar.features.dashboard.presentation.ui.user.reg
 import com.example.smarttrafficradar.features.history.presentation.ui.HistoryScreen
 import com.example.smarttrafficradar.features.notification.presentation.ui.NotificationActivity
 import com.example.smarttrafficradar.features.payment.presentation.ui.PaymentScreen
-import com.example.smarttrafficradar.features.profile.presentation.ui.ProfileScreen
-import com.example.smarttrafficradar.features.profile.presentation.ui.SupportCenterActivity
+import com.example.smarttrafficradar.features.profile.presentation.ui.user.ProfileScreen
+import com.example.smarttrafficradar.features.profile.presentation.ui.user.SupportCenterActivity
 import com.example.smarttrafficradar.features.user_profile.presentation.viewmodel.UserProfileState
 import com.example.smarttrafficradar.features.user_profile.presentation.viewmodel.UserProfileViewModel
 

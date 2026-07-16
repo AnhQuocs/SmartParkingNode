@@ -113,6 +113,7 @@ class AuthViewModel @Inject constructor(
 
     fun signOut() {
         viewModelScope.launch {
+            _state.value = AuthState.Loading
             try {
                 authUseCases.signOutUseCase()
                 _state.value = AuthState.SignedOut
