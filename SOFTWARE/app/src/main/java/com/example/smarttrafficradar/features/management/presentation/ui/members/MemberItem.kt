@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.smarttrafficradar.R
 import com.example.smarttrafficradar.features.management.domain.model.OrganizationMember
+import com.example.smarttrafficradar.features.user_profile.domain.model.UserProfile
 import com.example.smarttrafficradar.ui.dimens.AppShape
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
@@ -42,6 +43,7 @@ import com.example.smarttrafficradar.utils.semiBold
 @Composable
 fun MemberItem(
     member: OrganizationMember,
+    profile: UserProfile? = null,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -113,8 +115,13 @@ fun MemberItem(
                 }
             }
 
-            // Registration Status Chip
-            val isRegistered = member.linkedUid != null
+            // Registration Status Chip: Check rfidUid from profile if available, else fallback to linkedUid
+            val isRegistered = if (profile != null) {
+                profile.rfidUid != null
+            } else {
+                member.linkedUid != null
+            }
+
             val chipBgColor = if (isRegistered) SuccessBackground else Color(0xFFF1F5F9)
             val chipTextColor = if (isRegistered) SuccessGreen else Color(0xFF64748B)
             val statusText = if (isRegistered) {

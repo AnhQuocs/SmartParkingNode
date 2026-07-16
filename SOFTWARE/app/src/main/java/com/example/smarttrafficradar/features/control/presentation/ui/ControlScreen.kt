@@ -1,6 +1,5 @@
 package com.example.smarttrafficradar.features.control.presentation.ui
 
-import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,20 +33,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.smarttrafficradar.R
-import com.example.smarttrafficradar.features.app_system.language.presentation.ui.ChangeLanguageActivity
-import com.example.smarttrafficradar.features.app_system.language.presentation.viewmodel.LanguageViewModel
 import com.example.smarttrafficradar.features.control.domain.model.SystemMonitor
 import com.example.smarttrafficradar.features.control.presentation.viewmodel.ControlViewModel
 import com.example.smarttrafficradar.ui.dimens.AppShape
@@ -72,13 +66,8 @@ import java.util.Locale
 
 @Composable
 fun ControlScreen(
-    languageViewModel: LanguageViewModel = hiltViewModel(),
     controlViewModel: ControlViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    val currentLang by languageViewModel.currentLanguage.collectAsState()
-    val selectedLang by remember(currentLang) { mutableStateOf(currentLang) }
-
     val systemMonitor by controlViewModel.systemMonitorState.collectAsState()
 
     Column(
@@ -95,16 +84,6 @@ fun ControlScreen(
             Spacer(modifier = Modifier.height(AppSpacing.MediumLarge))
 
             SystemMonitorGrid(systemMonitor = systemMonitor)
-
-            Spacer(modifier = Modifier.height(AppSpacing.MediumLarge))
-
-            LanguagesCard(
-                selectedLang = selectedLang,
-                onChangeLanguage = {
-                    val intent = Intent(context, ChangeLanguageActivity::class.java)
-                    context.startActivity(intent)
-                }
-            )
 
             Spacer(modifier = Modifier.height(AppSpacing.MediumLarge))
         }

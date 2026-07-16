@@ -64,6 +64,7 @@ val DarkOnError = Color(0xFF690005)
 
 val NeonGreen = Color(0xFF00FF41)
 val ErrorRed = Color(0xFFFF3B30)
+val ErrorRedLight = Color(0xFFFFEBEA)
 val SlateMist = Color(0xFF919191)
 
 val YellowPrimary = Color(0xFFFFB200)

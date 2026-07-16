@@ -8,5 +8,7 @@ data class RegistrationUseCases @Inject constructor(
     val approveRegistration: ApproveRegistrationUseCase,
     val rejectRegistration: RejectRegistrationUseCase,
     val getRegisteredCards: GetRegisteredCardsUseCase,
-    val updateCardStatus: UpdateCardStatusUseCase
+    val updateCardStatus: UpdateCardStatusUseCase,
+    val lockCard: LockCardUseCase,
+    val sendVehicleChangeRequest: SendVehicleChangeRequestUseCase
 )

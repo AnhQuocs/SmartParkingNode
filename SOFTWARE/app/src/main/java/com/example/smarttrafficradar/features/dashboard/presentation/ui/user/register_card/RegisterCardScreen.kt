@@ -2,8 +2,6 @@ package com.example.smarttrafficradar.features.dashboard.presentation.ui.user.re
 
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -42,10 +41,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -58,12 +55,8 @@ import com.example.smarttrafficradar.ui.dimens.AppShape
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
 import com.example.smarttrafficradar.ui.theme.AmberOrange
-import com.example.smarttrafficradar.ui.theme.AmberOrangeLight
 import com.example.smarttrafficradar.ui.theme.Background
-import com.example.smarttrafficradar.ui.theme.LightOnPrimaryContainer
 import com.example.smarttrafficradar.ui.theme.LightOnSurface
-import com.example.smarttrafficradar.ui.theme.RoyalBlue
-import com.example.smarttrafficradar.ui.theme.RoyalBlueLight
 import com.example.smarttrafficradar.ui.theme.SlateGray
 import com.example.smarttrafficradar.ui.theme.SmartBlue
 import com.example.smarttrafficradar.ui.theme.SuccessGreen
@@ -88,13 +81,16 @@ fun RegisterCardScreen(
         viewModel.observeRegistrationStatus(uid)
     }
 
-    LaunchedEffect(state.isSuccess) {
-        if (state.isSuccess) {
-            Toast.makeText(
-                context,
-                context.getString(R.string.registration_request_sent),
-                Toast.LENGTH_SHORT
-            ).show()
+    LaunchedEffect(state.isSuccess, state.isVehicleChangeSuccess, state.isLockCardSuccess) {
+        if (state.isSuccess || state.isVehicleChangeSuccess || state.isLockCardSuccess) {
+            val message = when {
+                state.isSuccess -> context.getString(R.string.registration_request_sent)
+                state.isVehicleChangeSuccess -> context.getString(R.string.request_sent_success)
+                state.isLockCardSuccess -> context.getString(R.string.card_locked_success)
+                else -> ""
+            }
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            viewModel.resetSuccess()
             onBack()
         }
     }
@@ -116,7 +112,10 @@ fun RegisterCardScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        onClick = if (state.showChangeLockView) {
+                            { viewModel.setShowChangeLockView(false) }
+                        } else onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
@@ -136,16 +135,25 @@ fun RegisterCardScreen(
                 .padding(paddingValues)
                 .background(Background)
         ) {
-            if (state.isLoading && !state.isAlreadyRegistered) {
+            if (state.isLoading && !state.isAlreadyRegistered && !state.isLocked) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
                     color = SmartBlue
                 )
+            } else if (state.showChangeLockView) {
+                ChangeLockCardView(
+                    state = state,
+                    onVehicleChange = { viewModel.sendVehicleChangeRequest(uid) },
+                    onLockCard = { viewModel.lockCard(uid) }
+                )
+            } else if (state.isLocked) {
+                LockedCardView(onBack = onBack)
             } else if (state.isAlreadyRegistered) {
                 AlreadyRegisteredView(
                     rfidUid = state.currentRfidUid ?: "",
                     vehicleType = state.currentVehicleType,
-                    onBack = onBack
+                    onBack = onBack,
+                    onRequestChange = { viewModel.setShowChangeLockView(true) }
                 )
             } else {
                 RegisterCardForm(
@@ -162,7 +170,8 @@ fun RegisterCardScreen(
 fun AlreadyRegisteredView(
     rfidUid: String,
     vehicleType: VehicleType?,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onRequestChange: () -> Unit
 ) {
     val vehicleLabel = when (vehicleType) {
         VehicleType.MOTORBIKE -> stringResource(id = R.string.motorcycle)
@@ -238,6 +247,22 @@ fun AlreadyRegisteredView(
         Spacer(modifier = Modifier.height(AppSpacing.XL))
 
         Button(
+            onClick = onRequestChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(Dimen.HeightLarge),
+            shape = RoundedCornerShape(AppShape.ShapeXXL),
+            colors = ButtonDefaults.buttonColors(containerColor = AmberOrange)
+        ) {
+            Text(
+                text = stringResource(id = R.string.request_change_lock_card),
+                style = MaterialTheme.typography.s16.semiBold()
+            )
+        }
+
+        Spacer(modifier = Modifier.height(AppSpacing.M))
+
+        Button(
             onClick = onBack,
             modifier = Modifier
                 .fillMaxWidth()
@@ -254,10 +279,10 @@ fun AlreadyRegisteredView(
 }
 
 @Composable
-fun RegisterCardForm(
+fun ChangeLockCardView(
     state: RegisterCardState,
-    onVehicleTypeSelected: (VehicleType) -> Unit,
-    onSendRequest: () -> Unit
+    onVehicleChange: () -> Unit,
+    onLockCard: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -278,22 +303,22 @@ fun RegisterCardForm(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(70.dp)
-                        .background(AmberOrangeLight, CircleShape),
+                        .size(Dimen.SizeMega)
+                        .background(SmartBlue.copy(alpha = 0.1f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_warning),
+                        imageVector = Icons.Default.Info,
                         contentDescription = null,
-                        tint = AmberOrange,
-                        modifier = Modifier.size(40.dp)
+                        tint = SmartBlue,
+                        modifier = Modifier.size(Dimen.SizeXLPlus)
                     )
                 }
 
                 Spacer(modifier = Modifier.height(AppSpacing.L))
 
                 Text(
-                    text = stringResource(id = R.string.need_to_register_rfid),
+                    text = stringResource(id = R.string.change_vehicle_request_title),
                     style = MaterialTheme.typography.s20.semiBold(),
                     color = LightOnSurface
                 )
@@ -309,38 +334,17 @@ fun RegisterCardForm(
 
                 Spacer(modifier = Modifier.height(AppSpacing.XL))
 
-                GuideSection()
+                // Option 1: Change Vehicle Type
+                VehicleChangeSection(
+                    currentType = state.currentVehicleType ?: VehicleType.MOTORBIKE,
+                    onConfirm = onVehicleChange
+                )
 
-                Spacer(modifier = Modifier.height(AppSpacing.XL))
+                Spacer(modifier = Modifier.height(AppSpacing.L))
 
-                OfficeInfoSection()
-            }
-        }
-
-        Spacer(modifier = Modifier.height(AppSpacing.L))
-
-        VehicleSelectionSection(
-            selectedType = state.selectedVehicleType,
-            onTypeSelected = onVehicleTypeSelected
-        )
-
-        Spacer(modifier = Modifier.height(AppSpacing.L))
-
-        Button(
-            onClick = onSendRequest,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(Dimen.HeightLarge),
-            shape = RoundedCornerShape(AppShape.ShapeXXL),
-            colors = ButtonDefaults.buttonColors(containerColor = SmartBlue),
-            enabled = !state.isLoading
-        ) {
-            if (state.isLoading) {
-                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-            } else {
-                Text(
-                    text = stringResource(id = R.string.send_registration_request),
-                    style = MaterialTheme.typography.s16.semiBold()
+                // Option 2: Lock Card
+                LockCardSection(
+                    onConfirm = onLockCard
                 )
             }
         }
@@ -348,147 +352,78 @@ fun RegisterCardForm(
 }
 
 @Composable
-fun GuideSection() {
+fun VehicleChangeSection(
+    currentType: VehicleType,
+    onConfirm: () -> Unit
+) {
+    val nextType = if (currentType == VehicleType.CAR) VehicleType.MOTORBIKE else VehicleType.CAR
+    val currentLabel =
+        if (currentType == VehicleType.CAR) stringResource(R.string.car) else stringResource(R.string.motorcycle)
+    val nextLabel =
+        if (nextType == VehicleType.CAR) stringResource(R.string.car) else stringResource(R.string.motorcycle)
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(RoyalBlueLight, RoundedCornerShape(AppShape.ShapeM))
+            .background(Background, RoundedCornerShape(AppShape.ShapeM))
             .padding(Dimen.PaddingM)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Icon(
-                imageVector = Icons.Default.Info,
+                imageVector = Icons.Default.SwapHoriz,
                 contentDescription = null,
-                tint = RoyalBlue,
-                modifier = Modifier.size(20.dp)
+                tint = SmartBlue
             )
             Spacer(modifier = Modifier.width(AppSpacing.S))
             Text(
-                text = stringResource(id = R.string.register_guide),
+                text = stringResource(id = R.string.change_vehicle_type),
                 style = MaterialTheme.typography.s16.semiBold(),
-                color = LightOnPrimaryContainer
+                color = SmartBlue
             )
         }
 
         Spacer(modifier = Modifier.height(AppSpacing.M))
 
-        GuideItem(1, stringResource(id = R.string.register_step_1))
-        GuideItem(2, stringResource(id = R.string.register_step_2))
-        GuideItem(3, stringResource(id = R.string.register_step_3))
-    }
-}
-
-@Composable
-fun GuideItem(step: Int, text: String) {
-    Row(
-        modifier = Modifier.padding(vertical = Dimen.PaddingXSPlus),
-        verticalAlignment = Alignment.Top
-    ) {
-        Box(
-            modifier = Modifier
-                .size(24.dp)
-                .background(RoyalBlue.copy(alpha = 0.1f), CircleShape),
-            contentAlignment = Alignment.Center
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = step.toString(),
-                style = MaterialTheme.typography.s12.semiBold(),
-                color = RoyalBlue
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = stringResource(R.string.current_vehicle),
+                    style = MaterialTheme.typography.s12,
+                    color = SlateGray
+                )
+                Text(text = currentLabel, style = MaterialTheme.typography.s14.semiBold())
+            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = null,
+                modifier = Modifier.size(Dimen.SizeS),
+                tint = SlateGray
             )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = stringResource(R.string.new_vehicle),
+                    style = MaterialTheme.typography.s12,
+                    color = SlateGray
+                )
+                Text(text = nextLabel, style = MaterialTheme.typography.s14.semiBold())
+            }
         }
-        Spacer(modifier = Modifier.width(AppSpacing.M))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.s14,
-            color = SlateGray
-        )
-    }
-}
 
-@Composable
-fun OfficeInfoSection() {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.Start
-    ) {
-        Text(
-            text = stringResource(id = R.string.office_address_title),
-            style = MaterialTheme.typography.s16.semiBold(),
-            color = LightOnSurface
-        )
         Spacer(modifier = Modifier.height(AppSpacing.M))
 
-        InfoItem(stringResource(id = R.string.office_location))
-        InfoItem(stringResource(id = R.string.office_hours))
-        InfoItem(stringResource(id = R.string.office_phone))
-    }
-}
-
-@Composable
-fun InfoItem(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.s14,
-        color = SlateGray,
-        modifier = Modifier.padding(vertical = 2.dp)
-    )
-}
-
-@Composable
-fun VehicleSelectionSection(
-    selectedType: VehicleType,
-    onTypeSelected: (VehicleType) -> Unit
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(id = R.string.select_vehicle_type),
-            style = MaterialTheme.typography.s16.semiBold(),
-            color = LightOnSurface
-        )
-        Spacer(modifier = Modifier.height(AppSpacing.M))
-
-        Row(modifier = Modifier.fillMaxWidth()) {
-            VehicleTypeItem(
-                modifier = Modifier.weight(1f),
-                label = stringResource(id = R.string.motorcycle),
-                isSelected = selectedType == VehicleType.MOTORBIKE,
-                onClick = { onTypeSelected(VehicleType.MOTORBIKE) }
-            )
-            Spacer(modifier = Modifier.width(AppSpacing.M))
-            VehicleTypeItem(
-                modifier = Modifier.weight(1f),
-                label = stringResource(id = R.string.car),
-                isSelected = selectedType == VehicleType.CAR,
-                onClick = { onTypeSelected(VehicleType.CAR) }
-            )
+        Button(
+            onClick = onConfirm,
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(AppShape.ShapeM),
+            colors = ButtonDefaults.buttonColors(containerColor = SmartBlue)
+        ) {
+            Text(text = stringResource(id = R.string.confirm_change))
         }
-    }
-}
-
-@Composable
-fun VehicleTypeItem(
-    modifier: Modifier = Modifier,
-    label: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(AppShape.ShapeM))
-            .background(if (isSelected) SmartBlue.copy(alpha = 0.1f) else Color.White)
-            .border(
-                width = 1.dp,
-                color = if (isSelected) SmartBlue else Color.LightGray.copy(alpha = 0.5f),
-                shape = RoundedCornerShape(AppShape.ShapeM)
-            )
-            .clickable { onClick() }
-            .padding(Dimen.PaddingM),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.s14.semiBold(),
-            color = if (isSelected) SmartBlue else SlateGray
-        )
     }
 }

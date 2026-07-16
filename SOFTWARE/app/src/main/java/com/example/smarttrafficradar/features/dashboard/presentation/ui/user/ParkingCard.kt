@@ -80,7 +80,7 @@ fun ParkingCard(
     } else {
         CardStatus(
             bgrColor = SlateMist,
-            contentColor = Color.Gray,
+            contentColor = Color.White,
             icon = Icons.Default.HourglassEmpty,
             activeStatus = stringResource(id = R.string.not_activated),
             rfidCardCode = stringResource(id = R.string.not_activated),

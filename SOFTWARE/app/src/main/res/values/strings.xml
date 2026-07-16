@@ -277,6 +277,20 @@
     <string name="rfid_code_label">Card Code: %1$s</string>
     <string name="registered_vehicle_type">Registered Vehicle: %1$s</string>
     <string name="back_to_dashboard">Back to Dashboard</string>
+    <string name="request_change_lock_card">Change Vehicle / Lock Card</string>
+    <string name="change_vehicle_type">Change Vehicle Type</string>
+    <string name="current_vehicle">Current Vehicle</string>
+    <string name="new_vehicle">New Vehicle</string>
+    <string name="confirm_change">Confirm Change</string>
+    <string name="request_sent_success">Request sent successfully</string>
+    <string name="card_locked_success">Card locked successfully</string>
+    <string name="change_vehicle_request_title">Vehicle Change Request</string>
+    <string name="card_locked_title">Card Locked</string>
+    <string name="card_locked_desc">Your RFID card has been locked due to a violation or a security request (e.g., lost card, account protection).</string>
+    <string name="unlock_guide_title">Unlock Instruction</string>
+    <string name="unlock_step_1">Bring your student/employee card and vehicle papers to the management office</string>
+    <string name="unlock_step_2">The staff will verify your information and reactivate your card</string>
+    <string name="unlock_step_3">Your card will be reactivated immediately after verification</string>
 
     <!-- PROFILE -->
     <string name="setting">Setting</string>
@@ -475,10 +489,13 @@
     <string name="report_filename_prefix">Revenue_Report_</string>
     <string name="csv_header">Transaction ID,Date Time,Amount,Method,Status</string>
     <string name="export_report_via">Export report via…</string>
+    <string name="export_success">Exported file to Downloads folder</string>
+    <string name="export_error">Error exporting file: %1$s</string>
 
     <!-- REGISTER CARD -->
     <string name="register_rfid_card">Register RFID Card</string>
     <string name="assign_card_to_user">Assign Card to User</string>
+    <string name="no_registration_requests">No registration requests yet</string>
 
     <!-- SYSTEM -->
     <string name="device_monitoring">Device Monitoring</string>

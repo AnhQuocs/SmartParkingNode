@@ -4,6 +4,7 @@ import com.example.smarttrafficradar.features.management.domain.model.Registered
 import com.example.smarttrafficradar.features.management.domain.model.RegistrationRequest
 import com.example.smarttrafficradar.features.management.domain.model.RegistrationStatus
 import com.example.smarttrafficradar.features.management.domain.model.CardStatus
+import com.example.smarttrafficradar.features.management.domain.model.VehicleChangeRequest
 import kotlinx.coroutines.flow.Flow
 
 interface RegistrationRepository {
@@ -16,4 +17,8 @@ interface RegistrationRepository {
     // Registered Card actions
     fun getRegisteredCards(): Flow<List<RegisteredCard>>
     suspend fun updateCardStatus(cardId: String, status: CardStatus)
+    suspend fun lockCard(uid: String, cardId: String)
+
+    // Vehicle Change Request
+    suspend fun sendVehicleChangeRequest(request: VehicleChangeRequest)
 }

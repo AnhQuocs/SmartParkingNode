@@ -114,8 +114,8 @@
 
     <string name="sensor_status">Trạng thái cảm biến</string>
     <string name="peripheral_check">Kiểm tra ngoại vi</string>
-    <string name="ir_sensor_1">Cảm biến IR 1</string>
-    <string name="ir_sensor_2">Cảm biến IR 2</string>
+    <string name="ir_sensor_1">Kiểm tra IR 1</string>
+    <string name="ir_sensor_2">Kiểm tra IR 2</string>
     <string name="rfid_module">Mô-đun RFID</string>
 
     <string name="wifi_status">Trạng thái WiFi</string>
@@ -273,6 +273,20 @@
     <string name="rfid_code_label">Mã thẻ: %1$s</string>
     <string name="registered_vehicle_type">Loại xe đăng ký: %1$s</string>
     <string name="back_to_dashboard">Quay lại Trang chủ</string>
+    <string name="request_change_lock_card">Yêu cầu đổi loại xe/Khóa thẻ</string>
+    <string name="change_vehicle_type">Đổi loại xe</string>
+    <string name="current_vehicle">Loại xe hiện tại</string>
+    <string name="new_vehicle">Loại xe mới</string>
+    <string name="confirm_change">Xác nhận đổi</string>
+    <string name="request_sent_success">Yêu cầu đã được gửi thành công</string>
+    <string name="card_locked_success">Đã khóa thẻ thành công</string>
+    <string name="change_vehicle_request_title">Yêu cầu thay đổi xe</string>
+    <string name="card_locked_title">Thẻ đã bị khóa</string>
+    <string name="card_locked_desc">Thẻ RFID của bạn đã bị khóa do vi phạm hoặc theo yêu cầu bảo mật của bạn (ví dụ: báo mất thẻ, bảo vệ tài khoản).</string>
+    <string name="unlock_guide_title">Hướng dẫn mở khóa</string>
+    <string name="unlock_step_1">Mang theo thẻ sinh viên/nhân viên và giấy tờ xe đến văn phòng quản lý</string>
+    <string name="unlock_step_2">Nhân viên sẽ kiểm tra thông tin và kích hoạt lại thẻ cho bạn</string>
+    <string name="unlock_step_3">Thẻ sẽ được sử dụng lại bình thường ngay sau khi xác minh thành công</string>
 
     <!-- PROFILE -->
     <string name="setting">Cài đặt</string>
@@ -468,10 +482,13 @@
     <string name="report_filename_prefix">BaoCao_DoanhThu_</string>
     <string name="csv_header">ID Giao Dịch,Ngày Giờ,Số Tiền,Phương Thức,Trạng Thái</string>
     <string name="export_report_via">Xuất báo cáo qua…</string>
+    <string name="export_success">Đã xuất file vào thư mục Downloads</string>
+    <string name="export_error">Lỗi khi xuất file: %1$s</string>
 
     <!-- REGISTER CARD -->
     <string name="register_rfid_card">Đăng ký thẻ RFID</string>
     <string name="assign_card_to_user">Gán thẻ cho người dùng</string>
+    <string name="no_registration_requests">Chưa có yêu cầu đăng ký nào</string>
 
     <!-- SYSTEM -->
     <string name="device_monitoring">Theo dõi thiết bị</string>
@@ -532,7 +549,7 @@
 
     <string name="admin_privacy_title">Chính sách Bảo mật cho Quản trị viên</string>
     <string name="admin_privacy_intro">Chính sách này giải thích cách thức các hoạt động và dữ liệu quản trị được xử lý trong hệ thống Smart Parking.</string>
-    <string name="admin_privacy_section_1_title">1. Thu thập dữ liệu quản trị</string>
+    <string name="admin_privacy_section_1_title">1. Thu thu thập dữ liệu quản trị</string>
     <string name="admin_privacy_section_1_desc">Chúng tôi thu thập dữ liệu liên quan đến các phiên quản trị của bạn, bao gồm địa chỉ IP, dấu thời gian và các hành động cụ thể được thực hiện trong bảng điều khiển quản lý.</string>
     <string name="admin_privacy_section_2_title">2. Sử dụng thông tin quản trị</string>
     <string name="admin_privacy_section_2_desc">Thông tin này được sử dụng để kiểm tra hệ thống, giám sát bảo mật và nâng cao hiệu suất cũng như độ tin cậy tổng thể của nền tảng.</string>

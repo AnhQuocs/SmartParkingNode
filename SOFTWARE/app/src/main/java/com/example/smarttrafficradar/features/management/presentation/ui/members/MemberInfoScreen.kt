@@ -1,5 +1,6 @@
 package com.example.smarttrafficradar.features.management.presentation.ui.members
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,48 +55,53 @@ fun MemberInfoScreen(
     onBackClick: () -> Unit,
     viewModel: MemberInfoViewModel = hiltViewModel()
 ) {
+    BackHandler { onBackClick() }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Background)
     ) {
-        if (member.linkedUid != null) {
-            val state by viewModel.state.collectAsState()
+        val state by viewModel.state.collectAsState()
 
-            LaunchedEffect(member.linkedUid) {
-                viewModel.getRegisteredCard(member.linkedUid)
+        LaunchedEffect(member.identifier) {
+            viewModel.getMemberInfo(member.identifier)
+        }
+
+        when (val currentState = state) {
+            is MemberInfoState.Loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = SmartBlue)
+                }
             }
 
-            when (val currentState = state) {
-                is MemberInfoState.Loading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = SmartBlue)
-                    }
-                }
+            is MemberInfoState.Success -> {
+                CardDetailScreen(
+                    onBackClick = onBackClick,
+                    registeredCard = currentState.card,
+                    onBlock = { viewModel.updateCardStatus(it, CardStatus.BLOCKED) },
+                    onActive = { viewModel.updateCardStatus(it, CardStatus.ACTIVE) }
+                )
+            }
 
-                is MemberInfoState.Success -> {
-                    CardDetailScreen(
-                        onBackClick = onBackClick,
-                        registeredCard = currentState.card,
-                        onBlock = { viewModel.updateCardStatus(it, CardStatus.BLOCKED) },
-                        onActive = { viewModel.updateCardStatus(it, CardStatus.ACTIVE) }
+            is MemberInfoState.Unregistered -> {
+                UnregisteredMemberInfo(
+                    member = currentState.member,
+                    onBackClick = onBackClick
+                )
+            }
+
+            is MemberInfoState.Error -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = currentState.message,
+                        color = ActionDanger,
+                        style = MaterialTheme.typography.s16.medium()
                     )
                 }
-
-                is MemberInfoState.Error -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = currentState.message,
-                            color = ActionDanger,
-                            style = MaterialTheme.typography.s16.medium()
-                        )
-                    }
-                }
-
-                else -> {}
             }
-        } else {
-            UnregisteredMemberInfo(member = member, onBackClick = onBackClick)
+
+            else -> {}
         }
     }
 }

@@ -12,6 +12,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,6 +24,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.smarttrafficradar.features.management.domain.model.OrganizationMember
 import com.example.smarttrafficradar.features.management.presentation.viewmodel.OrganizationMemberListState
 import com.example.smarttrafficradar.features.management.presentation.viewmodel.OrganizationMemberListViewModel
+import com.example.smarttrafficradar.features.user_profile.presentation.viewmodel.UserProfileState
+import com.example.smarttrafficradar.features.user_profile.presentation.viewmodel.UserProfileViewModel
 import com.example.smarttrafficradar.ui.dimens.Dimen
 import com.example.smarttrafficradar.ui.theme.ActionDanger
 import com.example.smarttrafficradar.ui.theme.Background
@@ -80,9 +83,22 @@ fun MembersScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(vertical = Dimen.PaddingM)
                     ) {
-                        items(currentState.members) { member ->
+                        items(currentState.members, key = { it.identifier }) { member ->
+                            // Tạo/Lấy instance ViewModel riêng cho từng member dựa trên linkedUid
+                            val profile = if (member.linkedUid != null) {
+                                val itemViewModel: UserProfileViewModel = hiltViewModel(key = member.linkedUid)
+                                val profileState by itemViewModel.profileState.collectAsState()
+
+                                LaunchedEffect(member.linkedUid) {
+                                    itemViewModel.loadUserProfile(member.linkedUid)
+                                }
+
+                                (profileState as? UserProfileState.Success)?.profile
+                            } else null
+
                             MemberItem(
                                 member = member,
+                                profile = profile,
                                 onClick = {
                                     selectedMember = member
                                 }

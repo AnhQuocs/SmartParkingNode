@@ -67,7 +67,7 @@ fun HistoryDetailTopBar(
         HistoryInfo(
             icon = Icons.Default.HourglassEmpty,
             text = R.string.parking,
-            contentColor = Color.Gray,
+            contentColor = Color.White,
             bgrColor = SlateMist,
         )
     } else {
@@ -161,14 +161,15 @@ fun HistoryDetailTopBar(
                         modifier = Modifier
                             .height(22.dp)
                             .clip(RoundedCornerShape(AppShape.ShapeL))
-                            .background(color = historyInfo.bgrColor)
+                            .background(color = historyInfo.bgrColor),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = stringResource(id = historyInfo.text),
                             color = historyInfo.contentColor,
                             lineHeight = 12.sp,
                             style = MaterialTheme.typography.s14,
-                            modifier = Modifier.padding(horizontal = Dimen.PaddingS)
+                            modifier = Modifier.padding(horizontal = Dimen.PaddingSM)
                         )
                     }
 
@@ -212,7 +213,7 @@ fun HistoryDetailTopBar(
                                 (historyInfo.fee?.toCurrencyFormat() + " ₫"),
                             style = MaterialTheme.typography.s18,
                             fontWeight = if (isParking) FontWeight.Medium else FontWeight.Bold,
-                            color = if (isParking) SlateGray else GreenBright
+                            color = if (isParking) SlateGray.copy(alpha = 0.6f) else GreenBright
                         )
                     }
                 }

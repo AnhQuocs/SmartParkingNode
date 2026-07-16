@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.smarttrafficradar.features.management.domain.model.RegistrationRequest
 import com.example.smarttrafficradar.features.management.domain.model.RegistrationStatus
+import com.example.smarttrafficradar.features.management.domain.model.VehicleChangeRequest
 import com.example.smarttrafficradar.features.management.domain.usecase.RegistrationUseCases
 import com.example.smarttrafficradar.features.user_profile.domain.model.VehicleType
 import com.example.smarttrafficradar.features.user_profile.domain.usecase.UserProfileUseCases
@@ -20,8 +21,14 @@ data class RegisterCardState(
     val error: String? = null,
     val selectedVehicleType: VehicleType = VehicleType.MOTORBIKE,
     val isAlreadyRegistered: Boolean = false,
+    val isLocked: Boolean = false,
     val currentRfidUid: String? = null,
-    val currentVehicleType: VehicleType? = null
+    val currentVehicleType: VehicleType? = null,
+    val currentFullName: String? = null,
+    val currentIdentifier: String? = null,
+    val showChangeLockView: Boolean = false,
+    val isVehicleChangeSuccess: Boolean = false,
+    val isLockCardSuccess: Boolean = false
 )
 
 @HiltViewModel
@@ -38,11 +45,15 @@ class RegisterCardViewModel @Inject constructor(
             _state.value = _state.value.copy(isLoading = true)
             userProfileUseCases.getUserProfile(uid).collect { profile ->
                 if (profile != null) {
+                    val hasRfid = !profile.rfidUid.isNullOrEmpty()
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        isAlreadyRegistered = profile.isActive && !profile.rfidUid.isNullOrEmpty(),
+                        isAlreadyRegistered = profile.isActive && hasRfid,
+                        isLocked = !profile.isActive && hasRfid,
                         currentRfidUid = profile.rfidUid,
-                        currentVehicleType = profile.vehicleType
+                        currentVehicleType = profile.vehicleType,
+                        currentFullName = profile.fullName,
+                        currentIdentifier = profile.identifier
                     )
                 } else {
                     _state.value = _state.value.copy(isLoading = false, error = "User profile not found")
@@ -55,11 +66,14 @@ class RegisterCardViewModel @Inject constructor(
         _state.value = _state.value.copy(selectedVehicleType = vehicleType)
     }
 
+    fun setShowChangeLockView(show: Boolean) {
+        _state.value = _state.value.copy(showChangeLockView = show)
+    }
+
     fun sendRegistrationRequest(uid: String) {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null)
             try {
-                // Lấy thông tin profile tại thời điểm gửi
                 val profile = userProfileUseCases.getUserProfile(uid).firstOrNull()
                 
                 if (profile != null) {
@@ -73,7 +87,6 @@ class RegisterCardViewModel @Inject constructor(
                     )
                     
                     registrationUseCases.sendRegistrationRequest(request)
-                            
                     _state.value = _state.value.copy(isLoading = false, isSuccess = true)
                 } else {
                     _state.value = _state.value.copy(isLoading = false, error = "User profile not found")
@@ -82,5 +95,52 @@ class RegisterCardViewModel @Inject constructor(
                 _state.value = _state.value.copy(isLoading = false, error = e.message)
             }
         }
+    }
+
+    fun sendVehicleChangeRequest(uid: String) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isLoading = true, error = null)
+            try {
+                val currentState = _state.value
+                val newVehicleType = if (currentState.currentVehicleType == VehicleType.CAR) VehicleType.MOTORBIKE else VehicleType.CAR
+                
+                val request = VehicleChangeRequest(
+                    uid = uid,
+                    fullName = currentState.currentFullName ?: "",
+                    identifier = currentState.currentIdentifier ?: "",
+                    currentVehicleType = currentState.currentVehicleType ?: VehicleType.MOTORBIKE,
+                    requestedVehicleType = newVehicleType,
+                    timestamp = System.currentTimeMillis(),
+                    status = RegistrationStatus.PENDING
+                )
+                
+                registrationUseCases.sendVehicleChangeRequest(request)
+                _state.value = _state.value.copy(isLoading = false, isVehicleChangeSuccess = true)
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(isLoading = false, error = e.message)
+            }
+        }
+    }
+
+    fun lockCard(uid: String) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isLoading = true, error = null)
+            try {
+                val cardId = _state.value.currentIdentifier ?: ""
+                registrationUseCases.lockCard(uid, cardId)
+                _state.value = _state.value.copy(isLoading = false, isLockCardSuccess = true)
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(isLoading = false, error = e.message)
+            }
+        }
+    }
+
+    fun resetSuccess() {
+        _state.value = _state.value.copy(
+            isSuccess = false, 
+            isVehicleChangeSuccess = false, 
+            isLockCardSuccess = false,
+            showChangeLockView = false
+        )
     }
 }

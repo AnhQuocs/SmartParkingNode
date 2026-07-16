@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -97,23 +98,33 @@ fun RegistrationRequestsScreen(
 
                     Spacer(modifier = Modifier.height(AppSpacing.MediumLarge))
 
-                    LazyColumn(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        items(requests, key = { it.id }) { request ->
-                            RegistrationRequestItem(
-                                request = request,
-                                onRegister = {
-                                    navController.navigate(
-                                        "register_card/${request.uid}/${request.vehicleType.name}/${request.timestamp}"
-                                    )
-                                },
-                                onReject = {
-                                    requestToReject = request
-                                }
-                            )
+                    if (requests.isEmpty()) {
+                        Text(
+                            text = stringResource(id = R.string.no_registration_requests),
+                            style = MaterialTheme.typography.s16,
+                            color = SlateGray,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(requests, key = { it.id }) { request ->
+                                RegistrationRequestItem(
+                                    request = request,
+                                    onRegister = {
+                                        navController.navigate(
+                                            "register_card/${request.uid}/${request.vehicleType.name}/${request.timestamp}"
+                                        )
+                                    },
+                                    onReject = {
+                                        requestToReject = request
+                                    }
+                                )
 
-                            Spacer(modifier = Modifier.height(AppSpacing.M))
+                                Spacer(modifier = Modifier.height(AppSpacing.M))
+                            }
                         }
                     }
                 }

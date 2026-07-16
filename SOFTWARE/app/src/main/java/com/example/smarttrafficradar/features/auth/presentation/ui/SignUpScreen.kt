@@ -43,19 +43,20 @@ import androidx.navigation.NavController
 import com.example.smarttrafficradar.R
 import com.example.smarttrafficradar.features.auth.domain.model.UserRole
 import com.example.smarttrafficradar.features.auth.domain.model.UserStatus
-import com.example.smarttrafficradar.features.auth.presentation.components.AuthOptions
 import com.example.smarttrafficradar.features.auth.presentation.viewmodel.AuthState
 import com.example.smarttrafficradar.features.auth.presentation.viewmodel.AuthViewModel
+import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
 import com.example.smarttrafficradar.ui.theme.LightPrimary
 import com.example.smarttrafficradar.ui.theme.TextTertiary
 import com.example.smarttrafficradar.utils.s16
+import com.example.smarttrafficradar.utils.s24
 import com.example.smarttrafficradar.utils.semiBold
+import com.example.smarttrafficradar.utils.withColor
 
 @Composable
 fun SignUpScreen(
-    navController: NavController,
-    authViewModel: AuthViewModel = hiltViewModel()
+    navController: NavController, authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState = authViewModel.state.collectAsState()
 
@@ -81,8 +82,7 @@ fun SignUpScreen(
             }
 
             is AuthState.Error -> {
-                Toast.makeText(context, failedMessage, Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(context, failedMessage, Toast.LENGTH_SHORT).show()
                 authViewModel.clearError()
             }
 
@@ -128,9 +128,7 @@ fun SignUpScreen(
                     style = TextStyle(
                         brush = Brush.horizontalGradient(
                             colors = listOf(
-                                Color(0xFF0D47A1),
-                                Color(0xFF1976D2),
-                                Color(0xFF26D9E8)
+                                Color(0xFF0D47A1), Color(0xFF1976D2), Color(0xFF26D9E8)
                             )
                         )
                     )
@@ -146,6 +144,29 @@ fun SignUpScreen(
             }
         }
 
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 150.dp)
+                .align(Alignment.Center),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(id = R.string.create_account),
+                style = MaterialTheme.typography.s24.withColor(Color.Black)
+            )
+
+            Spacer(modifier = Modifier.height(AppSpacing.S))
+
+            Text(
+                text = stringResource(id = R.string.create_account_hint),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.s16.withColor(Color.Black),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimen.PaddingSM)
+            )
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -154,8 +175,7 @@ fun SignUpScreen(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color.Transparent,
-                            Color.White
+                            Color.Transparent, Color.White
                         )
                     )
                 )
@@ -164,30 +184,16 @@ fun SignUpScreen(
         Column(
             modifier = Modifier
                 .padding(Dimen.PaddingM)
-                .padding(bottom = Dimen.PaddingL)
-                .align(Alignment.BottomCenter)
+                .padding(top = 330.dp)
+                .align(Alignment.Center)
         ) {
-            SignUpForm(
-                onSignUp = { username, email, password ->
-                    authViewModel.signUp(username, email, password)
-                },
-                onSignUpWithAdmin = { username, email, password, adminCode ->
-                    authViewModel.signUpAdmin(username, email, password, adminCode)
-                },
-                onCheckBoxClick = { value -> isSignUpWithAdmin = value }
-            )
+            SignUpForm(onSignUp = { username, email, password ->
+                authViewModel.signUp(username, email, password)
+            }, onSignUpWithAdmin = { username, email, password, adminCode ->
+                authViewModel.signUpAdmin(username, email, password, adminCode)
+            }, onCheckBoxClick = { value -> isSignUpWithAdmin = value })
 
             Spacer(modifier = Modifier.height(Dimen.PaddingL))
-
-            if (!isSignUpWithAdmin) {
-                AuthOptions(
-                    onClick = {
-
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(Dimen.PaddingL))
-            }
 
             Row(
                 modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
@@ -206,8 +212,7 @@ fun SignUpScreen(
                         navController.navigate("sign_in") {
                             popUpTo("sign_up") { inclusive = true }
                         }
-                    }
-                )
+                    })
             }
         }
 
@@ -222,8 +227,7 @@ fun SignUpScreen(
                                 awaitPointerEvent()
                             }
                         }
-                    },
-                contentAlignment = Alignment.Center
+                    }, contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(color = LightPrimary)
             }

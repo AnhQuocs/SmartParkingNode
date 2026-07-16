@@ -111,12 +111,14 @@ fun AdminActionCard(
         elevation = CardDefaults.cardElevation(defaultElevation = Dimen.PaddingXXS),
         shape = RoundedCornerShape(AppShape.ShapeL),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimen.PaddingM)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(Dimen.PaddingL)
+                .padding(vertical = Dimen.PaddingL)
         ) {
             Column(
                 modifier = Modifier.padding(horizontal = Dimen.PaddingSM),

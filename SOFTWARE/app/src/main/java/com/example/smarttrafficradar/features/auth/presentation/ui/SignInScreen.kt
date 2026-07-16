@@ -43,7 +43,6 @@ import androidx.navigation.NavController
 import com.example.smarttrafficradar.R
 import com.example.smarttrafficradar.features.auth.domain.model.UserRole
 import com.example.smarttrafficradar.features.auth.domain.model.UserStatus
-import com.example.smarttrafficradar.features.auth.presentation.components.AuthOptions
 import com.example.smarttrafficradar.features.auth.presentation.viewmodel.AuthState
 import com.example.smarttrafficradar.features.auth.presentation.viewmodel.AuthViewModel
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
@@ -186,8 +185,8 @@ fun SignInScreen(
         Column(
             modifier = Modifier
                 .padding(Dimen.PaddingM)
-                .padding(bottom = Dimen.PaddingXXL)
-                .align(Alignment.BottomCenter)
+                .padding(top = 250.dp)
+                .align(Alignment.Center)
         ) {
             SignInForm(
                 email = email,
@@ -197,13 +196,6 @@ fun SignInScreen(
                 onShowDialog = { showDialog = true },
                 onSignIn = { email, password ->
                     authViewModel.signIn(email, password)
-                })
-
-            Spacer(modifier = Modifier.height(Dimen.PaddingL))
-
-            AuthOptions(
-                onClick = {
-
                 })
 
             Spacer(modifier = Modifier.height(Dimen.PaddingL))

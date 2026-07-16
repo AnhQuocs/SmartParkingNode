@@ -8,6 +8,7 @@ import com.example.smarttrafficradar.features.management.domain.model.CardStatus
 import com.example.smarttrafficradar.features.management.domain.model.RegisteredCard
 import com.example.smarttrafficradar.features.management.domain.model.RegistrationRequest
 import com.example.smarttrafficradar.features.management.domain.model.RegistrationStatus
+import com.example.smarttrafficradar.features.management.domain.model.VehicleChangeRequest
 import com.example.smarttrafficradar.features.management.domain.repository.RegistrationRepository
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -28,8 +29,8 @@ class RegistrationRepositoryImpl @Inject constructor(
 ) : RegistrationRepository {
 
     private val registrationRef = db.getReference("registration_requests")
+    private val vehicleChangeRef = db.getReference("vehicle_change_requests")
     private val cardsCollection = firestore.collection("registered_cards")
-
     private val profilesCollection = firestore.collection("profiles")
 
     override suspend fun sendRegistrationRequest(request: RegistrationRequest) {
@@ -110,6 +111,17 @@ class RegistrationRepositoryImpl @Inject constructor(
 
     override suspend fun updateCardStatus(cardId: String, status: CardStatus) {
         cardsCollection.document(cardId).update("status", status.name).await()
+    }
+
+    override suspend fun lockCard(uid: String, cardId: String) {
+        // Cập nhật trạng thái thẻ trong registered_cards
+        cardsCollection.document(cardId).update("status", CardStatus.BLOCKED.name).await()
+        // Cập nhật profile người dùng
+        profilesCollection.document(uid).update("isActive", false).await()
+    }
+
+    override suspend fun sendVehicleChangeRequest(request: VehicleChangeRequest) {
+        vehicleChangeRef.child(request.uid).setValue(request).await()
     }
 
     override suspend fun updateRegistrationStatus(uid: String, status: RegistrationStatus) {
