@@ -10,12 +10,8 @@
 // Servo MG90S — nguồn 5V riêng, tránh sụt áp
 #define PIN_SERVO 14
 
-// DFPlayer Mini — dùng Serial2 (RX2=16, TX2=17)
-#define PIN_DF_RX 16
-#define PIN_DF_TX 17
-
 // ── SERVO ANGLES ─────────────────────────────────────────────
-#define SERVO_OPEN_ANGLE 180
+#define SERVO_OPEN_ANGLE 150
 #define SERVO_CLOSE_ANGLE 90
 
 // ── DEVICE ID ────────────────────────────────────────────────
@@ -29,9 +25,3 @@
 #define TELEMETRY_INTERVAL_MS 15000  // Gửi telemetry mỗi 15s
 #define WIFI_RETRY_INTERVAL_MS 30000 // Thử kết nối lại WiFi mỗi 30s
 
-// ── AUDIO TRACKS ─────────────────────────────────────────────
-// File đặt trong SD card DFPlayer: 001.mp3, 002.mp3, ...
-#define AUDIO_GATE_OPEN_CLOSE 1 // "Cổng đang mở/đóng"
-#define AUDIO_DEBT_EXCEED 2     // "Vượt hạn mức công nợ"
-#define AUDIO_CARD_UNKNOWN 3    // "Thẻ chưa đăng ký"
-#define AUDIO_CARD_REGISTERED 4   // "Thẻ đã đăng ký"

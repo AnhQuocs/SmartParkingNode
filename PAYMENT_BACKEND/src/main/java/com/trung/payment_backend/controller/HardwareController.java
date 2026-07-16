@@ -36,10 +36,22 @@ public class HardwareController {
             firebaseService.handleHardwareEvent(request.getType(), request.getRfidUid(), request.getUserId());
 
             long finalFee = 0;
+            String vehicleType = "MOTORBIKE";
+            try {
+                Firestore db = FirestoreClient.getFirestore();
 
-            if ("OUT".equalsIgnoreCase(request.getType())) {
-                try {
-                    Firestore db = FirestoreClient.getFirestore();
+                QuerySnapshot profileSnapshot = db.collection("profiles")
+                        .whereEqualTo("uid", request.getUserId())
+                        .limit(1).get().get();
+
+                if (!profileSnapshot.isEmpty()) {
+                    String vType = profileSnapshot.getDocuments().get(0).getString("vehicleType");
+                    if (vType != null && !vType.trim().isEmpty()) {
+                        vehicleType = vType.toUpperCase();
+                    }
+                }
+                if ("OUT".equalsIgnoreCase(request.getType())) {
+
                     QuerySnapshot historySnapshot = db.collection("parking_histories")
                             .whereEqualTo("rfidUid", request.getRfidUid())
                             .whereEqualTo("status", "CHECK_OUT")
@@ -57,13 +69,13 @@ public class HardwareController {
                     } else {
                         System.out.println("[DEBUG] Không tìm thấy bản ghi CHECK_OUT nào cho thẻ này.");
                     }
-                } catch (Exception e) {
-                    System.err.println("[HARDWARE] Lỗi truy vấn phí: " + e.getMessage());
                 }
+            } catch (Exception e) {
+                System.err.println("[HARDWARE] Lỗi truy vấn phí: " + e.getMessage());
             }
 
             System.out.println("[DEBUG] Đang đẩy phí sang Analytics: " + finalFee);
-            firebaseService.updateRealtimeAnalytics(request.getType(), finalFee);
+            firebaseService.updateRealtimeAnalytics(request.getType(), finalFee, vehicleType);
 
         } else {
             System.err.println("[HARDWARE] Thiếu userId");
@@ -91,8 +103,6 @@ public class HardwareController {
             DocumentSnapshot cardDoc = cardSnapshot.getDocuments().get(0);
             String status = cardDoc.getString("status");
             String userId = cardDoc.getString("userId");
-            String vehicleType = cardDoc.getString("vehicleType");
-            if (vehicleType == null) vehicleType = "MOTORBIKE";
 
             if (!"ACTIVE".equalsIgnoreCase(status)) {
                 response.put("action", "DENY_BLOCKED");
@@ -108,6 +118,12 @@ public class HardwareController {
             }
 
             DocumentSnapshot profileDoc = profileSnapshot.getDocuments().get(0);
+
+            String vehicleType = profileDoc.getString("vehicleType");
+            if (vehicleType == null || vehicleType.trim().isEmpty()) {
+                vehicleType = "MOTORBIKE";
+            }
+
             Long currentDebtObj = profileDoc.getLong("currentDebt");
             long currentDebt = (currentDebtObj != null) ? currentDebtObj : 0L;
 

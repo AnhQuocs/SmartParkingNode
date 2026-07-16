@@ -121,13 +121,11 @@ void onCloudCommand(String cmd, String uid, String action)
     }
     else if (cmd == "BUZZER_ALERT")
     {
-        // Thẻ nợ quá hạn (Track 2)
-        barrier.playAudio(AUDIO_DEBT_EXCEED);
+        Serial.println("[ALERT] Thẻ nợ quá hạn / Bị khóa!");
     }
     else if (cmd == "CARD_UNKNOWN")
     {
-        // Thẻ chưa đăng ký (Track 3)
-        barrier.playAudio(AUDIO_CARD_UNKNOWN);
+        Serial.println("[ALERT] Thẻ chưa đăng ký!");
     }
     else if (cmd == "REGISTER_MODE" || cmd == "MODE_1")
     {

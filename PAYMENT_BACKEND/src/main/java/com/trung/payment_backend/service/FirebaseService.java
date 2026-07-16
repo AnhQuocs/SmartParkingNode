@@ -267,7 +267,7 @@ public class FirebaseService {
         }
     }
 
-    public void updateRealtimeAnalytics(String direction, long feeAmount) {
+    public void updateRealtimeAnalytics(String direction, long feeAmount, String vehicleType) {
         try {
             String todayStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             DatabaseReference ref = FirebaseDatabase.getInstance()
@@ -282,6 +282,7 @@ public class FirebaseService {
                     long todayInCount = 0;
                     long todayOutCount = 0;
                     long todayRevenue = 0;
+                    long dailyVehicleThroughput = 0;
 
                     if (mutableData.child("vehicles_in_lot").getValue() != null) {
                         vehiclesInLot = (Long) mutableData.child("vehicles_in_lot").getValue();
@@ -296,9 +297,14 @@ public class FirebaseService {
                         todayRevenue = (Long) mutableData.child("today_revenue").getValue();
                     }
 
+                    if (mutableData.child("vehicle_types").child(vehicleType).getValue() != null) {
+                        dailyVehicleThroughput = (Long) mutableData.child("vehicle_types").child(vehicleType).getValue();
+                    }
+
                     if ("IN".equalsIgnoreCase(direction)) {
                         vehiclesInLot++;
                         todayInCount++;
+                        dailyVehicleThroughput++;
                     } else if ("OUT".equalsIgnoreCase(direction)) {
                         vehiclesInLot--;
                         if (vehiclesInLot < 0) vehiclesInLot = 0;
@@ -310,6 +316,7 @@ public class FirebaseService {
                     mutableData.child("today_in_count").setValue(todayInCount);
                     mutableData.child("today_out_count").setValue(todayOutCount);
                     mutableData.child("today_revenue").setValue(todayRevenue);
+                    mutableData.child("vehicle_types").child(vehicleType).setValue(dailyVehicleThroughput);
 
                     return Transaction.success(mutableData);
                 }
