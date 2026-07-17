@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.filled.TwoWheeler
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -120,15 +121,11 @@ fun MonitorScreen(
                 SummaryCard(
                     modifier = Modifier.fillMaxWidth(),
                     title = stringResource(id = R.string.vehicles_in_lot),
-                    value = "${summary.current.vehiclesInLot} / 50",
-                    subValue = stringResource(
-                        id = R.string.available_spots,
-                        50 - summary.current.vehiclesInLot
-                    ),
+                    value = "${summary.current.vehiclesInLot}",
+                    subValue = "",
                     icon = Icons.Default.DirectionsCar,
                     iconColor = Color(0xFF0092CE),
                     iconBg = Color(0xFFC1E5F3).copy(alpha = 0.3f),
-                    // Dữ liệu giả định xu hướng lấp đầy bãi xe
                     chartData = listOf(
                         15f,
                         22f,
@@ -139,6 +136,23 @@ fun MonitorScreen(
                         summary.current.vehiclesInLot.toFloat()
                     )
                 )
+
+                // Hiển thị lưu lượng chi tiết theo loại xe
+                if (summary.current.vehicleTypes.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(AppSpacing.M))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.S)
+                    ) {
+                        summary.current.vehicleTypes.forEach { (type, count) ->
+                            VehicleTypeItem(
+                                type = type,
+                                count = count,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(AppSpacing.M))
 
@@ -190,6 +204,51 @@ fun MonitorScreen(
 
                 Spacer(modifier = Modifier.height(AppSpacing.MediumLarge))
             }
+        }
+    }
+}
+
+@Composable
+fun VehicleTypeItem(
+    type: String,
+    count: Int,
+    modifier: Modifier = Modifier
+) {
+    val (labelRes, icon) = when (type.lowercase()) {
+        "car" -> R.string.car to Icons.Default.DirectionsCar
+        "motorbike" -> R.string.motorcycle to Icons.Default.TwoWheeler
+        else -> R.string.vehicle_type to Icons.Default.DirectionsCar
+    }
+
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(AppShape.ShapeM),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Dimen.PaddingS),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(Dimen.SizeS)
+            )
+            Spacer(modifier = Modifier.width(AppSpacing.XS))
+            Text(
+                text = stringResource(
+                    id = R.string.vehicle_type_count_format,
+                    stringResource(id = labelRes),
+                    count
+                ),
+                style = MaterialTheme.typography.s12.semiBold(),
+                color = LightOnSurface
+            )
         }
     }
 }

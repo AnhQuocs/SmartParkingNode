@@ -21,6 +21,9 @@
         android:theme="@style/Theme.SMART_PARKING"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".features.management.presentation.ui.vehicle.VehicleChangeRequestActivity"
+            android:exported="false" />
+        <activity
             android:name=".features.profile.presentation.ui.admin.AdminProfileActivity"
             android:exported="false" />
         <activity

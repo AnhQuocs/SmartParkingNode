@@ -29,7 +29,7 @@
     <!-- VIOLATION -->
     <string name="violation_level_critical">NGHIÊM TRỌNG</string>
     <string name="violation_level_high">CAO</string>
-    <string name="violation_level_moderate">TRUNG BÌNH</string>
+    <string name="violation_level_moderate">MODERATE</string>
 
     <string name="violation_recorded_speed">Tốc độ ghi nhận</string>
     <string name="violation_speed_limit">Giới hạn tốc độ</string>
@@ -422,6 +422,7 @@
     </plurals>
     <string name="pending_registrations">Yêu cầu đăng ký</string>
     <string name="registered_cards">Thẻ đã đăng ký</string>
+    <string name="vehicle_change_requests">Yêu cầu đổi phương tiện</string>
     <plurals name="pending_requests">
         <item quantity="other">%d yêu cầu đang chờ</item>
     </plurals>
@@ -440,6 +441,14 @@
 
     <string name="reject_request_title">Từ chối yêu cầu</string>
     <string name="reject_request_message">Bạn có chắc chắn muốn từ chối yêu cầu đăng ký này không? Hành động này sẽ xóa yêu cầu khỏi hệ thống.</string>
+
+    <!-- VEHICLE CHANGE REQUEST -->
+    <string name="no_vehicle_change_requests">Chưa có yêu cầu đổi phương tiện nào</string>
+    <string name="request_details">Chi tiết yêu cầu</string>
+    <string name="approve_change_title">Duyệt đổi phương tiện</string>
+    <string name="approve_change_message">Bạn có chắc chắn muốn duyệt yêu cầu đổi phương tiện này không? Hành động này sẽ cập nhật loại xe cho thẻ này.</string>
+    <string name="reject_change_title">Từ chối đổi phương tiện</string>
+    <string name="reject_change_message">Bạn có chắc chắn muốn từ chối yêu cầu đổi phương tiện này không? Hành động này sẽ giữ nguyên loại xe hiện tại.</string>
 
     <!-- REGISTERED CARDS -->
     <string name="search_registered_cards_hint">Tìm theo UID hoặc chủ sở hữu…</string>
@@ -529,6 +538,8 @@
     <string name="out_label">Ra</string>
     <string name="parking_capacity">Sức chứa bãi xe</string>
     <string name="available_spots">Còn trống: %1$d chỗ</string>
+    <string name="traffic_by_vehicle_type">Lưu lượng theo loại xe</string>
+    <string name="vehicle_type_count_format">%1$s: %2$d</string>
 
     <!-- ADMIN PROFILE -->
     <string name="system_administrator">Quản trị viên hệ thống</string>

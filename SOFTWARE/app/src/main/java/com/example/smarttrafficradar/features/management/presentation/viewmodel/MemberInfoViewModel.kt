@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.smarttrafficradar.features.management.domain.model.CardStatus
 import com.example.smarttrafficradar.features.management.domain.model.OrganizationMember
 import com.example.smarttrafficradar.features.management.domain.model.RegisteredCard
-import com.example.smarttrafficradar.features.management.domain.usecase.GetOrganizationMembersUseCase
 import com.example.smarttrafficradar.features.management.domain.usecase.RegistrationUseCases
+import com.example.smarttrafficradar.features.management.domain.usecase.members.GetOrganizationMembersUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

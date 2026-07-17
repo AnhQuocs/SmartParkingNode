@@ -1,4 +1,4 @@
-package com.example.smarttrafficradar.features.management.domain.usecase
+package com.example.smarttrafficradar.features.management.domain.usecase.vehicle
 
 import com.example.smarttrafficradar.features.management.domain.model.VehicleChangeRequest
 import com.example.smarttrafficradar.features.management.domain.repository.RegistrationRepository

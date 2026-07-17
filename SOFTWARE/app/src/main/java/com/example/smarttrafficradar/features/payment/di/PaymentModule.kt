@@ -4,7 +4,6 @@ import com.example.smarttrafficradar.features.payment.data.remote.PaymentApi
 import com.example.smarttrafficradar.features.payment.data.repository.PaymentRepositoryImpl
 import com.example.smarttrafficradar.features.payment.domain.repository.PaymentRepository
 import com.google.firebase.firestore.FirebaseFirestore
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,7 +16,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object PaymentModule {
 
-    private const val BASE_URL = "https://e5f1-118-70-182-219.ngrok-free.app/"
+    private const val BASE_URL = "https://492e-2405-4802-1ff-e580-911c-b86c-ee82-18dd.ngrok-free.app/"
 //    private const val BASE_URL = "http://192.168.0.103:8080"
 
     @Provides

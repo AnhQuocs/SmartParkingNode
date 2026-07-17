@@ -6,6 +6,7 @@ import com.example.smarttrafficradar.features.management.domain.model.Registrati
 import com.example.smarttrafficradar.features.management.domain.model.RegistrationStatus
 import com.example.smarttrafficradar.features.management.domain.model.VehicleChangeRequest
 import com.example.smarttrafficradar.features.management.domain.usecase.RegistrationUseCases
+import com.example.smarttrafficradar.features.user_profile.domain.model.MemberType
 import com.example.smarttrafficradar.features.user_profile.domain.model.VehicleType
 import com.example.smarttrafficradar.features.user_profile.domain.usecase.UserProfileUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,6 +21,7 @@ data class RegisterCardState(
     val isSuccess: Boolean = false,
     val error: String? = null,
     val selectedVehicleType: VehicleType = VehicleType.MOTORBIKE,
+    val memberType: MemberType = MemberType.STUDENT,
     val isAlreadyRegistered: Boolean = false,
     val isLocked: Boolean = false,
     val currentRfidUid: String? = null,
@@ -53,7 +55,8 @@ class RegisterCardViewModel @Inject constructor(
                         currentRfidUid = profile.rfidUid,
                         currentVehicleType = profile.vehicleType,
                         currentFullName = profile.fullName,
-                        currentIdentifier = profile.identifier
+                        currentIdentifier = profile.identifier,
+                        memberType = profile.memberType
                     )
                 } else {
                     _state.value = _state.value.copy(isLoading = false, error = "User profile not found")
@@ -108,8 +111,10 @@ class RegisterCardViewModel @Inject constructor(
                     uid = uid,
                     fullName = currentState.currentFullName ?: "",
                     identifier = currentState.currentIdentifier ?: "",
+                    rfidUid = currentState.currentRfidUid ?: "",
                     currentVehicleType = currentState.currentVehicleType ?: VehicleType.MOTORBIKE,
                     requestedVehicleType = newVehicleType,
+                    memberType = currentState.memberType,
                     timestamp = System.currentTimeMillis(),
                     status = RegistrationStatus.PENDING
                 )

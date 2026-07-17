@@ -21,4 +21,6 @@ interface RegistrationRepository {
 
     // Vehicle Change Request
     suspend fun sendVehicleChangeRequest(request: VehicleChangeRequest)
+    fun getVehicleChangeRequests(): Flow<List<VehicleChangeRequest>>
+    suspend fun handleVehicleChangeDecision(uid: String, status: RegistrationStatus)
 }

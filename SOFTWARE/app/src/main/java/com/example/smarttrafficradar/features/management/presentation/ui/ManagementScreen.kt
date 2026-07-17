@@ -26,12 +26,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.smarttrafficradar.features.management.presentation.ui.members.MembersActivity
 import com.example.smarttrafficradar.features.management.presentation.ui.registerd_card.RegisteredCardsActivity
 import com.example.smarttrafficradar.features.management.presentation.ui.registration_requests.RegistrationRequestsActivity
+import com.example.smarttrafficradar.features.management.presentation.ui.vehicle.VehicleChangeRequestActivity
 import com.example.smarttrafficradar.features.management.presentation.viewmodel.OrganizationMemberListState
 import com.example.smarttrafficradar.features.management.presentation.viewmodel.OrganizationMemberListViewModel
 import com.example.smarttrafficradar.features.management.presentation.viewmodel.PendingCardsState
 import com.example.smarttrafficradar.features.management.presentation.viewmodel.PendingCardsViewModel
 import com.example.smarttrafficradar.features.management.presentation.viewmodel.RegistrationListState
 import com.example.smarttrafficradar.features.management.presentation.viewmodel.RegistrationListViewModel
+import com.example.smarttrafficradar.features.management.presentation.viewmodel.VehicleChangeRequestsState
+import com.example.smarttrafficradar.features.management.presentation.viewmodel.VehicleChangeRequestsViewModel
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
 import com.example.smarttrafficradar.ui.theme.Background
@@ -42,23 +45,27 @@ import com.example.smarttrafficradar.utils.s14
 fun ManagementScreen(
     registrationListViewModel: RegistrationListViewModel = hiltViewModel(),
     organizationMemberListViewModel: OrganizationMemberListViewModel = hiltViewModel(),
-    pendingCardsViewModel: PendingCardsViewModel = hiltViewModel()
+    pendingCardsViewModel: PendingCardsViewModel = hiltViewModel(),
+    vehicleChangeRequestsViewModel: VehicleChangeRequestsViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
 
     val registrationState by registrationListViewModel.state.collectAsState()
     val organizationMemberState by organizationMemberListViewModel.state.collectAsState()
     val pendingCardsState by pendingCardsViewModel.state.collectAsState()
+    val vehicleChangeRequestState by vehicleChangeRequestsViewModel.state.collectAsState()
 
     val scrollState = rememberScrollState()
 
     val isLoading = registrationState is RegistrationListState.Loading ||
             organizationMemberState is OrganizationMemberListState.Loading ||
-            pendingCardsState is PendingCardsState.Loading
+            pendingCardsState is PendingCardsState.Loading ||
+            vehicleChangeRequestState is VehicleChangeRequestsState.Loading
 
     val errorMessage = (registrationState as? RegistrationListState.Error)?.message
         ?: (organizationMemberState as? OrganizationMemberListState.Error)?.message
         ?: (pendingCardsState as? PendingCardsState.Error)?.message
+        ?: (vehicleChangeRequestState as? VehicleChangeRequestsState.Error)?.message
 
     Box(
         modifier = Modifier
@@ -105,6 +112,8 @@ fun ManagementScreen(
                 val users =
                     (organizationMemberState as? OrganizationMemberListState.Success)?.members
                         ?: emptyList()
+                val vehicleChangeRequests =
+                    (vehicleChangeRequestState as VehicleChangeRequestsState.Success).requests
 
                 ManagementCategoriesSection(
                     onRegistrationRequests = {
@@ -119,9 +128,14 @@ fun ManagementScreen(
                         val intent = Intent(context, MembersActivity::class.java)
                         context.startActivity(intent)
                     },
+                    onVehicleChangeRequest = {
+                        val intent = Intent(context, VehicleChangeRequestActivity::class.java)
+                        context.startActivity(intent)
+                    },
                     registrationRequests = registrationRequests,
                     registeredCards = registeredCards,
-                    users = users
+                    users = users,
+                    vehicleChangeRequests = vehicleChangeRequests
                 )
 
                 Spacer(modifier = Modifier.height(AppSpacing.M))

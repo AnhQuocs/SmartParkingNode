@@ -4,7 +4,8 @@ data class ParkingAnalytics(
     val todayInCount: Int = 0,
     val todayOutCount: Int = 0,
     val todayRevenue: Long = 0,
-    val vehiclesInLot: Int = 0
+    val vehiclesInLot: Int = 0,
+    val vehicleTypes: Map<String, Int> = emptyMap()
 )
 
 data class ParkingSummary(

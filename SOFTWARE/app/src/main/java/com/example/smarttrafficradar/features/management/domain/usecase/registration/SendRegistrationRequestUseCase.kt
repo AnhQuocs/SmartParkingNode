@@ -1,4 +1,4 @@
-package com.example.smarttrafficradar.features.management.domain.usecase
+package com.example.smarttrafficradar.features.management.domain.usecase.registration
 
 import com.example.smarttrafficradar.features.management.domain.model.RegistrationRequest
 import com.example.smarttrafficradar.features.management.domain.repository.RegistrationRepository

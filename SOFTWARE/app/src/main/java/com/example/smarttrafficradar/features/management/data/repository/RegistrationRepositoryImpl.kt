@@ -2,6 +2,7 @@ package com.example.smarttrafficradar.features.management.data.repository
 
 import com.example.smarttrafficradar.features.management.data.dto.RegisteredCardDto
 import com.example.smarttrafficradar.features.management.data.dto.RegistrationRequestDto
+import com.example.smarttrafficradar.features.management.data.dto.VehicleChangeRequestDto
 import com.example.smarttrafficradar.features.management.data.mapper.toDomain
 import com.example.smarttrafficradar.features.management.data.mapper.toDto
 import com.example.smarttrafficradar.features.management.domain.model.CardStatus
@@ -63,9 +64,8 @@ class RegistrationRepositoryImpl @Inject constructor(
             request?.let {
                 val now = System.currentTimeMillis()
 
-                // 1. Tạo thông tin thẻ đã đăng ký
                 val card = RegisteredCard(
-                    id = it.identifier, // Thường dùng Student/Employee ID làm document ID
+                    id = it.identifier,
                     userId = it.uid,
                     rfidUid = it.rfidUid,
                     ownerName = it.fullName,
@@ -78,10 +78,8 @@ class RegistrationRepositoryImpl @Inject constructor(
                     lastUsedAt = now
                 )
 
-                // 2. Lưu vào collection registered_cards
                 cardsCollection.document(card.id).set(card.toDto()).await()
 
-                // 3. Cập nhật thông tin User Profile để kích hoạt tài khoản trên App người dùng
                 profilesCollection.document(it.uid).update(
                     mapOf(
                         "isActive" to true,
@@ -91,8 +89,6 @@ class RegistrationRepositoryImpl @Inject constructor(
                 ).await()
             }
         }
-
-        // Sau khi duyệt hoặc từ chối, xóa yêu cầu khỏi Realtime Database
         registrationRef.child(uid).removeValue().await()
     }
 
@@ -114,14 +110,49 @@ class RegistrationRepositoryImpl @Inject constructor(
     }
 
     override suspend fun lockCard(uid: String, cardId: String) {
-        // Cập nhật trạng thái thẻ trong registered_cards
         cardsCollection.document(cardId).update("status", CardStatus.BLOCKED.name).await()
-        // Cập nhật profile người dùng
         profilesCollection.document(uid).update("isActive", false).await()
     }
 
     override suspend fun sendVehicleChangeRequest(request: VehicleChangeRequest) {
-        vehicleChangeRef.child(request.uid).setValue(request).await()
+        vehicleChangeRef.child(request.uid).setValue(request.toDto()).await()
+    }
+
+    override fun getVehicleChangeRequests(): Flow<List<VehicleChangeRequest>> = callbackFlow {
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val requests = snapshot.children.mapNotNull { child ->
+                    child.getValue(VehicleChangeRequestDto::class.java)?.toDomain()
+                }
+                trySend(requests)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
+        vehicleChangeRef.addValueEventListener(listener)
+        awaitClose { vehicleChangeRef.removeEventListener(listener) }
+    }
+
+    override suspend fun handleVehicleChangeDecision(uid: String, status: RegistrationStatus) {
+        if (status == RegistrationStatus.APPROVED) {
+            val snapshot = vehicleChangeRef.child(uid).get().await()
+            val requestDto = snapshot.getValue(VehicleChangeRequestDto::class.java)
+            val request = requestDto?.toDomain()
+
+            request?.let {
+                // Update registered_cards
+                val cardsQuery = cardsCollection.whereEqualTo("userId", it.uid).get().await()
+                for (doc in cardsQuery.documents) {
+                    doc.reference.update("vehicleType", it.requestedVehicleType.name).await()
+                }
+
+                // Update profiles
+                profilesCollection.document(it.uid).update("vehicleType", it.requestedVehicleType.name).await()
+            }
+        }
+        vehicleChangeRef.child(uid).removeValue().await()
     }
 
     override suspend fun updateRegistrationStatus(uid: String, status: RegistrationStatus) {

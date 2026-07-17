@@ -1,4 +1,4 @@
-package com.example.smarttrafficradar.features.management.presentation.ui.registerd_card
+package com.example.smarttrafficradar.features.management.presentation.ui.vehicle
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.example.smarttrafficradar.R
@@ -31,11 +32,18 @@ import com.example.smarttrafficradar.utils.s20
 import com.example.smarttrafficradar.utils.semiBold
 
 @Composable
-fun CardDetailTopBar(
-    rfidUid: String,
-    text: String = stringResource(id = R.string.card_detail),
-    onBackClick: () -> Unit
+fun VehicleChangeRequestTopBar(
+    onBackClick: () -> Unit,
+    count: Int
 ) {
+    val context = LocalContext.current
+
+    val countText = context.resources.getQuantityString(
+        R.plurals.pending_requests,
+        count,
+        count
+    )
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -78,13 +86,13 @@ fun CardDetailTopBar(
                     .padding(Dimen.PaddingM)
             ) {
                 Text(
-                    text = text,
+                    text = stringResource(id = R.string.vehicle_change_requests),
                     style = MaterialTheme.typography.s20.semiBold(),
                     color = Color.White
                 )
 
                 Text(
-                    text = rfidUid,
+                    text = countText,
                     style = MaterialTheme.typography.s16,
                     color = Color.White
                 )

@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.smarttrafficradar.features.management.domain.model.PendingCard
 import com.example.smarttrafficradar.features.management.domain.model.PendingCardStatus
-import com.example.smarttrafficradar.features.management.domain.usecase.GetPendingCardsUseCase
-import com.example.smarttrafficradar.features.management.domain.usecase.UpdatePendingCardStatusUseCase
+import com.example.smarttrafficradar.features.management.domain.usecase.cards.GetPendingCardsUseCase
+import com.example.smarttrafficradar.features.management.domain.usecase.cards.UpdatePendingCardStatusUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

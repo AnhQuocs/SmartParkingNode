@@ -1,4 +1,4 @@
-package com.example.smarttrafficradar.features.management.domain.usecase
+package com.example.smarttrafficradar.features.management.domain.usecase.cards
 
 import com.example.smarttrafficradar.features.management.domain.model.PendingCard
 import com.example.smarttrafficradar.features.management.domain.repository.PendingCardRepository

@@ -34,10 +34,12 @@ import com.example.smarttrafficradar.R
 import com.example.smarttrafficradar.features.management.domain.model.OrganizationMember
 import com.example.smarttrafficradar.features.management.domain.model.RegisteredCard
 import com.example.smarttrafficradar.features.management.domain.model.RegistrationRequest
+import com.example.smarttrafficradar.features.management.domain.model.VehicleChangeRequest
 import com.example.smarttrafficradar.ui.dimens.AppShape
 import com.example.smarttrafficradar.ui.dimens.AppSpacing
 import com.example.smarttrafficradar.ui.dimens.Dimen
 import com.example.smarttrafficradar.ui.theme.CyanPrimary
+import com.example.smarttrafficradar.ui.theme.EmeraldPrimary
 import com.example.smarttrafficradar.ui.theme.IndigoPrimary
 import com.example.smarttrafficradar.ui.theme.OrangePrimary
 import com.example.smarttrafficradar.ui.theme.SlateGray
@@ -50,9 +52,11 @@ fun ManagementCategoriesSection(
     onRegistrationRequests: () -> Unit,
     onRegisteredCardsClick: () -> Unit,
     onUserListClick: () -> Unit,
+    onVehicleChangeRequest: () -> Unit,
     registrationRequests: List<RegistrationRequest>,
     registeredCards: List<RegisteredCard>,
-    users: List<OrganizationMember>
+    users: List<OrganizationMember>,
+    vehicleChangeRequests: List<VehicleChangeRequest>
 ) {
     Column(
         modifier = Modifier
@@ -82,6 +86,14 @@ fun ManagementCategoriesSection(
             text = stringResource(id = R.string.users),
             onClick = onUserListClick,
             count = users.size
+        )
+
+        ManagementCategoryItem(
+            icon = R.drawable.ic_rotate,
+            iconColor = EmeraldPrimary,
+            text = stringResource(id = R.string.vehicle_change_requests),
+            onClick = onVehicleChangeRequest,
+            count = vehicleChangeRequests.size
         )
     }
 }

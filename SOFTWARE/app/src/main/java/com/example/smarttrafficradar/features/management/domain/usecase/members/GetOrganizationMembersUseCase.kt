@@ -1,4 +1,4 @@
-package com.example.smarttrafficradar.features.management.domain.usecase
+package com.example.smarttrafficradar.features.management.domain.usecase.members
 
 import com.example.smarttrafficradar.features.management.domain.model.OrganizationMember
 import com.example.smarttrafficradar.features.management.domain.repository.OrganizationMemberRepository
@@ -8,7 +8,7 @@ import javax.inject.Inject
 class GetOrganizationMembersUseCase @Inject constructor(
     private val repository: OrganizationMemberRepository
 ) {
-    operator fun invoke(): Flow<List<OrganizationMember>> {
+    operator fun invoke(): Flow<List<OrganizationMember> > {
         return repository.getOrganizationMembers()
     }
 }

@@ -435,6 +435,7 @@
     </plurals>
     <string name="pending_registrations">Pending Registrations</string>
     <string name="registered_cards">Registered Cards</string>
+    <string name="vehicle_change_requests">Vehicle Change Requests</string>
     <string name="users">Users</string>
 
     <!-- PENDING CARDS -->
@@ -447,6 +448,15 @@
 
     <string name="reject_request_title">Reject Request</string>
     <string name="reject_request_message">Are you sure you want to reject this registration request? This will remove the request from the system.</string>
+
+    <!-- VEHICLE CHANGE REQUEST -->
+    <string name="no_vehicle_change_requests">No vehicle change requests yet</string>
+    <string name="request_details">Request Details</string>
+    <string name="approve_change_title">Approve Vehicle Change</string>
+    <string name="approve_change_message">Are you sure you want to approve this vehicle change request? This will update the registered vehicle type for this card.</string>
+    <string name="reject_change_title">Reject Vehicle Change</string>
+    <string name="reject_change_message">Are you sure you want to reject this vehicle change request? This will keep the current vehicle type.</string>
+    <string name="confirm_confirm">Confirm</string>
 
     <!-- REGISTERED CARDS -->
     <string name="search_registered_cards_hint">Search by UID or owner…</string>
@@ -536,6 +546,8 @@
     <string name="out_label">Out</string>
     <string name="parking_capacity">Parking Capacity</string>
     <string name="available_spots">Available: %1$d spots</string>
+    <string name="traffic_by_vehicle_type">Traffic by vehicle type</string>
+    <string name="vehicle_type_count_format">%1$s %2$d</string>
 
     <!-- ADMIN PROFILE -->
     <string name="system_administrator">System Administrator</string>
