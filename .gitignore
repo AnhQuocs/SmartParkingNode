@@ -1,1 +1,23 @@
+# Firebase service account
 PAYMENT_BACKEND/src/main/resources/serviceAccountKey.json
+
+# Android Studio
+.idea/
+
+# Gradle
+.gradle/
+
+# Local SDK path
+local.properties
+
+# Build outputs
+**/build/
+
+# Release APK/AAB
+*.apk
+*.aab
+SOFTWARE/app/release/
+
+# Keystore
+*.jks
+*.keystore
