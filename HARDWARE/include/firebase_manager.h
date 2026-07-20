@@ -542,8 +542,8 @@ private:
     double _calcFee(time_t checkInTs, time_t checkOutTs, int64_t durationMin, const String &vehicleType)
     {
         // // Miễn phí nếu thời gian đỗ dưới 30 phút
-        // if (durationMin < 30)
-        //     return 0.0;
+        if (durationMin < 30)
+            return 0.0;
 
         time_t inLocal = checkInTs + 7 * 3600;
         time_t outLocal = checkOutTs + 7 * 3600;

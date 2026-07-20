@@ -59,7 +59,6 @@ void openGate(const String &uid, const String &action)
     pendingUID = uid;
     pendingAction = action; // "IN" hoặc "OUT"
 
-    // PHẦN CỨNG TRƯỚC (Hàm mở này đã tự động kích hoạt Audio)
     barrier.open();
     SpeedSensor::Direction dir = (action == "OUT") ? SpeedSensor::DIR_OUT
                                                    : SpeedSensor::DIR_IN;

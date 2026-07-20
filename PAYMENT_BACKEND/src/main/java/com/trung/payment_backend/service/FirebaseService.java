@@ -183,6 +183,11 @@ public class FirebaseService {
     public void pushAndSaveNotification(String uid, String titleKey, String bodyKey, List<String> args) {
         if (uid == null || uid.isEmpty()) return;
 
+        if ("BODY_PARKING_OVER_30_MIN".equals(bodyKey) && args != null && args.size() > 2) {
+            args = new java.util.ArrayList<>(args);
+            args.set(2, "30");
+        }
+
         Firestore db = FirestoreClient.getFirestore();
         String fcmToken = null;
         String lang = "vi";
@@ -359,7 +364,7 @@ public class FirebaseService {
                 text = isEn ? "Parked over 30 minutes" : "Xe gửi quá 30 phút";
                 break;
             case "BODY_PARKING_OVER_30_MIN":
-                text = isEn ? "{0} (Card {1}) has been parked for {2} minutes. Estimated fee: {3} đ." : "{0} (Thẻ {1}) đã gửi được {2} phút. Tạm tính phí: {3} đ."; // [cite: 3]
+                text = isEn ? "{0} (Card {1}) has been parked for 30 minutes. Estimated fee: {3} đ." : "{0} (Thẻ {1}) đã gửi được 30 phút. Tạm tính phí: {3} đ."; // [cite: 3]
                 break;
 
             case "TITLE_PARKING_OVERNIGHT":

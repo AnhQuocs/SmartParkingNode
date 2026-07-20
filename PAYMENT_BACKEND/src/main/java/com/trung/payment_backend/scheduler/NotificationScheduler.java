@@ -15,8 +15,8 @@ public class NotificationScheduler {
     @Autowired
     private FirebaseService firebaseService;
 
-    // Đang để 30s để test, lúc chạy thật nhớ đổi về 30 phút (1.800.000 ms)
-    private static final long THIRTY_SECOND_MS = 60L * 1000L;
+    private static final long THIRTY_SECOND_MS = 30L * 1000L;
+//    private static final long THIRTY_MINUTE_MS = 60L * 30L * 1000L;
 
     @Scheduled(fixedRate = 10000) // Chạy mỗi 10s để quét
     public void checkParkingDuration() {
